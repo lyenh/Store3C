@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_user_account"
+        android:orderInCategory="200"
+        android:title="@string/action_user_account"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_position"
+        android:orderInCategory="300"
+        android:title="@string/action_position"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_memo"
+        android:orderInCategory="400"
+        android:title="@string/action_memo"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_shopping_car"
+        android:orderInCategory="500"
+        android:title="@string/action_order_list"
+        android:icon="@drawable/shopping_car1"
+        app:showAsAction="ifRoom" />
+
+</menu>

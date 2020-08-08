@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dish"
+            android:icon="@drawable/dish"
+            android:title="餐點" />
+        <item
+            android:id="@+id/nav_cake"
+            android:icon="@drawable/cake"
+            android:title="甜點" />
+        <item
+            android:id="@+id/nav_phone"
+            android:icon="@drawable/phone_icon"
+            android:title="手機" />
+        <item
+            android:id="@+id/nav_camera"
+            android:icon="@drawable/camera_icon"
+            android:title="相機" />
+        <item
+            android:id="@+id/nav_book"
+            android:icon="@drawable/book"
+            android:title="書籍" />
+    </group>
+
+
+
+</menu>

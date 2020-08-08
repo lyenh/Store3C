@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_cake"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.user.store3c.CakeActivity"
+    tools:showIn="@layout/app_bar_cake"
+    android:orientation="vertical">
+
+    <include layout="@layout/fragment_youtube"
+        android:id="@+id/youTubeFrameLayout_id" />
+
+    <TextView
+        android:text="甜點產品"
+        app:layout_scrollFlags="scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/titleCake_id"
+        android:textSize="18sp"
+        android:textColor="#501d96"
+        android:gravity="center_horizontal"
+        android:textStyle="bold|italic" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/cakeRecyclerView_id" >
+
+    </androidx.recyclerview.widget.RecyclerView>
+
+
+</LinearLayout>

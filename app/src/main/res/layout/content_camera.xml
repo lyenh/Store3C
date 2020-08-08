@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_camera"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.user.store3c.CameraActivity"
+    tools:showIn="@layout/app_bar_camera">
+
+    <include
+        android:id="@+id/youTubeFrameLayout_id"
+        layout="@layout/fragment_youtube" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <TextView
+                android:id="@+id/title1Camera_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#6bd8b7"
+                android:gravity="center_horizontal"
+                android:text="Nikon 數位相機"
+                android:textColor="#501d96"
+                android:textSize="18dp"
+                android:textStyle="bold|italic"
+                app:layout_scrollFlags="scroll" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/camera1RecyclerView_id"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:contextClickable="false"
+                android:duplicateParentState="false"
+                android:focusable="false"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+
+            <TextView
+                android:id="@+id/title2Camera_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="35dp"
+                android:background="#6bd8b7"
+                android:gravity="center_horizontal"
+                android:text="Canon 數位相機"
+                android:textColor="#501d96"
+                android:textSize="18dp"
+                android:textStyle="bold|italic"
+                app:layout_scrollFlags="scroll" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/camera2RecyclerView_id"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:contextClickable="false"
+                android:duplicateParentState="false"
+                android:focusable="false"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+
+            <TextView
+                android:id="@+id/title3Camera_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="35dp"
+                android:background="#6bd8b7"
+                android:gravity="center_horizontal"
+                android:text="Sony 數位相機"
+                android:textColor="#501d96"
+                android:textSize="18dp"
+                android:textStyle="bold|italic"
+                app:layout_scrollFlags="scroll" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/camera3RecyclerView_id"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="30dp"
+                android:clickable="false"
+                android:contextClickable="false"
+                android:duplicateParentState="false"
+                android:focusable="false"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

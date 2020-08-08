@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/deleteOrder_id"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimaryDark"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        tools:background="@color/colorPrimaryDark">
+
+        <ImageView
+            android:id="@+id/imgOrder_id"
+            android:layout_width="263dp"
+            android:layout_height="300dp"
+            app:srcCompat="@drawable/dish" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/nameOrder_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginRight="5dp"
+                android:layout_weight="0.36"
+                android:text="name"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/priceOrder_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/nameOrder_id"
+                android:layout_alignStart="@+id/nameOrder_id"
+                android:layout_marginTop="20dp"
+                android:text="price"
+                android:textSize="20sp" />
+
+            <com.example.user.store3c.MemoReorderImageView
+                android:id="@+id/reorderOrder_id"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="30dp"
+                app:srcCompat="@drawable/reorder" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.user.store3c.PromotionActivity">
+
+    <TextView
+        android:id="@+id/paymentTitle_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:text="訂單明細"
+        android:textAlignment="center"
+        android:textColor="#9b38c9"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/paymentText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:paddingRight="10dp"
+        android:text="(此App為測試版本, 並無實際付費購買的功能, 感謝您的使用 !)"
+        android:textAlignment="center"
+        android:textColor="#cb3c99"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/paymentList_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingTop="30dp"
+        android:paddingRight="20dp"
+        android:text="您會收到預購商品促銷的推播簡訊和E-mail訂單的預估明細通知, 感謝您."
+        android:textAlignment="viewStart"
+        android:textColor="#aa7320"
+        android:textSize="15sp" />
+
+
+    <Button
+        android:id="@+id/promotionRtn_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:layout_marginTop="100dp"
+        android:layout_marginRight="10dp"
+        android:text="Return"
+        android:textAlignment="center" />
+</LinearLayout>

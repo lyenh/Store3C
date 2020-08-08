@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.user.store3c.PositionActivity"
+    tools:showIn="@layout/activity_position">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
+            android:paddingLeft="20dp"
+            android:text="購物中心影片介紹: Demo Sample" />
+
+        <include
+            android:id="@+id/youTubeFrameLayout_id"
+            layout="@layout/fragment_youtube" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="35dp"
+            android:text="購物中心參考位置資訊:  可開啟google地圖" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/mall1_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="台茂購物中心" />
+
+            <Button
+                android:id="@+id/mall2_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="大江購物中心" />
+
+            <Button
+                android:id="@+id/mall3_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="大潤發平鎮店" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/mall4_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="家樂福內壢店" />
+
+            <Button
+                android:id="@+id/mall5_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="愛買桃園店" />
+
+            <Button
+                android:id="@+id/mall6_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="好市多中壢店" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/mall7_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="華泰名品城" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/positionRtb_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginTop="30dp"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Return" />
+
+
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>
