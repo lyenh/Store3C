@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -15,8 +17,10 @@ import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
-import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+//import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.google.android.youtube.player.YouTubePlayerSupportFragmentX;
+
+import java.util.Objects;
 
 
 public class YouTubeFragment extends Fragment{
@@ -102,7 +106,7 @@ public class YouTubeFragment extends Fragment{
             public void onInitializationFailure(YouTubePlayer.Provider arg0, YouTubeInitializationResult arg1) {
                 // TODO Auto-generated method stub
                 if (arg1.isUserRecoverableError()) {
-                    arg1.getErrorDialog(getActivity(), RECOVERY_REQUEST).show();
+                    arg1.getErrorDialog(Objects.requireNonNull(getActivity()), RECOVERY_REQUEST).show();
                 } else {
                     String error = String.format(getString(R.string.player_error), arg1.toString());
                     Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
@@ -110,9 +114,11 @@ public class YouTubeFragment extends Fragment{
             }
         });
         FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.youtubeFragment_id, youtubePlayerFragment);
-        fragmentTransaction.commit();
+        if (fragmentManager != null) {
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.youtubeFragment_id, youtubePlayerFragment);
+            fragmentTransaction.commit();
+        }
         return view;
 
     }
@@ -132,7 +138,7 @@ public class YouTubeFragment extends Fragment{
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
@@ -189,13 +195,16 @@ public class YouTubeFragment extends Fragment{
     }
 
     @Override
-    public void onSaveInstanceState(Bundle bundle) {
+    public void onSaveInstanceState(@NonNull Bundle bundle) {
         super.onSaveInstanceState(bundle);
     }
 
     @Override
     public void onDestroy() {
         if (YPlayer != null) {
+            if (YPlayer.isPlaying()) {
+                YPlayer.pause();
+            }
             YPlayer.release();
         }
         super.onDestroy();
