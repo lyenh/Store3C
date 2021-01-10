@@ -1,6 +1,6 @@
 package com.google.android.youtube.player;
 
-/**
+/*
  * Please create this directories schema com.google.android.youtube.player and post the file there
  */
 
@@ -9,7 +9,10 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
@@ -51,8 +54,8 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
         this.b = var1 != null ? var1.getBundle("YouTubePlayerSupportFragment.KEY_PLAYER_VIEW_STATE") : null;
     }
 
-    public View onCreateView(LayoutInflater var1, ViewGroup var2, Bundle var3) {
-        this.c = new YouTubePlayerView(this.getActivity(), (AttributeSet)null, 0, this.a);
+    public View onCreateView(@NonNull LayoutInflater var1, ViewGroup var2, Bundle var3) {
+        this.c = new YouTubePlayerView(this.requireActivity(), (AttributeSet)null, 0, this.a);
         this.a();
         return this.c;
     }
@@ -72,7 +75,7 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
         super.onPause();
     }
 
-    public void onSaveInstanceState(Bundle var1) {
+    public void onSaveInstanceState(@NonNull Bundle var1) {
         super.onSaveInstanceState(var1);
         Bundle var2 = this.c != null ? this.c.e() : this.b;
         var1.putBundle("YouTubePlayerSupportFragment.KEY_PLAYER_VIEW_STATE", var2);
@@ -84,9 +87,19 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
     }
 
     public void onDestroyView() {
-        this.c.c(this.getActivity().isFinishing());
+        this.c.c((this.requireActivity().isFinishing()));
         this.c = null;
         super.onDestroyView();
+    }
+
+    @Override
+    public void setReturnTransition(@Nullable Object transition) {
+        super.setReturnTransition(transition);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 
     public void onDestroy() {
@@ -96,6 +109,13 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
         }
 
         super.onDestroy();
+
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        this.finalize();
     }
 
     private final class a implements YouTubePlayerView.b {

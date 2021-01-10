@@ -93,19 +93,19 @@ public class BookActivity extends AppCompatActivity
 
         RecyclerView bookRecyclerView;
         ImageView imageTitle;
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarBook);
         setSupportActionBar(toolbar);
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
         AccountDbAdapter dbHelper;
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_book);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view_book);
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setItemIconTintList(null);
@@ -674,7 +674,7 @@ public class BookActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         Intent intent;
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_book);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -764,7 +764,7 @@ public class BookActivity extends AppCompatActivity
                 BookActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_book_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "BOOK");
@@ -807,7 +807,7 @@ public class BookActivity extends AppCompatActivity
         } else if (id == R.id.nav_book) {
 
         }
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_book);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

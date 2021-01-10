@@ -25,7 +25,7 @@ public class PositionActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_position);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarPosition);
         setSupportActionBar(toolbar);
 
         //getSupportActionBar().setLogo(R.drawable.store1);
@@ -49,6 +49,7 @@ public class PositionActivity extends AppCompatActivity implements View.OnClickL
         YouTubeF = YouTubeFragment.newInstance(mallVideoId);
         fragManager = getSupportFragmentManager();
         FragmentTransaction trans = fragManager.beginTransaction();
+        trans.setReorderingAllowed(true);
         trans.add(R.id.youTubeFrameLayout_id, YouTubeF);
         trans.commit();
 
@@ -65,21 +66,27 @@ public class PositionActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        if (screenWidth > 800) {
-            if (YouTubeF.YPlayer.isPlaying()) {
-                YouTubeF.YPlayer.setFullscreen(true);
-                YouTubeF.YPlayer.play();
-            } else {
-                YouTubeF.YPlayer.setFullscreen(true);
-                YouTubeF.YPlayer.loadVideo(YouTubeF.videoId);
-            }
-        } else {
-            if (YouTubeF.YPlayer.isPlaying()) {
-                YouTubeF.YPlayer.setFullscreen(false);
-                YouTubeF.YPlayer.play();
-            } else {
-                YouTubeF.YPlayer.setFullscreen(false);
-                YouTubeF.YPlayer.cueVideo(YouTubeF.videoId);
+        if (YouTubeFragment.YPlayer != null) {
+            try {
+                if (screenWidth > 800) {
+                    if (YouTubeFragment.YPlayer.isPlaying()) {
+                        YouTubeFragment.YPlayer.setFullscreen(true);
+                        YouTubeFragment.YPlayer.play();
+                    } else {
+                        YouTubeFragment.YPlayer.setFullscreen(true);
+                        YouTubeFragment.YPlayer.cueVideo(YouTubeF.videoId);
+                    }
+                } else {
+                    if (YouTubeFragment.YPlayer.isPlaying()) {
+                        YouTubeFragment.YPlayer.setFullscreen(false);
+                        YouTubeFragment.YPlayer.play();
+                    } else {
+                        YouTubeFragment.YPlayer.setFullscreen(false);
+                        YouTubeFragment.YPlayer.cueVideo(YouTubeF.videoId);
+                    }
+                }
+            }catch (Exception e) {
+                Toast.makeText(PositionActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
         super.onConfigurationChanged(newConfig);
@@ -182,12 +189,34 @@ public class PositionActivity extends AppCompatActivity implements View.OnClickL
                             break;
                         case "CAKE":
                             intentItem.setClass(PositionActivity.this, CakeActivity.class);
+                            if (YouTubeFragment.YPlayer != null) {
+                                try {
+                                    if (YouTubeFragment.YPlayer.isPlaying()) {
+                                        YouTubeFragment.YPlayer.pause();
+                                        //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (Exception e) {
+                                    Toast.makeText(PositionActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                                YouTubeFragment.YPlayer.release();
+                            }
                             break;
                         case "PHONE":
                             intentItem.setClass(PositionActivity.this, PhoneActivity.class);
                             break;
                         case "CAMERA":
                             intentItem.setClass(PositionActivity.this, CameraActivity.class);
+                            if (YouTubeFragment.YPlayer != null) {
+                                try {
+                                    if (YouTubeFragment.YPlayer.isPlaying()) {
+                                        YouTubeFragment.YPlayer.pause();
+                                        //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (Exception e) {
+                                    Toast.makeText(PositionActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                                YouTubeFragment.YPlayer.release();
+                            }
                             break;
                         case "BOOK":
                             intentItem.setClass(PositionActivity.this, BookActivity.class);
@@ -250,12 +279,34 @@ public class PositionActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case "CAKE":
                 intent.setClass(PositionActivity.this, CakeActivity.class);
+                if (YouTubeFragment.YPlayer != null) {
+                    try {
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.pause();
+                            //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(PositionActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    YouTubeFragment.YPlayer.release();
+                }
                 break;
             case "PHONE":
                 intent.setClass(PositionActivity.this, PhoneActivity.class);
                 break;
             case "CAMERA":
                 intent.setClass(PositionActivity.this, CameraActivity.class);
+                if (YouTubeFragment.YPlayer != null) {
+                    try {
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.pause();
+                            //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(PositionActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    YouTubeFragment.YPlayer.release();
+                }
                 break;
             case "BOOK":
                 intent.setClass(PositionActivity.this, BookActivity.class);

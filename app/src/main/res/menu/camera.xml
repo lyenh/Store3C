@@ -17,7 +17,7 @@
         android:title="@string/action_memo"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_shopping_car"
+        android:id="@+id/action_camera_shopping_car"
         android:orderInCategory="500"
         android:title="@string/action_order_list"
         android:icon="@drawable/shopping_car1"

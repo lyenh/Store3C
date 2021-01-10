@@ -11,8 +11,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.user.store3c.CameraActivity"
-    tools:showIn="@layout/app_bar_camera">
+    tools:showIn="@layout/app_bar_camera"
+    tools:context="com.example.user.store3c.CameraActivity">
 
     <include
         android:id="@+id/youTubeFrameLayout_id"
@@ -52,7 +52,7 @@
                 android:duplicateParentState="false"
                 android:focusable="false"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+                app:layout_scrollFlags="scroll" />
 
             <TextView
                 android:id="@+id/title2Camera_id"
@@ -76,7 +76,7 @@
                 android:duplicateParentState="false"
                 android:focusable="false"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+                app:layout_scrollFlags="scroll" />
 
             <TextView
                 android:id="@+id/title3Camera_id"
@@ -101,8 +101,7 @@
                 android:duplicateParentState="false"
                 android:focusable="false"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
-
+                app:layout_scrollFlags="scroll" />
 
         </LinearLayout>
 

@@ -30,7 +30,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
 
-        //Toolbar toolbar = findViewById(R.id.toolbar);
+        //Toolbar toolbar = findViewById(R.id.toolbarMap);
         //getActionBar().show();
         //setSupportActionBar(toolbar);
         //getSupportActionBar().setLogo(R.drawable.store1);

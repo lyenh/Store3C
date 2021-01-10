@@ -68,7 +68,7 @@ public class PageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarPage);
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {

@@ -106,7 +106,7 @@ public class PhoneActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phone);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarPhone);
         setSupportActionBar(toolbar);
         AccountDbAdapter dbHelper;
 
@@ -116,14 +116,14 @@ public class PhoneActivity extends AppCompatActivity
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         staticFragmentManager = getSupportFragmentManager();
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view_phone);
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setItemIconTintList(null);
@@ -859,7 +859,7 @@ public class PhoneActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         Intent intent;
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -949,7 +949,7 @@ public class PhoneActivity extends AppCompatActivity
                 PhoneActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_phone_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "PHONE");
@@ -992,7 +992,7 @@ public class PhoneActivity extends AppCompatActivity
             PhoneActivity.this.finish();
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
