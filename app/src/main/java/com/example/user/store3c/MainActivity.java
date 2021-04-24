@@ -34,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -1268,6 +1269,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         //menu.findItem(R.id.action_login_status).setIconTintList(Color.BLUE);
+
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_main_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -1345,7 +1360,15 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intentItem);
                 MainActivity.this.finish();
                 break;
-
+            case R.id.action_main_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "DISH");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(MainActivity.this, SearchActivity.class);
+                startActivity(intentItem);
+                MainActivity.this.finish();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

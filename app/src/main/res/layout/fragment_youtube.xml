@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.fragment.app.FragmentContainerView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/youtubeFragment_id"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_centerHorizontal="true"
-    android:visibility="visible" />
+    tools:context="com.example.user.store3c.YouTubeFragment">
+
+    <FrameLayout
+        android:id="@+id/youtubeFragment_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:tag="youTubeFragment_tag"
+        android:visibility="visible" />
+
+</FrameLayout>

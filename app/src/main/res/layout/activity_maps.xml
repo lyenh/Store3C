@@ -38,7 +38,7 @@
         </com.google.android.material.appbar.AppBarLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <fragment
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map_id"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="350dp"
@@ -52,8 +52,8 @@
         android:id="@+id/mapRtn_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="Return" />
+        android:layout_gravity="end"
+        android:text="@string/action_return" />
 
 
 </LinearLayout>

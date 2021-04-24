@@ -8,20 +8,25 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.youtube.player.YouTubeApiServiceUtil;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeIntents;
 import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.google.android.youtube.player.YouTubePlayerSupportFragmentX;
+
+import java.util.Objects;
 
 public class YouTubeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
@@ -95,6 +100,7 @@ public class YouTubeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             //pData.getIntArray(ARG_PARAM1);
             videoId = getArguments().getString(ARG_PARAM1);
@@ -102,19 +108,18 @@ public class YouTubeFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view =  inflater.inflate(R.layout.fragment_youtube, container, false);
-        youtubePlayerFragment = YouTubePlayerSupportFragmentX.newInstance();
+        View view =  inflater.inflate(R.layout.fragment_youtube, container,false);
 
-        FragmentManager fragmentManager = getParentFragmentManager();
+        youtubePlayerFragment = YouTubePlayerSupportFragmentX.newInstance();
+        FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setReorderingAllowed(true);
         fragmentTransaction.replace(R.id.youtubeFragment_id, youtubePlayerFragment);
         fragmentTransaction.commit();
 
         Activity activity = getActivity();
-        if (activity != null) {
+        if (activity != null && youtubePlayerFragment != null) {
             if (InternetConnection.checkConnection(activity)) {
                 if (YouTubeIntents.isYouTubeInstalled(activity) ||
                         (YouTubeApiServiceUtil.isYouTubeApiServiceAvailable(activity) == YouTubeInitializationResult.SUCCESS)) {
@@ -156,7 +161,7 @@ public class YouTubeFragment extends Fragment {
                             int RECOVERY_REQUEST = 1;
                             // TODO Auto-generated method stub
                             if (arg1.isUserRecoverableError()) {
-                                arg1.getErrorDialog(requireActivity(), RECOVERY_REQUEST).show();
+                                arg1.getErrorDialog(getActivity(), RECOVERY_REQUEST).show();
                             } else {
                                 String error = String.format(getString(R.string.player_error), arg1.toString());
                                 Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
@@ -172,7 +177,6 @@ public class YouTubeFragment extends Fragment {
             }
         }
         return view;
-
     }
 
     @Override
@@ -221,6 +225,11 @@ public class YouTubeFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle bundle) {
+/*
+        FragmentManager fragmentManager = getParentFragmentManager();
+        fragmentManager.beginTransaction().remove(youtubePlayerFragment).commit();
+        fragmentManager.executePendingTransactions();
+*/
         super.onSaveInstanceState(bundle);
     }
 
@@ -232,7 +241,6 @@ public class YouTubeFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Runtime.getRuntime().runFinalization();
     }
 
     /**

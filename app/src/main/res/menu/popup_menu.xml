@@ -3,9 +3,9 @@
     <item
         android:id="@+id/sellAmount_id"
         android:icon="@mipmap/ic_launcher"
-        android:title="已銷售數量"/>
+        android:title="@string/sell_number"/>
     <item
         android:id="@+id/saveAmount_id"
         android:icon="@mipmap/ic_launcher"
-        android:title="庫存數量"/>
+        android:title="@string/stock_number"/>
 </menu>

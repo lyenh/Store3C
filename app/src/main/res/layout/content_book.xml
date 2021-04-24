@@ -21,7 +21,7 @@
         android:layout_height="88dp" />
 
     <TextView
-        android:text="書籍產品"
+        android:text="@string/book"
         app:layout_scrollFlags="scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

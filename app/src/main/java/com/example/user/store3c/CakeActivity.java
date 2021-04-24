@@ -28,6 +28,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -188,17 +189,13 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
 
         //let's create the delegate, passing the activity at both arguments (Activity, AppCompatCallback)
         delegate = AppCompatDelegate.create(this, this);
-
         //we need to call the onCreate() of the AppCompatDelegate
         delegate.onCreate(savedInstanceState);
-
         //we use the delegate to inflate the layout
         delegate.setContentView(R.layout.activity_cake);
-
         //Finally, let's add the Toolbar
         Toolbar toolbar = findViewById(R.id.toolbarCake);
         delegate.setSupportActionBar(toolbar);
-
         if (delegate.getSupportActionBar() != null) {
             delegate.getSupportActionBar().setLogo(R.drawable.store_logo);
         }
@@ -954,6 +951,24 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_cake_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -1031,6 +1046,15 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                 bundleItem.putString("Menu", "CAKE");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(CakeActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                CakeActivity.this.finish();
+                break;
+            case R.id.action_cake_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "CAKE");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(CakeActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 CakeActivity.this.finish();
                 break;

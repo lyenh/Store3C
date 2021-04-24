@@ -1,27 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.user.store3c.OrderActivity"
+    android:background="#F2CBEBAA"
     android:orientation="vertical"
-    android:weightSum="1">
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:weightSum="1"
+    tools:context="com.example.user.store3c.OrderActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarOrder"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:contentInsetStartWithNavigation="0dp"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+        </androidx.appcompat.widget.Toolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="有購買意願的產品"
-        android:id="@+id/textView"
         android:layout_gravity="center_horizontal"
-        android:textStyle="bold"
-        android:textColorHint="#a7681f"
         android:layout_marginBottom="6dp"
-        android:textColor="#501d96" />
+        android:text="@string/want_to_buy"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="#501d96"
+        android:textColorHint="#a7681f"
+        android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/orderRecyclerView_id"
@@ -48,16 +66,16 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
             android:layout_weight="1"
-            android:text="預購促銷"
+            android:text="@string/promotion"
             android:textSize="16sp" />
 
         <Button
             android:id="@+id/orderReturnBtn_id"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
+            android:layout_gravity="end"
             android:layout_marginRight="5dp"
-            android:text="返回"
+            android:text="@string/action_return"
             android:textSize="16sp" />
 
     </LinearLayout>

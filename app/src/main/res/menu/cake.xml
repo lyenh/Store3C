@@ -17,9 +17,15 @@
         android:title="@string/action_memo"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_cake_search"
+        android:orderInCategory="500"
+        android:title="@string/action_search"
+        app:actionLayout="@layout/search_icon_view"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_cake_shopping_car"
         android:icon="@drawable/shopping_car1"
-        android:orderInCategory="500"
+        android:orderInCategory="600"
         android:title="@string/action_order_list"
         app:showAsAction="ifRoom" />
 

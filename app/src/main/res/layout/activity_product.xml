@@ -39,7 +39,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2.7"
-                    android:gravity="left">
+                    android:gravity="start">
 
                     <TextView
                         android:layout_height="wrap_content"
@@ -54,7 +54,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="right">
+                    android:gravity="end">
 
                     <TextView
                         android:layout_height="wrap_content"
@@ -62,7 +62,7 @@
                         android:id="@+id/productPrice_id"
                         android:textIsSelectable="false"
                         android:layout_width="105dp"
-                        android:layout_gravity="right"
+                        android:layout_gravity="end"
                         android:layout_weight="1" />
 
                 </LinearLayout>
@@ -106,7 +106,7 @@
                     <Button
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Return"
+                        android:text="@string/action_return"
                         android:id="@+id/productReturnBtn_id"
                         android:layout_marginLeft="10dp" />
                 </LinearLayout>
@@ -116,7 +116,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:gravity="right">
+                    android:gravity="end">
 
                     <ImageView
                         android:layout_width="wrap_content"

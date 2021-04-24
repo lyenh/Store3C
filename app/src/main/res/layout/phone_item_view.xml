@@ -44,7 +44,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="HTC"
+                    android:text="@string/htc"
                     android:textSize="16sp" />
             </LinearLayout>
 
@@ -58,7 +58,7 @@
                     android:id="@+id/moreImg_id"
                     android:layout_width="45dp"
                     android:layout_height="32dp"
-                    android:layout_gravity="right"
+                    android:layout_gravity="end"
                     android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     app:srcCompat="@drawable/more" />

@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private String menu_item, product_name, product_price, product_intro, order_list = "";
+    private String menu_item, product_name, product_price, product_intro, order_list = "", search_list = "";
     private byte[] product_pic;
 
     @Override
@@ -47,6 +47,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (bundle != null) {
             if (bundle.getString("Order") != null) {
                 order_list = bundle.getString("Order");
+            }
+            if (bundle.getString("Search") != null) {
+                search_list = bundle.getString("Search");
             }
             menu_item = bundle.getString("Menu");
             //product_pic = bundle.getInt("Pic");
@@ -88,6 +91,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     intentItem.putExtras(bundle);
                     intentItem.setClass(ProductActivity.this, OrderActivity.class);
                 }
+                else if (search_list.equals("SEARCH")) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("Menu", menu_item);
+                    intentItem.putExtras(bundle);
+                    intentItem.setClass(ProductActivity.this, SearchActivity.class);
+                }
                 else {
                     switch (menu_item) {
                         case "DISH":
@@ -117,7 +126,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.buyBtn_id:
                 Intent intent = new Intent();
                 Bundle bundle = new Bundle();
-
+                if (search_list.equals("SEARCH")) {
+                    bundle.putString("Search", "SEARCH");
+                }
                 bundle.putString("Menu", menu_item);
                 bundle.putByteArray("Pic", product_pic);
                 bundle.putString("Name", product_name);
@@ -142,6 +153,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             bundle.putString("Menu", menu_item);
             intent.putExtras(bundle);
             intent.setClass(ProductActivity.this, OrderActivity.class);
+        }
+        else if (search_list.equals("SEARCH")) {
+            Bundle bundle = new Bundle();
+            bundle.putString("Menu", menu_item);
+            intent.putExtras(bundle);
+            intent.setClass(ProductActivity.this, SearchActivity.class);
         }
         else {
             switch (menu_item) {

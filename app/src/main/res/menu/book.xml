@@ -17,8 +17,14 @@
         android:title="@string/action_memo"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_book_shopping_car"
+        android:id="@+id/action_book_search"
         android:orderInCategory="500"
+        android:title="@string/action_search"
+        app:actionLayout="@layout/search_icon_view"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_book_shopping_car"
+        android:orderInCategory="600"
         android:title="@string/action_order_list"
         android:icon="@drawable/shopping_car1"
         app:showAsAction="ifRoom" />

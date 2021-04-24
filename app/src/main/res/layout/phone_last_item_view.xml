@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="顯示所有同廠牌手機: "
+            android:text="@string/all_phone"
             android:textSize="18sp"
             app:layout_scrollFlags="scroll" />
 

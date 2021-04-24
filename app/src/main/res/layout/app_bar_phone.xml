@@ -16,6 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
+            app:contentInsetStartWithNavigation="0dp"
             app:layout_scrollFlags="scroll"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
@@ -34,19 +35,19 @@
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="HTC"
+                android:text="@string/htc"
                 app:layout_scrollFlags="scroll" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="ASUS"
+                android:text="@string/asus"
                 app:layout_scrollFlags="scroll" />
 
             <com.google.android.material.tabs.TabItem
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SAMSUNG"
+                android:text="@string/samsung"
                 app:layout_scrollFlags="scroll" />
         </com.google.android.material.tabs.TabLayout>
 

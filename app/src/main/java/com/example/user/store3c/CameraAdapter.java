@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+//import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,7 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
     private CameraActivity activity;
     private YouTubeFragment YouTubeF;
     private String[][] cameraVideoId = { {"jHzU8Ixa75w", "I2W0Opbtrpg", "zywGqoPIc0k"},
-                                        {"Nd1wc8XMarg", "mzwPuyfQcrA", "_7d1knBJe8k"},
+                                        {"Nd1wc8XMarg", "mzwPuyfQcrA", "XFSf6IV8-oI"},
                                         {"dUbZBlbmNng", "P_noJ0Ati60", "D8AvEstX_3E"}};
     private int videoPlayBtn;
 
@@ -106,6 +107,7 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
 
         holder.cameraImage.setImageBitmap(product.getImg());
         holder.cameraName.setText(product.getName());
+        holder.videoPlay.setImageResource(R.drawable.video_play);
         holder.videoPlay.setTag(position);
         holder.videoPlay.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -43,7 +43,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:text="Camera Name"
+                    android:text="@string/product_name"
                     android:textSize="16sp" />
             </LinearLayout>
 
@@ -57,7 +57,7 @@
                     android:id="@+id/videoPlay_id"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="right"
+                    android:layout_gravity="end"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     app:srcCompat="@drawable/video_play" />

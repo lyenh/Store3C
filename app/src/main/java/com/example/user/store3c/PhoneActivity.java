@@ -16,7 +16,10 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.tabs.TabLayout;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -31,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -101,6 +105,7 @@ public class PhoneActivity extends AppCompatActivity
     private static handler5 handlerDownload5 = new handler5();
     private static handler6 handlerDownload6 = new handler6();
     private static FragmentManager staticFragmentManager;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,12 +114,6 @@ public class PhoneActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbarPhone);
         setSupportActionBar(toolbar);
         AccountDbAdapter dbHelper;
-
-        AdView mAdView;
-        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
-        mAdView = findViewById(R.id.adView_id);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -248,6 +247,15 @@ public class PhoneActivity extends AppCompatActivity
                         break;
                 }
                 //Toast.makeText(PhoneActivity.this, "The fragment "+ position, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
+                mAdView = findViewById(R.id.adView_id);
+                AdRequest adRequest = new AdRequest.Builder().build();
+                mAdView.loadAd(adRequest);
             }
         });
 
@@ -889,6 +897,24 @@ public class PhoneActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_phone_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -955,6 +981,15 @@ public class PhoneActivity extends AppCompatActivity
                 bundleItem.putString("Menu", "PHONE");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(PhoneActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                PhoneActivity.this.finish();
+                break;
+            case R.id.action_phone_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "PHONE");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(PhoneActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 PhoneActivity.this.finish();
                 break;

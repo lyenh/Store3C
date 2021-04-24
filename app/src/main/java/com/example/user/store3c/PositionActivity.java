@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -7,26 +8,53 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatCallback;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-public class PositionActivity extends AppCompatActivity implements View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener {
+public class PositionActivity extends Activity implements View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener, AppCompatCallback {
 
     private String menu_item;
     private Intent intent = null;
     private YouTubeFragment YouTubeF;
+    private AppCompatDelegate delegate;
+
+    @Override
+    public void onSupportActionModeStarted(ActionMode mode) {
+        //let's leave this empty, for now
+    }
+
+    @Override
+    public void onSupportActionModeFinished(ActionMode mode) {
+        // let's leave this empty, for now
+    }
+
+    @Nullable
+    @Override
+    public ActionMode onWindowStartingSupportActionMode(ActionMode.Callback callback) {
+        return null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_position);
+
+        //let's create the delegate, passing the activity at both arguments (Activity, AppCompatCallback)
+        delegate = AppCompatDelegate.create(this, this);
+        //we need to call the onCreate() of the AppCompatDelegate
+        delegate.onCreate(savedInstanceState);
+        //we use the delegate to inflate the layout
+        delegate.setContentView(R.layout.activity_position);
+        //Finally, let's add the Toolbar
         Toolbar toolbar = findViewById(R.id.toolbarPosition);
-        setSupportActionBar(toolbar);
+        delegate.setSupportActionBar(toolbar);
 
         //getSupportActionBar().setLogo(R.drawable.store1);
         Button returnBtn, position1Btn, position2Btn, position3Btn, position4Btn, position5Btn, position6Btn, position7Btn;
@@ -46,12 +74,12 @@ public class PositionActivity extends AppCompatActivity implements View.OnClickL
         position6Btn = findViewById(R.id.mall6_id);
         position7Btn = findViewById(R.id.mall7_id);
 
-        YouTubeF = YouTubeFragment.newInstance(mallVideoId);
-        fragManager = getSupportFragmentManager();
-        FragmentTransaction trans = fragManager.beginTransaction();
-        trans.setReorderingAllowed(true);
-        trans.add(R.id.youTubeFrameLayout_id, YouTubeF);
-        trans.commit();
+        if (YouTubeF == null && savedInstanceState == null) {
+            YouTubeF = YouTubeFragment.newInstance(mallVideoId);
+            getFragmentManager().beginTransaction()
+                    .add(R.id.youTubeFrameLayoutPosition_id, YouTubeF,null)
+                    .commit();
+        }
 
         returnBtn.setOnClickListener(this);
         position1Btn.setOnClickListener(this);

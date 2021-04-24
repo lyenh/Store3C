@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -704,6 +705,24 @@ public class BookActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_book_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -770,6 +789,15 @@ public class BookActivity extends AppCompatActivity
                 bundleItem.putString("Menu", "BOOK");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(BookActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                BookActivity.this.finish();
+                break;
+            case R.id.action_book_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "BOOK");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(BookActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 BookActivity.this.finish();
                 break;

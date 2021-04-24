@@ -4,6 +4,11 @@ package com.google.android.youtube.player;
  * Please create this directories schema com.google.android.youtube.player and post the file there
  */
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -13,10 +18,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 
+import com.bumptech.glide.load.engine.Resource;
 import com.google.android.youtube.player.internal.ab;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Objects;
 
 public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePlayer.Provider {
     private final YouTubePlayerSupportFragmentX.a a = new YouTubePlayerSupportFragmentX.a();
@@ -55,8 +63,9 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
     }
 
     public View onCreateView(@NonNull LayoutInflater var1, ViewGroup var2, Bundle var3) {
-        this.c = new YouTubePlayerView(this.requireActivity(), (AttributeSet)null, 0, this.a);
+        this.c = new YouTubePlayerView(getActivity().getBaseContext(), (AttributeSet)null, 0, this.a);
         this.a();
+
         return this.c;
     }
 
@@ -87,14 +96,9 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
     }
 
     public void onDestroyView() {
-        this.c.c((this.requireActivity().isFinishing()));
+        this.c.c((this.getActivity().isFinishing()));
         this.c = null;
         super.onDestroyView();
-    }
-
-    @Override
-    public void setReturnTransition(@Nullable Object transition) {
-        super.setReturnTransition(transition);
     }
 
     @Override
@@ -104,18 +108,10 @@ public class YouTubePlayerSupportFragmentX extends Fragment implements YouTubePl
 
     public void onDestroy() {
         if (this.c != null) {
-            FragmentActivity var1 = this.getActivity();
+            Activity var1 = this.getActivity();
             this.c.b(var1 == null || var1.isFinishing());
         }
-
         super.onDestroy();
-
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        this.finalize();
     }
 
     private final class a implements YouTubePlayerView.b {

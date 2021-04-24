@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,20 +14,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatCallback;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.AttributeSet;
 import android.util.Log;
-import android.view.View;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,8 +62,8 @@ import static com.example.user.store3c.MainActivity.userImg;
 import static java.lang.Integer.parseInt;
 import static com.example.user.store3c.MainActivity.mAuth;
 
-public class CameraActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener {
+public class CameraActivity extends Activity
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener, AppCompatCallback {
 
     private CameraAdapter camera1Adapter = null, camera2Adapter = null, camera3Adapter = null;
     private static ArrayList<ProductItem> CameraData1 = new ArrayList<>(), CameraData2 = new ArrayList<>(), CameraData3 = new ArrayList<>();
@@ -91,6 +97,7 @@ public class CameraActivity extends AppCompatActivity
     private static handler4 handlerDownload4;
     private static handler5 handlerDownload5 = new handler5();
     private static handler6 handlerDownload6 = new handler6();
+    private AppCompatDelegate delegate;
 
     private YouTubePlayer.PlayerStateChangeListener playerStateChangeListener = new YouTubePlayer.PlayerStateChangeListener() {
         @Override
@@ -155,16 +162,42 @@ public class CameraActivity extends AppCompatActivity
     };
 
     @Override
+    public void onSupportActionModeStarted(ActionMode mode) {
+        //let's leave this empty, for now
+    }
+
+    @Override
+    public void onSupportActionModeFinished(ActionMode mode) {
+        // let's leave this empty, for now
+    }
+
+    @Nullable
+    @Override
+    public ActionMode onWindowStartingSupportActionMode(ActionMode.Callback callback) {
+        return null;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
         RecyclerView camera1RecyclerView, camera2RecyclerView, camera3RecyclerView;
         LinearLayoutManager layoutManager1, layoutManager2, layoutManager3;
-
         AccountDbAdapter dbHelper;
+
+        //let's create the delegate, passing the activity at both arguments (Activity, AppCompatCallback)
+        delegate = AppCompatDelegate.create(this, this);
+        //we need to call the onCreate() of the AppCompatDelegate
+        delegate.onCreate(savedInstanceState);
+        //we use the delegate to inflate the layout
+        delegate.setContentView(R.layout.activity_camera);
+        //Finally, let's add the Toolbar
         Toolbar toolbar = findViewById(R.id.toolbarCamera);
-        setSupportActionBar(toolbar);
+        delegate.setSupportActionBar(toolbar);
+        if (delegate.getSupportActionBar() != null) {
+            delegate.getSupportActionBar().setLogo(R.drawable.store_logo);
+        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout_camera);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -208,9 +241,6 @@ public class CameraActivity extends AppCompatActivity
         };
         drawer.addDrawerListener(listene);
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setLogo(R.drawable.store_logo);
-        }
         if (navigationView.getHeaderCount() > 0) {
             View header = navigationView.getHeaderView(0);
             logoImage = header.findViewById(R.id.logoImage_id);
@@ -247,9 +277,8 @@ public class CameraActivity extends AppCompatActivity
 
         if (YouTubeF == null && savedInstanceState == null) {
             YouTubeF = YouTubeFragment.newInstance(cameraVideoId);
-            getSupportFragmentManager().beginTransaction()
-                    .setReorderingAllowed(true)
-                    .add(R.id.youTubeFrameLayout_id, YouTubeF,null)
+            getFragmentManager().beginTransaction()
+                    .add(R.id.youTubeFrameLayoutCamera_id, YouTubeF,null)
                     .commit();
         }
 
@@ -890,7 +919,8 @@ public class CameraActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.camera, menu);
+        //getMenuInflater().inflate(R.menu.camera, menu);
+        delegate.getMenuInflater().inflate(R.menu.camera, menu);
         if (InternetConnection.checkConnection(CameraActivity.this)) {
             FirebaseUser currentUser = mAuth.getCurrentUser();
             menu.add(0,R.id.action_login_status,100,"使用者");
@@ -917,6 +947,24 @@ public class CameraActivity extends AppCompatActivity
             }
         }
         return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_camera_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -997,6 +1045,15 @@ public class CameraActivity extends AppCompatActivity
                 bundleItem.putString("Menu", "CAMERA");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(CameraActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                CameraActivity.this.finish();
+                break;
+            case R.id.action_camera_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "CAMERA");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(CameraActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 CameraActivity.this.finish();
                 break;
