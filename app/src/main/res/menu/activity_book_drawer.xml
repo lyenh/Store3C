@@ -5,23 +5,23 @@
         <item
             android:id="@+id/nav_dish"
             android:icon="@drawable/dish"
-            android:title="餐點" />
+            android:title="@string/dish_icon" />
         <item
             android:id="@+id/nav_cake"
             android:icon="@drawable/cake"
-            android:title="甜點" />
+            android:title="@string/cake_icon" />
         <item
             android:id="@+id/nav_phone"
             android:icon="@drawable/phone_icon"
-            android:title="手機" />
+            android:title="@string/phone_icon" />
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/camera_icon"
-            android:title="相機" />
+            android:title="@string/camera_icon" />
         <item
             android:id="@+id/nav_book"
             android:icon="@drawable/book"
-            android:title="書籍" />
+            android:title="@string/book_icon" />
     </group>
 
 </menu>

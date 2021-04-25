@@ -11,6 +11,7 @@
     <string name="action_return">返回</string>
     <string name="title_activity_cake">3C生活百貨</string>
     <string name="action_memo">採購小筆記</string>
+    <string name="action_search">產品搜尋</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -20,6 +21,62 @@
     <string name="title_activity_page">3C生活百貨</string>
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="title_activity_position">3C生活百貨</string>
+    <string name="title_activity_search">3C生活百貨</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_maps">3C生活百貨</string>
+    <string name="action_login">網路連線後即可登入</string>
+    <string name="action_logout">使用者登出</string>
+    <string name="default_notification_channel_id">OnSaleChannel</string>
+    <string name="player_error">Error initializing YouTube player: %s</string>
+    <string name="account">E-mail (帳號) : </string>
+    <string name="password">Password (密碼) : </string>
+    <string name="login">Login</string>
+    <string name="dollar">元</string>
+    <string name="product_to_buy">欲購買商品 : </string>
+    <string name="clear">清除</string>
+    <string name="save">儲存</string>
+    <string name="want_to_buy">有購買意願的產品</string>
+    <string name="promotion">預購促銷</string>
+    <string name="hundred">100</string>
+    <string name="price">價格</string>
+    <string name="name">名稱</string>
+    <string name="order_list">訂單明細</string>
+    <string name="comment">(此App為測試版本, 並無實際付費購買的功能, 感謝您的使用 !)</string>
+    <string name="order_thanks">您會收到預購商品促銷的推播簡訊和E-mail訂單的預估明細通知, 感謝您.</string>
+    <string name="product_name">產品名稱 : </string>
+    <string name="search">查詢</string>
+    <string name="user_name">姓名:</string>
+    <string name="change">更改</string>
+    <string name="htc">HTC</string>
+    <string name="asus">ASUS</string>
+    <string name="samsung">SAMSUNG</string>
+    <string name="intro">簡介</string>
+    <string name="dish">餐點產品</string>
+    <string name="book">書籍產品</string>
+    <string name="cake">甜點產品</string>
+    <string name="nikon">Nikon 數位相機</string>
+    <string name="canon">Canon 數位相機</string>
+    <string name="sony">Sony 數位相機</string>
+    <string name="mall_demo">購物中心影片介紹: Demo Sample</string>
+    <string name="mall_map">購物中心參考位置資訊:  可開啟google地圖</string>
+    <string name="mall1">台茂購物中心</string>
+    <string name="mall2">大江購物中心</string>
+    <string name="mall3">大潤發平鎮店</string>
+    <string name="mall4">家樂福內壢店</string>
+    <string name="mall5">愛買桃園店</string>
+    <string name="mall6">好市多中壢店</string>
+    <string name="mall7">華泰名品城</string>
+    <string name="dish_name">海鮮羹</string>
+    <string name="user_account">User Account</string>
+    <string name="all_phone">顯示所有同廠牌手機: </string>
+    <string name="dish_icon">餐點</string>
+    <string name="cake_icon">甜點</string>
+    <string name="phone_icon">手機</string>
+    <string name="camera_icon">相機</string>
+    <string name="book_icon">書籍</string>
+    <string name="sell_number">已銷售數量</string>
+    <string name="stock_number">庫存數量</string>
+
     <string name="large_text">
         "Material is the metaphor.\n\n"
 
@@ -109,11 +166,5 @@
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_maps">3C生活百貨</string>
-    <string name="action_login">網路連線後即可登入</string>
-    <string name="action_logout">使用者登出</string>
-    <string name="default_notification_channel_id">OnSaleChannel</string>
-    <string name="player_error">Error initializing YouTube player: %s</string>
 
 </resources>

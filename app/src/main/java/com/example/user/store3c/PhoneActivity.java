@@ -16,7 +16,10 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.tabs.TabLayout;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -31,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -101,29 +105,24 @@ public class PhoneActivity extends AppCompatActivity
     private static handler5 handlerDownload5 = new handler5();
     private static handler6 handlerDownload6 = new handler6();
     private static FragmentManager staticFragmentManager;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_phone);
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarPhone);
         setSupportActionBar(toolbar);
         AccountDbAdapter dbHelper;
 
-        AdView mAdView;
-        MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
-        mAdView = findViewById(R.id.adView_id);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         staticFragmentManager = getSupportFragmentManager();
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view_phone);
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setItemIconTintList(null);
@@ -248,6 +247,15 @@ public class PhoneActivity extends AppCompatActivity
                         break;
                 }
                 //Toast.makeText(PhoneActivity.this, "The fragment "+ position, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        MobileAds.initialize(this, new OnInitializationCompleteListener() {
+            @Override
+            public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
+                mAdView = findViewById(R.id.adView_id);
+                AdRequest adRequest = new AdRequest.Builder().build();
+                mAdView.loadAd(adRequest);
             }
         });
 
@@ -859,7 +867,7 @@ public class PhoneActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         Intent intent;
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -886,6 +894,24 @@ public class PhoneActivity extends AppCompatActivity
             menu.findItem(R.id.action_login_status).setShowAsAction(SHOW_AS_ACTION_NEVER);
         }
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_phone_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -949,12 +975,21 @@ public class PhoneActivity extends AppCompatActivity
                 PhoneActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_phone_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "PHONE");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(PhoneActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                PhoneActivity.this.finish();
+                break;
+            case R.id.action_phone_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "PHONE");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(PhoneActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 PhoneActivity.this.finish();
                 break;
@@ -992,7 +1027,7 @@ public class PhoneActivity extends AppCompatActivity
             PhoneActivity.this.finish();
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_phone);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

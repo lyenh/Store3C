@@ -10,6 +10,8 @@ import android.graphics.BitmapFactory;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -31,7 +33,7 @@ import static com.example.user.store3c.MainActivity.mAuth;
 public class OrderActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
     private TextView orderText;
-    private String menu_item = "DISH", up_menu_item = "DISH";
+    private String menu_item = "DISH", up_menu_item = "DISH", search_list = "";
     private String orderTextList = "";
     private OrderRecyclerAdapter adapter = null;
     private float total_price = 0;
@@ -45,9 +47,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order);
 
+        Toolbar toolbar = findViewById(R.id.toolbarOrder);
+        setSupportActionBar(toolbar);
         String edit_Title = "購物車資料";
         if (getSupportActionBar() != null) {
-            this.getSupportActionBar().setTitle(edit_Title);
+            getSupportActionBar().setLogo(R.drawable.store_logo);
+            getSupportActionBar().setTitle(edit_Title);
         }
 
         dbhelper = new AccountDbAdapter(this);
@@ -71,6 +76,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
         if (bundle != null) {
             if (bundle.getString("Name") != null) {
+                if (bundle.getString("Search") != null) {
+                    search_list = bundle.getString("Search");
+                }
                 menu_item = bundle.getString("Menu");
                 product_pic = bundle.getByteArray("Pic");
                 product_name = bundle.getString("Name");
@@ -276,32 +284,40 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 break;
 
             case R.id.orderReturnBtn_id:
-                switch (menu_item) {
-                    case "DISH":
-                        intentItem.setClass(OrderActivity.this, MainActivity.class);
-                        break;
-                    case "CAKE":
-                        intentItem.setClass(OrderActivity.this, CakeActivity.class);
-                        break;
-                    case "PHONE":
-                        intentItem.setClass(OrderActivity.this, PhoneActivity.class);
-                        break;
-                    case "CAMERA":
-                        intentItem.setClass(OrderActivity.this, CameraActivity.class);
-                        break;
-                    case "BOOK":
-                        intentItem.setClass(OrderActivity.this, BookActivity.class);
-                        break;
-                    case "MEMO":
-                        Bundle bundle;
-                        bundle = new Bundle();
-                        bundle.putString("Menu", up_menu_item);
-                        intentItem.putExtras(bundle);
-                        intentItem.setClass(OrderActivity.this, MemoActivity.class);
-                        break;
-                    default:
-                        Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                        intentItem.setClass(OrderActivity.this, MainActivity.class);
+                if (search_list.equals("SEARCH")) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("Menu", menu_item);
+                    intentItem.putExtras(bundle);
+                    intentItem.setClass(OrderActivity.this, SearchActivity.class);
+                }
+                else {
+                    switch (menu_item) {
+                        case "DISH":
+                            intentItem.setClass(OrderActivity.this, MainActivity.class);
+                            break;
+                        case "CAKE":
+                            intentItem.setClass(OrderActivity.this, CakeActivity.class);
+                            break;
+                        case "PHONE":
+                            intentItem.setClass(OrderActivity.this, PhoneActivity.class);
+                            break;
+                        case "CAMERA":
+                            intentItem.setClass(OrderActivity.this, CameraActivity.class);
+                            break;
+                        case "BOOK":
+                            intentItem.setClass(OrderActivity.this, BookActivity.class);
+                            break;
+                        case "MEMO":
+                            Bundle bundle;
+                            bundle = new Bundle();
+                            bundle.putString("Menu", up_menu_item);
+                            intentItem.putExtras(bundle);
+                            intentItem.setClass(OrderActivity.this, MemoActivity.class);
+                            break;
+                        default:
+                            Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
+                            intentItem.setClass(OrderActivity.this, MainActivity.class);
+                    }
                 }
                 dbhelper.close();
                 startActivity(intentItem);
@@ -316,6 +332,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         Intent intent = new Intent();
         Bundle bundle;
 
+        if (search_list.equals("SEARCH")) {
+            bundle = new Bundle();
+            bundle.putString("Menu", menu_item);
+            intent.putExtras(bundle);
+            intent.setClass(OrderActivity.this, SearchActivity.class);
+        }
         switch (menu_item) {
             case "DISH":
                 intent.setClass(OrderActivity.this, MainActivity.class);

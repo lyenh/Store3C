@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,20 +14,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatCallback;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.AttributeSet;
 import android.util.Log;
-import android.view.View;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +41,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.youtube.player.YouTubePlayer;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -55,8 +62,8 @@ import static com.example.user.store3c.MainActivity.userImg;
 import static java.lang.Integer.parseInt;
 import static com.example.user.store3c.MainActivity.mAuth;
 
-public class CameraActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener{
+public class CameraActivity extends Activity
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener, AppCompatCallback {
 
     private CameraAdapter camera1Adapter = null, camera2Adapter = null, camera3Adapter = null;
     private static ArrayList<ProductItem> CameraData1 = new ArrayList<>(), CameraData2 = new ArrayList<>(), CameraData3 = new ArrayList<>();
@@ -82,13 +89,93 @@ public class CameraActivity extends AppCompatActivity
     private ImageView logoImage;
     private byte[] dbUserPicture;
     private NavigationView navigationView;
-    private YouTubeFragment YouTubeF;
+    private YouTubeFragment YouTubeF = null;
+    private String cameraVideoId = "2O0C4PnULtk";
     private static handler1 handlerDownload1 = new handler1();
     private static handler2 handlerDownload2 = new handler2();
     private static handler3 handlerDownload3 = new handler3();
     private static handler4 handlerDownload4;
     private static handler5 handlerDownload5 = new handler5();
     private static handler6 handlerDownload6 = new handler6();
+    private AppCompatDelegate delegate;
+
+    private YouTubePlayer.PlayerStateChangeListener playerStateChangeListener = new YouTubePlayer.PlayerStateChangeListener() {
+        @Override
+        public void onAdStarted() {
+            //Toast.makeText(CameraActivity.this, "AdStarted", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onError(YouTubePlayer.ErrorReason errorReason) {
+            String error = errorReason.toString();
+            Toast.makeText(CameraActivity.this, error, Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onLoaded(String arg0) {
+            //Toast.makeText(CameraActivity.this, "Loaded", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onLoading() {
+            //Toast.makeText(CameraActivity.this, "Loading", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onVideoEnded() {
+            // finish();
+        }
+
+        @Override
+        public void onVideoStarted() {
+            //Toast.makeText(CameraActivity.this, "VideoStarted", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private YouTubePlayer.PlaybackEventListener playbackEventListener = new YouTubePlayer.PlaybackEventListener() {
+
+        @Override
+        public void onBuffering(boolean arg0) {
+            //Toast.makeText(CameraActivity.this, "Buffering", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onPaused() {
+            //Toast.makeText(CameraActivity.this, "camera Paused", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onPlaying() {
+            //Toast.makeText(CameraActivity.this, "Playing", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onSeekTo(int arg0) {
+            //Toast.makeText(CameraActivity.this, "Seek", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStopped() {
+            //Toast.makeText(CameraActivity.this, "camera Stop", Toast.LENGTH_SHORT).show();
+        }
+
+    };
+
+    @Override
+    public void onSupportActionModeStarted(ActionMode mode) {
+        //let's leave this empty, for now
+    }
+
+    @Override
+    public void onSupportActionModeFinished(ActionMode mode) {
+        // let's leave this empty, for now
+    }
+
+    @Nullable
+    @Override
+    public ActionMode onWindowStartingSupportActionMode(ActionMode.Callback callback) {
+        return null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,26 +184,63 @@ public class CameraActivity extends AppCompatActivity
 
         RecyclerView camera1RecyclerView, camera2RecyclerView, camera3RecyclerView;
         LinearLayoutManager layoutManager1, layoutManager2, layoutManager3;
-        FragmentManager fragManager;
-        String cameraVideoId = "2O0C4PnULtk";
         AccountDbAdapter dbHelper;
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //let's create the delegate, passing the activity at both arguments (Activity, AppCompatCallback)
+        delegate = AppCompatDelegate.create(this, this);
+        //we need to call the onCreate() of the AppCompatDelegate
+        delegate.onCreate(savedInstanceState);
+        //we use the delegate to inflate the layout
+        delegate.setContentView(R.layout.activity_camera);
+        //Finally, let's add the Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbarCamera);
+        delegate.setSupportActionBar(toolbar);
+        if (delegate.getSupportActionBar() != null) {
+            delegate.getSupportActionBar().setLogo(R.drawable.store_logo);
+        }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_camera);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view_camera);
         navigationView.setNavigationItemSelectedListener(this);
-
         navigationView.setItemIconTintList(null);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setLogo(R.drawable.store_logo);
-        }
+
+        DrawerLayout.DrawerListener listene = new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                if (YouTubeFragment.YPlayer != null) {
+                    try {
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.pause();
+                            //Toast.makeText(CameraActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                        }
+                    }catch (Exception e) {
+                        Toast.makeText(CameraActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        };
+        drawer.addDrawerListener(listene);
+
         if (navigationView.getHeaderCount() > 0) {
             View header = navigationView.getHeaderView(0);
             logoImage = header.findViewById(R.id.logoImage_id);
@@ -151,11 +275,12 @@ public class CameraActivity extends AppCompatActivity
             dbHelper.close();
         }
 
-        YouTubeF = YouTubeFragment.newInstance(cameraVideoId);
-        fragManager = getSupportFragmentManager();
-        FragmentTransaction trans = fragManager.beginTransaction();
-        trans.add(R.id.youTubeFrameLayout_id, YouTubeF);
-        trans.commit();
+        if (YouTubeF == null && savedInstanceState == null) {
+            YouTubeF = YouTubeFragment.newInstance(cameraVideoId);
+            getFragmentManager().beginTransaction()
+                    .add(R.id.youTubeFrameLayoutCamera_id, YouTubeF,null)
+                    .commit();
+        }
 
         if (CameraData1.size() == 0) {
             camera1RecyclerView = findViewById(R.id.camera1RecyclerView_id);
@@ -236,29 +361,52 @@ public class CameraActivity extends AppCompatActivity
     }
 
     @Override
+    public void onFragmentInteractionL(Uri uri) {
+
+    }
+
+    @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        if (screenWidth > 800) {
-            if (YouTubeF.YPlayer.isPlaying()) {
-                YouTubeF.YPlayer.setFullscreen(true);
-                YouTubeF.YPlayer.play();
-            }
-            else {
-                YouTubeF.YPlayer.setFullscreen(true);
-                YouTubeF.YPlayer.loadVideo(YouTubeF.videoId);
-            }
-        }
-        else {
-            if (YouTubeF.YPlayer.isPlaying()) {
-                YouTubeF.YPlayer.setFullscreen(false);
-                YouTubeF.YPlayer.play();
-            }
-            else {
-                YouTubeF.YPlayer.setFullscreen(false);
-                YouTubeF.YPlayer.cueVideo(YouTubeF.videoId);
+        if (YouTubeFragment.YPlayer != null) {
+            try {
+                if (screenWidth > 800) {
+                    if (YouTubeFragment.YPlayer.isPlaying()) {
+                        YouTubeFragment.YPlayer.setFullscreen(true);
+                        YouTubeFragment.YPlayer.play();
+                    } else {
+                        YouTubeFragment.YPlayer.setFullscreen(true);
+                        YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                    }
+                } else {
+                    if (YouTubeFragment.YPlayer.isPlaying()) {
+                        YouTubeFragment.YPlayer.setFullscreen(false);
+                        YouTubeFragment.YPlayer.play();
+                    } else {
+                        YouTubeFragment.YPlayer.setFullscreen(false);
+                        YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                    }
+                }
+            }catch (Exception e) {
+                Toast.makeText(CameraActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
         super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
@@ -340,11 +488,6 @@ public class CameraActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onFragmentInteractionL(Uri uri) {
-
-    }
-
     static class handler1 extends Handler {
         @Override
         public void handleMessage(Message msg1) {
@@ -363,8 +506,6 @@ public class CameraActivity extends AppCompatActivity
 
         @Override
         public void run() {
-
-
             // TODO: http request.
             // Read from the database
             cameraAmount.addValueEventListener(new ValueEventListener() {
@@ -759,14 +900,11 @@ public class CameraActivity extends AppCompatActivity
         }
     };
 
-
-
-
     @Override
     public void onBackPressed() {
         Intent intent;
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_camera);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -781,7 +919,8 @@ public class CameraActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.camera, menu);
+        //getMenuInflater().inflate(R.menu.camera, menu);
+        delegate.getMenuInflater().inflate(R.menu.camera, menu);
         if (InternetConnection.checkConnection(CameraActivity.this)) {
             FirebaseUser currentUser = mAuth.getCurrentUser();
             menu.add(0,R.id.action_login_status,100,"使用者");
@@ -793,6 +932,39 @@ public class CameraActivity extends AppCompatActivity
             menu.findItem(R.id.action_login_status).setShowAsAction(SHOW_AS_ACTION_NEVER);
         }
         return true;
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        if (YouTubeFragment.YPlayer != null) {
+            try {
+                if (YouTubeFragment.YPlayer.isPlaying()) {
+                    YouTubeFragment.YPlayer.pause();
+                    //Toast.makeText(CameraActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                }
+            }catch (Exception e) {
+                Toast.makeText(CameraActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_camera_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -811,6 +983,17 @@ public class CameraActivity extends AppCompatActivity
                 bundleItem.putString("Menu", "CAMERA");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(CameraActivity.this, PositionActivity.class);
+                if (YouTubeFragment.YPlayer != null) {
+                    try {
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.pause();
+                            //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                        }
+                    }catch (Exception e) {
+                        Toast.makeText(CameraActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    YouTubeFragment.YPlayer.release();
+                }
                 startActivity(intentItem);
                 CameraActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
@@ -856,12 +1039,21 @@ public class CameraActivity extends AppCompatActivity
                 CameraActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_camera_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "CAMERA");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(CameraActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                CameraActivity.this.finish();
+                break;
+            case R.id.action_camera_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "CAMERA");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(CameraActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 CameraActivity.this.finish();
                 break;
@@ -883,6 +1075,9 @@ public class CameraActivity extends AppCompatActivity
         } else if (id == R.id.nav_cake) {
             Intent intentItem = new Intent();
             intentItem.setClass(CameraActivity.this, CakeActivity.class);
+            if (YouTubeFragment.YPlayer != null) {
+                YouTubeFragment.YPlayer.release();
+            }
             startActivity(intentItem);
             CameraActivity.this.finish();
         } else if (id == R.id.nav_phone) {
@@ -899,8 +1094,9 @@ public class CameraActivity extends AppCompatActivity
             CameraActivity.this.finish();
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_camera);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }

@@ -26,7 +26,7 @@
             android:theme="@style/AppTheme.AppBarOverlay">
 
             <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
+                android:id="@+id/toolbarMemo"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
@@ -57,7 +57,7 @@
                 android:background="@color/colorAccent"
                 android:gravity="center_vertical"
                 android:paddingLeft="5dp"
-                android:text="採購小筆記"
+                android:text="@string/action_memo"
                 android:textColor="#b56aeb"
                 android:textColorLink="@color/colorAccent"
                 android:textSize="20sp"
@@ -77,7 +77,7 @@
                 android:inputType="numberDecimal"
                 android:maxWidth="100dp"
                 android:maxLength="10"
-                android:text="100" />
+                android:text="@string/hundred" />
 
             <TextView
                 android:id="@+id/textView9"
@@ -87,7 +87,7 @@
                 android:background="@color/colorAccent"
                 android:gravity="center_vertical|center_horizontal|center"
                 android:paddingRight="5dp"
-                android:text="元"
+                android:text="@string/dollar"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/colorAccent"
                 android:paddingLeft="3dp"
-                android:text="欲購買商品 : "
+                android:text="@string/product_to_buy"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -135,21 +135,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:text="Clear" />
+                android:text="@string/clear" />
 
             <Button
                 android:id="@+id/memoSave_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:text="Save" />
+                android:text="@string/save" />
 
             <Button
                 android:id="@+id/memoRtb_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical|center_horizontal"
-                android:text="Return" />
+                android:text="@string/action_return" />
 
         </LinearLayout>
 

@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <RelativeLayout
@@ -64,9 +65,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/titleDish_id"
-        android:text="餐點產品"
+        android:text="@string/dish"
         android:textColor="#501d96"
-        android:textSize="18dp"
+        android:textSize="18sp"
         android:textStyle="bold|italic"
         android:gravity="center_horizontal"/>
 

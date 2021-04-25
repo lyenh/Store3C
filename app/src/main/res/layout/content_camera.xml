@@ -11,12 +11,14 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.user.store3c.CameraActivity"
-    tools:showIn="@layout/app_bar_camera">
+    tools:showIn="@layout/app_bar_camera"
+    tools:context="com.example.user.store3c.CameraActivity">
 
-    <include
-        android:id="@+id/youTubeFrameLayout_id"
-        layout="@layout/fragment_youtube" />
+    <FrameLayout
+        android:id="@+id/youTubeFrameLayoutCamera_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context="com.example.user.store3c.CameraActivity" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -37,9 +39,9 @@
                 android:layout_height="wrap_content"
                 android:background="#6bd8b7"
                 android:gravity="center_horizontal"
-                android:text="Nikon 數位相機"
+                android:text="@string/nikon"
                 android:textColor="#501d96"
-                android:textSize="18dp"
+                android:textSize="18sp"
                 android:textStyle="bold|italic"
                 app:layout_scrollFlags="scroll" />
 
@@ -52,7 +54,7 @@
                 android:duplicateParentState="false"
                 android:focusable="false"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+                app:layout_scrollFlags="scroll" />
 
             <TextView
                 android:id="@+id/title2Camera_id"
@@ -61,9 +63,9 @@
                 android:layout_marginTop="35dp"
                 android:background="#6bd8b7"
                 android:gravity="center_horizontal"
-                android:text="Canon 數位相機"
+                android:text="@string/canon"
                 android:textColor="#501d96"
-                android:textSize="18dp"
+                android:textSize="18sp"
                 android:textStyle="bold|italic"
                 app:layout_scrollFlags="scroll" />
 
@@ -76,7 +78,7 @@
                 android:duplicateParentState="false"
                 android:focusable="false"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
+                app:layout_scrollFlags="scroll" />
 
             <TextView
                 android:id="@+id/title3Camera_id"
@@ -85,9 +87,9 @@
                 android:layout_marginTop="35dp"
                 android:background="#6bd8b7"
                 android:gravity="center_horizontal"
-                android:text="Sony 數位相機"
+                android:text="@string/sony"
                 android:textColor="#501d96"
-                android:textSize="18dp"
+                android:textSize="18sp"
                 android:textStyle="bold|italic"
                 app:layout_scrollFlags="scroll" />
 
@@ -101,8 +103,7 @@
                 android:duplicateParentState="false"
                 android:focusable="false"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                app:layout_scrollFlags="scroll"></androidx.recyclerview.widget.RecyclerView>
-
+                app:layout_scrollFlags="scroll" />
 
         </LinearLayout>
 

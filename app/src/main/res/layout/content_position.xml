@@ -8,7 +8,6 @@
     tools:context="com.example.user.store3c.PositionActivity"
     tools:showIn="@layout/activity_position">
 
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,18 +21,19 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="10dp"
             android:paddingLeft="20dp"
-            android:text="購物中心影片介紹: Demo Sample" />
+            android:text="@string/mall_demo" />
 
-        <include
-            android:id="@+id/youTubeFrameLayout_id"
-            layout="@layout/fragment_youtube" />
+        <FrameLayout
+            android:id="@+id/youTubeFrameLayoutPosition_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="35dp"
-            android:text="購物中心參考位置資訊:  可開啟google地圖" />
+            android:text="@string/mall_map" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,19 +46,19 @@
                 android:id="@+id/mall1_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="台茂購物中心" />
+                android:text="@string/mall1" />
 
             <Button
                 android:id="@+id/mall2_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="大江購物中心" />
+                android:text="@string/mall2" />
 
             <Button
                 android:id="@+id/mall3_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="大潤發平鎮店" />
+                android:text="@string/mall3" />
 
         </LinearLayout>
 
@@ -72,19 +72,19 @@
                 android:id="@+id/mall4_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="家樂福內壢店" />
+                android:text="@string/mall4" />
 
             <Button
                 android:id="@+id/mall5_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="愛買桃園店" />
+                android:text="@string/mall5" />
 
             <Button
                 android:id="@+id/mall6_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="好市多中壢店" />
+                android:text="@string/mall6" />
 
         </LinearLayout>
 
@@ -98,7 +98,7 @@
                 android:id="@+id/mall7_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="華泰名品城" />
+                android:text="@string/mall7" />
 
         </LinearLayout>
 
@@ -106,12 +106,10 @@
             android:id="@+id/positionRtb_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
+            android:layout_gravity="end"
             android:layout_marginTop="30dp"
             android:gravity="center_vertical|center_horizontal"
-            android:text="Return" />
-
-
+            android:text="@string/action_return" />
 
     </LinearLayout>
 

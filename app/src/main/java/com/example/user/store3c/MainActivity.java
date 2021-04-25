@@ -34,8 +34,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -129,10 +129,10 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         try {
-            Toolbar toolbar = findViewById(R.id.toolbar);
+            Toolbar toolbar = findViewById(R.id.toolbarMain);
             setSupportActionBar(toolbar);
 
-            DrawerLayout drawer = findViewById(R.id.drawer_layout);
+            DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                     this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
             drawer.addDrawerListener(toggle);
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity
 
             returnApp = 0;
             appRntTimer = 0;
-            navigationView = findViewById(R.id.nav_view);
+            navigationView = findViewById(R.id.nav_view_main);
             navigationView.setNavigationItemSelectedListener(this);
 
             navigationView.setItemIconTintList(null);
@@ -432,7 +432,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
         catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Pick image timeout, reload data.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Reload data.", Toast.LENGTH_SHORT).show();
             Log.i("Pick image timeout: " , "reload data.");
         }
         versionCodeRef = db.getReference("versionNumber");
@@ -1077,7 +1077,6 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-
     private static void iniUpperPage(MainActivity activity) {
         /*fragments = new Vector<>();
         fragments.add(Fragment.instantiate(this, Slide1Fragment.class.getName()));
@@ -1234,7 +1233,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -1270,6 +1269,20 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         //menu.findItem(R.id.action_login_status).setIconTintList(Color.BLUE);
+
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_main_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -1338,7 +1351,7 @@ public class MainActivity extends AppCompatActivity
                 MainActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_main_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "DISH");
@@ -1347,7 +1360,15 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intentItem);
                 MainActivity.this.finish();
                 break;
-
+            case R.id.action_main_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "DISH");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(MainActivity.this, SearchActivity.class);
+                startActivity(intentItem);
+                MainActivity.this.finish();
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -1388,7 +1409,7 @@ public class MainActivity extends AppCompatActivity
             MainActivity.this.finish();
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

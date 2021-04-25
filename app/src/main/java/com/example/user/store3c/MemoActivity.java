@@ -44,7 +44,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         RecyclerView MemoRecyclerView;
         setContentView(R.layout.activity_memo);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarMemo);
         setSupportActionBar(toolbar);
 
         Intent intentItem = getIntent();
@@ -286,7 +286,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         int id = item.getItemId();
         Intent intent;
 
-        if (id == R.id.action_shopping_car) {
+        if (id == R.id.action_memo_shopping_car) {
             intent = new Intent();
             bundle = new Bundle();
             bundle.putString("Menu", "MEMO");

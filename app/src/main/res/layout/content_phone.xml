@@ -14,7 +14,6 @@
     tools:context="com.example.user.store3c.PhoneActivity"
     tools:showIn="@layout/app_bar_phone">
 
-
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewPagerPhone_id"
         android:layout_width="match_parent"
@@ -32,6 +31,5 @@
         app:adUnitId="ca-app-pub-3940256099942544/6300978111">
 
     </com.google.android.gms.ads.AdView>
-
 
 </LinearLayout>

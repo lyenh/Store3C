@@ -11,8 +11,8 @@
       "type": "SINGLE",
       "filters": [],
       "properties": [],
-      "versionCode": 320,
-      "versionName": "Store3C_v3.2.0",
+      "versionCode": 331,
+      "versionName": "Store3C_v3.2.1",
       "enabled": true,
       "outputFile": "app-release.apk"
     }

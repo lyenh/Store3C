@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -93,19 +94,19 @@ public class BookActivity extends AppCompatActivity
 
         RecyclerView bookRecyclerView;
         ImageView imageTitle;
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbarBook);
         setSupportActionBar(toolbar);
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
         AccountDbAdapter dbHelper;
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_book);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view_book);
         navigationView.setNavigationItemSelectedListener(this);
 
         navigationView.setItemIconTintList(null);
@@ -674,7 +675,7 @@ public class BookActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         Intent intent;
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_book);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -701,6 +702,24 @@ public class BookActivity extends AppCompatActivity
             menu.findItem(R.id.action_login_status).setShowAsAction(SHOW_AS_ACTION_NEVER);
         }
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_book_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -764,12 +783,21 @@ public class BookActivity extends AppCompatActivity
                 BookActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_book_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "BOOK");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(BookActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                BookActivity.this.finish();
+                break;
+            case R.id.action_book_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "BOOK");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(BookActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 BookActivity.this.finish();
                 break;
@@ -807,7 +835,7 @@ public class BookActivity extends AppCompatActivity
         } else if (id == R.id.nav_book) {
 
         }
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_book);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

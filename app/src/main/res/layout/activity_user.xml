@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:paddingLeft="20dp"
-                android:text="姓名:"
+                android:text="@string/user_name"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
 
             <LinearLayout
@@ -47,7 +47,7 @@
                     android:layout_width="35dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0.35"
-                    android:text="更改" />
+                    android:text="@string/change" />
 
             </LinearLayout>
 

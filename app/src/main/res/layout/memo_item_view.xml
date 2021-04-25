@@ -40,10 +40,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:width="300dp"
-                android:gravity="left"
+                android:gravity="start"
                 android:maxLength="38"
                 android:paddingLeft="10dp"
-                android:text="TextView"
+                android:text="@string/product_name"
                 android:textSize="26sp" />
         </LinearLayout>
 
@@ -59,7 +59,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="100元"
+                android:text="@string/hundred"
                 android:textSize="13sp" />
         </LinearLayout>
 

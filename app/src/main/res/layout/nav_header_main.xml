@@ -6,10 +6,10 @@
     android:background="@drawable/side_nav_bar"
     android:gravity="bottom"
     android:orientation="vertical"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     tools:context="com.example.user.store3c.MainActivity">
 
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="15dp"
             android:paddingTop="@dimen/nav_header_vertical_text_spacing"
-            android:text="User Account"
+            android:text="@string/user_account"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
     </LinearLayout>
 

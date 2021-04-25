@@ -60,7 +60,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_marginLeft="20dp"
                         android:layout_weight="1"
-                        android:text="Book fragment"
+                        android:text="@string/product_name"
                         android:textColor="#12a7be"
                         android:textSize="22sp"
                         android:textStyle="normal|bold|italic" />

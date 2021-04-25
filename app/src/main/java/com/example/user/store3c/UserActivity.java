@@ -1967,18 +1967,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.action_order_list:
-                //Toast.makeText(this.getBaseContext(),"The order list item", Toast.LENGTH_SHORT).show();
-                intent = new Intent();
-                bundle = new Bundle();
-                bundle.putString("Menu", menu_item);
-                intent.putExtras(bundle);
-                intent.setClass(UserActivity.this, OrderActivity.class);
-                startActivity(intent);
-                UserActivity.this.finish();
-                break;
-
-            case R.id.action_shopping_car:
+            case R.id.action_user_shopping_car:
                 intent = new Intent();
                 bundle = new Bundle();
                 bundle.putString("Menu", menu_item);

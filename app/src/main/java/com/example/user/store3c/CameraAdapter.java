@@ -6,13 +6,17 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+//import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -22,10 +26,10 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
     private Context mContext;
     private int screenWidth;
     private String menuItem;
-    private MainActivity activity = null;
+    private CameraActivity activity;
     private YouTubeFragment YouTubeF;
-    private String[][] cameraVideoId = { {"jHzU8Ixa75w", "I2W0Opbtrpg", "m7Xjobff-mY"},
-                                        {"Nd1wc8XMarg", "mzwPuyfQcrA", "_7d1knBJe8k"},
+    private String[][] cameraVideoId = { {"jHzU8Ixa75w", "I2W0Opbtrpg", "zywGqoPIc0k"},
+                                        {"Nd1wc8XMarg", "mzwPuyfQcrA", "XFSf6IV8-oI"},
                                         {"dUbZBlbmNng", "P_noJ0Ati60", "D8AvEstX_3E"}};
     private int videoPlayBtn;
 
@@ -34,9 +38,7 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
         this.menuItem = menuItem;
         this.YouTubeF = YouTubeF;
         mContext = c;
-        if (menuItem.equals("DISH")) {
-            activity = (MainActivity) c;
-        }
+        activity = (CameraActivity) c;
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
     }
 
@@ -64,12 +66,10 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
         public interface MyViewHolderClick {
             void clickOnView(View v, int position);
         }
-
     }
 
-
     @Override
-    public CameraAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public @NonNull CameraAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         View view = LayoutInflater.from(context).inflate(R.layout.camera_item_view, parent, false);
 
@@ -107,6 +107,7 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
 
         holder.cameraImage.setImageBitmap(product.getImg());
         holder.cameraName.setText(product.getName());
+        holder.videoPlay.setImageResource(R.drawable.video_play);
         holder.videoPlay.setTag(position);
         holder.videoPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,7 +117,7 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
                         videoPlayBtn = (int) view.findViewById(R.id.videoPlay_id).getTag();
                         if (!YouTubeF.youTubePlayerBoolean) {
                             String cameraName = ProductData.get(videoPlayBtn).getName();
-                            String tokens[] = cameraName.split(" ");
+                            String[] tokens = cameraName.split(" ");
                             String brand = tokens[0];
                             int brandId = 0;
                             switch (brand) {
@@ -131,10 +132,10 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
                                 default:
                                     break;
                             }
-                            YouTubeF.YPlayer.loadVideo(cameraVideoId[brandId][videoPlayBtn]);
-                            YouTubeF.YPlayer.play();
+                            YouTubeFragment.YPlayer.loadVideo(cameraVideoId[brandId][videoPlayBtn]);
+                            YouTubeFragment.YPlayer.play();
                         }
-                        //Toast.makeText(OrderActivity.this, "The delete number: " + favDeleteBtn, Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(activity, "The number: " + videoPlayBtn, Toast.LENGTH_SHORT).show();
                         break;
                 }
 
@@ -152,7 +153,6 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
         bm.compress(Bitmap.CompressFormat.PNG,  100 , baos);
         return  baos.toByteArray();
     }
-
 
 }
 

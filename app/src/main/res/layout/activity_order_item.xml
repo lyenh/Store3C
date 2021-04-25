@@ -34,7 +34,7 @@
             android:layout_width="70dp"
             android:layout_height="match_parent"
             android:gravity="center"
-            android:text="100"
+            android:text="@string/hundred"
             android:textSize="18sp" />
 
         <com.example.user.store3c.MemoReorderImageView

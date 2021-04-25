@@ -26,7 +26,7 @@
             app:srcCompat="@drawable/dish" />
 
         <TextView
-            android:text="海鮮羹"
+            android:text="@string/dish_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/dishName_id"

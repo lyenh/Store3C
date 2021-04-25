@@ -8,25 +8,27 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatCallback;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.util.Log;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +37,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.youtube.player.YouTubeApiServiceUtil;
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubeIntents;
+import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerSupportFragmentX;
+import com.google.android.youtube.player.YouTubePlayerView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -51,11 +59,12 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
+import static com.example.user.store3c.DeveloperKey.YOUTUBE_API_KEY;
 import static com.example.user.store3c.MainActivity.mAuth;
 import static com.example.user.store3c.MainActivity.userImg;
 
-public class CakeActivity extends AppCompatActivity
-implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, YouTubeFragment.OnFragmentInteractionListener{
+public class CakeActivity extends YouTubeFailureRecoveryActivity
+implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, YouTubePlayer.OnInitializedListener, AppCompatCallback {
 
     private ProductAdapter cakeAdapter = null;
     private static ArrayList<ProductItem> CakeData = new ArrayList<>();
@@ -80,14 +89,95 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
     private static int Reload = 0;
     private ImageView logoImage;
     private byte[] dbUserPicture;
+    private YouTubePlayerSupportFragmentX YouTubeF;
     private NavigationView navigationView;
-    private YouTubeFragment YouTubeF;
     private handler1 handlerDownload1 = new handler1();
     private static handler2 handlerDownload2 = new handler2();
     private static handler3 handlerDownload3 = new handler3();
     private static handler4 handlerDownload4;
     private static handler5 handlerDownload5 = new handler5();
     private static handler6 handlerDownload6 = new handler6();
+    private String cakeVideoId = "JRC9XC3DFY8";
+    private YouTubePlayer YPlayer = null;
+    private AppCompatDelegate delegate;
+
+    private YouTubePlayer.PlayerStateChangeListener playerStateChangeListener = new YouTubePlayer.PlayerStateChangeListener() {
+        @Override
+        public void onAdStarted() {
+            //Toast.makeText(CakeActivity.this, "AdStarted", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onError(YouTubePlayer.ErrorReason errorReason) {
+            String error = errorReason.toString();
+            Toast.makeText(CakeActivity.this, error, Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onLoaded(String arg0) {
+            //Toast.makeText(CakeActivity.this, "Loaded", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onLoading() {
+            //Toast.makeText(CakeActivity.this, "Loading", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onVideoEnded() {
+            // finish();
+        }
+
+        @Override
+        public void onVideoStarted() {
+            //Toast.makeText(CakeActivity.this, "VideoStarted", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private YouTubePlayer.PlaybackEventListener playbackEventListener = new YouTubePlayer.PlaybackEventListener() {
+
+        @Override
+        public void onBuffering(boolean arg0) {
+            //Toast.makeText(CakeActivity.this, "Buffering", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onPaused() {
+            //Toast.makeText(CakeActivity.this, "cake Pause", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onPlaying() {
+            //Toast.makeText(CakeActivity.this, "Playing", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onSeekTo(int arg0) {
+            //Toast.makeText(CakeActivity.this, "Seek", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStopped() {
+            //Toast.makeText(CakeActivity.this, "cake Stop", Toast.LENGTH_SHORT).show();
+        }
+
+    };
+
+    @Override
+    public void onSupportActionModeStarted(ActionMode mode) {
+        //let's leave this empty, for now
+    }
+
+    @Override
+    public void onSupportActionModeFinished(ActionMode mode) {
+        // let's leave this empty, for now
+    }
+
+    @Nullable
+    @Override
+    public ActionMode onWindowStartingSupportActionMode(ActionMode.Callback callback) {
+        return null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,25 +185,62 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         setContentView(R.layout.activity_cake);
 
         RecyclerView cakeRecyclerView;
-        FragmentManager fragManager;
-        String cakeVideoId = "JRC9XC3DFY8";
         AccountDbAdapter dbHelper;
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        //let's create the delegate, passing the activity at both arguments (Activity, AppCompatCallback)
+        delegate = AppCompatDelegate.create(this, this);
+        //we need to call the onCreate() of the AppCompatDelegate
+        delegate.onCreate(savedInstanceState);
+        //we use the delegate to inflate the layout
+        delegate.setContentView(R.layout.activity_cake);
+        //Finally, let's add the Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbarCake);
+        delegate.setSupportActionBar(toolbar);
+        if (delegate.getSupportActionBar() != null) {
+            delegate.getSupportActionBar().setLogo(R.drawable.store_logo);
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_cake);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
-        navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view_cake);
         navigationView.setNavigationItemSelectedListener(this);
-
         navigationView.setItemIconTintList(null);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setLogo(R.drawable.store_logo);
-        }
+
+        DrawerLayout.DrawerListener listene = new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(@NonNull View drawerView) {
+                if (YPlayer != null) {
+                    try {
+                        if (YPlayer.isPlaying()) {
+                            YPlayer.pause();
+                            //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                        }
+                    }catch (Exception e) {
+                        Toast.makeText(CakeActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onDrawerClosed(@NonNull View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+
+            }
+        };
+        drawer.addDrawerListener(listene);
+
         if (navigationView.getHeaderCount() > 0) {
             View header = navigationView.getHeaderView(0);
             logoImage = header.findViewById(R.id.logoImage_id);
@@ -146,6 +273,21 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                 }
             }
             dbHelper.close();
+        }
+
+        YouTubePlayerView youTubePlayerView = (YouTubePlayerView) findViewById(R.id.youTubePlayerViewCake_id);
+
+        if (InternetConnection.checkConnection(CakeActivity.this)) {
+            if (YouTubeIntents.isYouTubeInstalled(this) ||
+                    (YouTubeApiServiceUtil.isYouTubeApiServiceAvailable(this) == YouTubeInitializationResult.SUCCESS)) {
+                youTubePlayerView.initialize(YOUTUBE_API_KEY, this);
+                //Toast.makeText(CakeActivity.this, "YouTube ok ", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(CakeActivity.this, "YouTube busy ", Toast.LENGTH_SHORT).show();
+                youTubePlayerView.initialize(YOUTUBE_API_KEY, this);
+            }
+        } else {
+            Toast.makeText(CakeActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
         }
 
         if (CakeData.size() == 0) {
@@ -197,45 +339,104 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
             cakeRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         }
 
-        YouTubeF = YouTubeFragment.newInstance(cakeVideoId);
-        fragManager = getSupportFragmentManager();
-        FragmentTransaction trans = fragManager.beginTransaction();
-        trans.add(R.id.youTubeFrameLayout_id, YouTubeF);
-        trans.commit();
-
         logoImage.setOnClickListener(this);
 
     }
 
     @Override
+    public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult result) {
+        int RECOVERY_REQUEST = 1;
+        Toast.makeText(CakeActivity.this, "Failured to Initialize!", Toast.LENGTH_LONG).show();
+        if (result.isUserRecoverableError()) {
+            result.getErrorDialog(CakeActivity.this, RECOVERY_REQUEST).show();
+        } else {
+            String error = String.format(getString(R.string.player_error), result.toString());
+            Toast.makeText(CakeActivity.this, error, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player, boolean wasRestored) {
+        /** add listeners to YouTubePlayer instance **/
+        //player.setPlaybackEventListener(playbackEventListener);
+        int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        player.setPlayerStateChangeListener(playerStateChangeListener);
+        player.setPlaybackEventListener(playbackEventListener);
+
+        if (!wasRestored) {
+            YPlayer = player;
+            if (screenWidth > 800) {
+                if (YPlayer.isPlaying()) {
+                    YPlayer.setFullscreen(true);
+                    YPlayer.play();
+                } else {
+                    YPlayer.setFullscreen(true);
+                    YPlayer.cueVideo(cakeVideoId);
+                }
+            } else {
+                if (YPlayer.isPlaying()) {
+                    Toast.makeText(CakeActivity.this, "isPlaying", Toast.LENGTH_LONG).show();
+                    YPlayer.setFullscreen(false);
+                    YPlayer.play();
+                } else {
+                    YPlayer.cueVideo(cakeVideoId);
+                }
+            }
+        } else {
+            Toast.makeText(CakeActivity.this, "youTubePlayerBoolean error", Toast.LENGTH_LONG).show();
+        }
+
+    }
+
+    @Override
+    protected YouTubePlayer.Provider getYouTubePlayerProvider() {
+        Toast.makeText(CakeActivity.this, "youTubePlayerProvider", Toast.LENGTH_LONG).show();
+        return (YouTubePlayerView) findViewById(R.id.youTubePlayerViewCake_id);
+    }
+
+    @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        if (screenWidth > 800) {
-            if (YouTubeF.YPlayer.isPlaying()) {
-                YouTubeF.YPlayer.setFullscreen(true);
-                YouTubeF.YPlayer.play();
-            }
-            else {
-                YouTubeF.YPlayer.setFullscreen(true);
-                YouTubeF.YPlayer.loadVideo(YouTubeF.videoId);
-            }
-        }
-        else {
-            if (YouTubeF.YPlayer.isPlaying()) {
-                YouTubeF.YPlayer.setFullscreen(false);
-                YouTubeF.YPlayer.play();
-            }
-            else {
-                YouTubeF.YPlayer.setFullscreen(false);
-                YouTubeF.YPlayer.cueVideo(YouTubeF.videoId);
+
+        if (YPlayer != null) {
+            try {
+                if (screenWidth > 800) {
+                    if (YPlayer.isPlaying()) {
+                        YPlayer.setFullscreen(true);
+                        YPlayer.play();
+                    } else {
+                        YPlayer.setFullscreen(true);
+                        YPlayer.cueVideo(cakeVideoId);
+                    }
+                } else {
+                    if (YPlayer.isPlaying()) {
+                        YPlayer.setFullscreen(false);
+                        YPlayer.play();
+                    } else {
+                        YPlayer.setFullscreen(false);
+                        YPlayer.cueVideo(cakeVideoId);
+                    }
+                }
+            }catch (Exception e) {
+                Toast.makeText(CakeActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
         super.onConfigurationChanged(newConfig);
     }
 
     @Override
-    public void onFragmentInteractionL(Uri uri) {
+    protected void onStart() {
+        super.onStart();
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
@@ -249,6 +450,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
             startActivity(intentItem);
             CakeActivity.this.finish();
         }
+
     }
 
     private void startDownload() {
@@ -519,6 +721,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                     hmCakeAdapter.notifyDataSetChanged();
                 }
                 dialog.dismiss();
+
             }
         }
 
@@ -699,12 +902,10 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         }
     };
 
-
-
     @Override
     public void onBackPressed() {
         Intent intent;
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_cake);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -719,7 +920,8 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.cake, menu);
+        //getMenuInflater().inflate(R.menu.cake, menu);
+        delegate.getMenuInflater().inflate(R.menu.cake, menu);
         if (InternetConnection.checkConnection(CakeActivity.this)) {
             FirebaseUser currentUser = mAuth.getCurrentUser();
             menu.add(0,R.id.action_login_status,100,"使用者");
@@ -731,6 +933,39 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
             menu.findItem(R.id.action_login_status).setShowAsAction(SHOW_AS_ACTION_NEVER);
         }
         return true;
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureId, @NonNull Menu menu) {
+        if (YPlayer != null) {
+            try {
+                if (YPlayer.isPlaying()) {
+                    YPlayer.pause();
+                    //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                }
+            }catch (Exception e) {
+                Toast.makeText(CakeActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_cake_search);
+        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+
+        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(searchMenuItem);
+            }
+        });
+
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -749,6 +984,17 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                 bundleItem.putString("Menu", "CAKE");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(CakeActivity.this, PositionActivity.class);
+                if (YPlayer != null) {
+                    try {
+                        if (YPlayer.isPlaying()) {
+                            YPlayer.pause();
+                            //Toast.makeText(CakeActivity.this, "play pause", Toast.LENGTH_SHORT).show();
+                        }
+                    }catch (Exception e) {
+                        Toast.makeText(CakeActivity.this, "YPayer have released: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                    YPlayer.release();
+                }
                 startActivity(intentItem);
                 CakeActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
@@ -794,12 +1040,21 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                 CakeActivity.this.finish();
                 //Toast.makeText(this.getBaseContext(),"The setting item", Toast.LENGTH_SHORT).show();
                 break;
-            case R.id.action_shopping_car:
+            case R.id.action_cake_shopping_car:
                 intentItem = new Intent();
                 bundleItem = new Bundle();
                 bundleItem.putString("Menu", "CAKE");
                 intentItem.putExtras(bundleItem);
                 intentItem.setClass(CakeActivity.this, OrderActivity.class);
+                startActivity(intentItem);
+                CakeActivity.this.finish();
+                break;
+            case R.id.action_cake_search:
+                intentItem = new Intent();
+                bundleItem = new Bundle();
+                bundleItem.putString("Menu", "CAKE");
+                intentItem.putExtras(bundleItem);
+                intentItem.setClass(CakeActivity.this, SearchActivity.class);
                 startActivity(intentItem);
                 CakeActivity.this.finish();
                 break;
@@ -827,8 +1082,16 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
             startActivity(intentItem);
             CakeActivity.this.finish();
         } else if (id == R.id.nav_camera) {
+            //FragmentManager fragmentManager = getSupportFragmentManager();
+            //fragmentManager.popBackStack();
+            //fragmentManager.beginTransaction().remove(YouTubeFragmentCake.youtubePlayerFragment).commit();
+            //fragmentManager.executePendingTransactions();
+
             Intent intentItem = new Intent();
             intentItem.setClass(CakeActivity.this, CameraActivity.class);
+            if (YPlayer != null) {
+                YPlayer.release();
+            }
             startActivity(intentItem);
             CakeActivity.this.finish();
         } else if (id == R.id.nav_book) {
@@ -838,8 +1101,9 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
             CakeActivity.this.finish();
         }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout_cake);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }
