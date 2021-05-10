@@ -1,10 +1,8 @@
 package com.example.user.store3c;
 
 import android.content.Intent;
-import android.database.CharArrayBuffer;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.View;
@@ -12,13 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.material.textfield.TextInputEditText;
-
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import androidx.annotation.Nullable;
@@ -32,8 +26,8 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private EditText keyWord;
     private RecyclerView SearchRecyclerView;
     private AccountDbAdapter dbHelper = null;
-    private Boolean finding = false, findingChinese = false, findChineseItem = false, findMarkItem = false;
-    private int MaxStringIndex = 1000;
+    private Boolean finding = false, findingChinese = false, findChineseItem = false, findMatching = false;
+    private final int MaxStringIndex = 1000;
     private int findingIndex = MaxStringIndex;
     private SearchRecyclerAdapter adapter = null;
     private static ArrayList<ProductItem> resultTable = new ArrayList<>();
@@ -135,8 +129,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        SortedMap<Integer, String> findText = new TreeMap<>(), findPrice = new TreeMap<>();
-        ArrayList<Integer> findIndex = new ArrayList<>();
+        Map<Integer, String> findText = new HashMap<>(), findPrice = new HashMap<>();
+        Map<Integer, Integer> findIndex = new HashMap<>();
+        ArrayList<Integer> findIndexArray = new ArrayList<>(), findIndexSorted = new ArrayList<>();
+        int countChinese = 0, countMark = 0, countMatching = 0;
 
         switch (v.getId()) {
             case R.id.searchBtn_id:
@@ -171,27 +167,25 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                             }
                                         }
                                         if (findChineseItem) {
-                                            findingIndex = cursor.getInt(1);
-                                            findIndex.add(findingIndex);
-                                            findText.put(findingIndex, cursor.getString(2));
-                                            findPrice.put(findingIndex, cursor.getString(3));
+                                            findIndexArray.add(cursor.getInt(1));
+                                            findIndex.put(cursor.getInt(1), wordTextC.length());
+                                            findText.put(cursor.getInt(1), cursor.getString(2));
+                                            findPrice.put(cursor.getInt(1), cursor.getString(3));
                                             finding = true;
                                             findingChinese = true;
+                                            findMatching = true;
                                         }
                                     }
                                     if (!findChineseItem) {
                                         p = prodNameTextC.toCharArray();
                                         for (int i=0;i<wordTextC.length();i++) {
-                                            if (findChineseItem)
-                                                break;
                                             for (int j=0;j<prodNameTextC.length();j++) {
                                                 if (w[i] == p[j]) {
-                                                    findIndex.add(cursor.getInt(1));
-                                                    findText.put(cursor.getInt(1), cursor.getString(2));
-                                                    findPrice.put(cursor.getInt(1), cursor.getString(3));
+                                                    countChinese = countChinese + 1;
                                                     findChineseItem = true;
                                                     finding = true;
                                                     findingChinese = true;
+                                                    p[j] = 'f';     //finding
                                                     break;
                                                 }
                                             }
@@ -209,8 +203,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                 if (!prodNameTextM.equals("") && !wordTextM.equals("")) {
                                     p = prodNameTextM.toCharArray();
                                     for (int i=0;i<wordTextM.length();i++) {
-                                        if (findMarkItem)
-                                            break;
                                         if (Character.isSurrogate(m[i])) {
                                             mark = wordTextM.substring(i,i+2);
                                             i = i + 1;
@@ -223,12 +215,11 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                     continue;
                                                 }
                                                 if (mark.equals(compare)) {
-                                                    findIndex.add(cursor.getInt(1));
-                                                    findText.put(cursor.getInt(1), cursor.getString(2));
-                                                    findPrice.put(cursor.getInt(1), cursor.getString(3));
-                                                    findMarkItem = true;
+                                                    countMark = countMark + 1;
                                                     finding = true;
                                                     findingChinese = true;
+                                                    p[j-1] = 'f';   //finding
+                                                    p[j] = 'f';
                                                     break;
                                                 }
                                             }
@@ -236,29 +227,76 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                         else {
                                             for (int j = 0; j < prodNameTextM.length(); j++) {
                                                 if (m[i] == p[j]) {
-                                                    findIndex.add(cursor.getInt(1));
-                                                    findText.put(cursor.getInt(1), cursor.getString(2));
-                                                    findPrice.put(cursor.getInt(1), cursor.getString(3));
-                                                    findMarkItem = true;
+                                                    countMark = countMark + 1;
                                                     finding = true;
                                                     findingChinese = true;
+                                                    p[j] = 'f';
                                                     break;
                                                 }
                                             }
                                         }
                                     }
                                 }
+                                if ((countChinese > 0 || countMark > 0) && !findMatching) {
+                                    findIndexArray.add(cursor.getInt(1));
+                                    findIndex.put(cursor.getInt(1), countChinese +countMark);
+                                    findText.put(cursor.getInt(1), cursor.getString(2));
+                                    findPrice.put(cursor.getInt(1), cursor.getString(3));
+                                    countChinese = 0;
+                                    countMark = 0;
+                                }
+                                if (findMatching && countMark == 0 && countMatching == 0) {
+                                    if (wordTextM.equals("") && prodNameTextM.equals("")) {
+                                        findingIndex = cursor.getInt(1);
+                                    }
+                                    else if (findingIndex == MaxStringIndex) {
+                                        findingIndex = cursor.getInt(1);
+                                    }
+                                }
+                                if (findMatching) {
+                                    if (countMark > countMatching) {
+                                        findingIndex = cursor.getInt(1);
+                                        countMatching = countMark;
+                                        countMark = 0;
+                                    }
+                                }
+                                findMatching = false;
                                 findChineseItem = false;
-                                findMarkItem = false;
                                 cursor.moveToNext();
                             } while (!cursor.isAfterLast());
                             if (findingChinese) {
                                 if (findingIndex != MaxStringIndex) {
                                     resultTable.add(new ProductItem(BitmapFactory.decodeResource(getResources(), R.drawable.store_item), findText.get(findingIndex), findPrice.get(findingIndex), "待採購產品"));
                                 }
-                                for (int i=0;i<findIndex.size();i++) {
-                                    if (findIndex.get(i) != findingIndex) {
-                                        resultTable.add(new ProductItem(BitmapFactory.decodeResource(getResources(), R.drawable.store_item), findText.get(findIndex.get(i)), findPrice.get(findIndex.get(i)), "待採購產品"));
+                                int index, value;
+                                boolean insert = false;
+                                try {
+                                    for (int i=0;i<findIndexArray.size();i++) {
+                                        index = findIndexArray.get(i);
+                                        value = findIndex.get(index);
+                                        if (i==0) {
+                                            findIndexSorted.add(index);
+                                        }
+                                        else {
+                                            for (int j=0; j<findIndexSorted.size(); j++) {
+                                                if (value > findIndex.get(findIndexSorted.get(j))) {
+                                                    findIndexSorted.add(j, index);
+                                                    insert = true;
+                                                    break;
+                                                }
+                                            }
+                                            if (!insert) {
+                                                findIndexSorted.add(index);
+                                            }
+                                        }
+                                        insert = false;
+                                    }
+                                } catch (Exception e) {
+                                    Toast.makeText(SearchActivity.this, "Sort error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                                for (int i=0; i<findIndexSorted.size();i++) {
+                                    if (findIndexSorted.get(i) != findingIndex) {
+                                        resultTable.add(new ProductItem(BitmapFactory.decodeResource(getResources(), R.drawable.store_item), findText.get(findIndexSorted.get(i)), findPrice.get(findIndexSorted.get(i)), "待採購產品"));
                                     }
                                 }
                                 adapter.notifyDataSetChanged();
@@ -281,11 +319,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                     finding = false;
                     findingChinese = false;
                     findChineseItem = false;
-                    findMarkItem = false;
                     findingIndex = MaxStringIndex;
                     findIndex.clear();
                     findText.clear();
                     findPrice.clear();
+                    findIndexArray.clear();
+                    findIndexSorted.clear();
                 }
                 break;
             case R.id.searchRtn_id:
