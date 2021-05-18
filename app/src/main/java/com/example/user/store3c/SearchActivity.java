@@ -26,11 +26,13 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private EditText keyWord;
     private RecyclerView SearchRecyclerView;
     private AccountDbAdapter dbHelper = null;
-    private Boolean finding = false, findingChinese = false, findChineseItem = false, findMatching = false;
+    private Boolean finding = false, findingText = false, findChineseItem = false, findChineseMatching = false;
+    private Boolean findEnglishItem = false, findEnglishMatching = false;
     private final int MaxStringIndex = 1000;
     private int findingIndex = MaxStringIndex;
     private SearchRecyclerAdapter adapter = null;
     private static ArrayList<ProductItem> resultTable = new ArrayList<>();
+    private ArrayList<String> wordTextE, prodNameTextE;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,9 +68,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         SearchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    public String getMarkText(String str) {
+    private String getMarkText(String str) {
         Pattern pc = Pattern.compile("[\u4E00-\u9FA5]");
-        Pattern pe = Pattern.compile("[a-zA-Z]");
+        Pattern pe = Pattern.compile("[a-zA-Z 　]");
         String compareString, markString = "";
 
         for (int i=0;i<str.length();i++) {
@@ -80,7 +82,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         return markString;
     }
 
-    public String getChineseText(String str) {
+    private String getChineseText(String str) {
         Pattern pc = Pattern.compile("[\u4E00-\u9FA5]");
         String compareString, textString = "";
 
@@ -93,38 +95,46 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         return textString;
     }
 
-    public String getEnglishText(String str) {
+    private ArrayList<String> getEnglishText(String str) {
         Pattern pe = Pattern.compile("[a-zA-Z]");
-        int startPosition = MaxStringIndex, endPosition = MaxStringIndex;
+        int startPosition = MaxStringIndex, endPosition = MaxStringIndex, index = 0;
         String compareString;
-        boolean startWord = false;
+        boolean startWord = false, findWord = false;
+        ArrayList<String> stringList = new ArrayList<>();
 
-        for (int i=0;i<str.length();i++) {
-            compareString = str.charAt(i) + "";
-            if (pe.matcher(compareString).find()) {
-                startPosition = i;
-                startWord = true;
-                break;
-            }
-        }
-        if (startWord) {
-            for (int i=startPosition + 1;i<str.length();i++) {
+        do {
+            for (int i = index; i < str.length(); i++) {
                 compareString = str.charAt(i) + "";
-                if (!pe.matcher(compareString).find()) {
-                    endPosition = i;
+                if (pe.matcher(compareString).find()) {
+                    startPosition = i;
+                    startWord = true;
                     break;
                 }
             }
-            if (endPosition == MaxStringIndex) {
-                endPosition = str.length();
+            if (startWord) {
+                for (int i = startPosition + 1; i < str.length(); i++) {
+                    compareString = str.charAt(i) + "";
+                    if (!pe.matcher(compareString).find()) {
+                        endPosition = i;
+                        break;
+                    }
+                }
+                findWord = true;
+                if (endPosition == MaxStringIndex) {
+                    endPosition = str.length();
+                    findWord = false;
+                }
+                startWord = false;
+                index = endPosition;
+                stringList.add(str.substring(startPosition, endPosition));
             }
-        }
-        if (startPosition != MaxStringIndex) {
-            return str.substring(startPosition, endPosition);
-        }
-        else {
-            return "";
-        }
+            else {
+                findWord = false;
+            }
+            endPosition = MaxStringIndex;
+        } while (findWord);
+
+        return stringList;
     }
 
     @Override
@@ -132,7 +142,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         Map<Integer, String> findText = new HashMap<>(), findPrice = new HashMap<>();
         Map<Integer, Integer> findIndex = new HashMap<>();
         ArrayList<Integer> findIndexArray = new ArrayList<>(), findIndexSorted = new ArrayList<>();
-        int countChinese = 0, countMark = 0, countMatching = 0;
+        int countChinese = 0, countEnglish = 0, countMark = 0, countMatching = 0;
 
         switch (v.getId()) {
             case R.id.searchBtn_id:
@@ -146,16 +156,17 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                             Cursor cursor = dbHelper.listAllMemo();
                             cursor.moveToFirst();
                             String wordTextC = getChineseText(Word);
-                            String wordTextE = getEnglishText(Word);
+                            wordTextE = getEnglishText(Word);
                             String wordTextM = getMarkText(Word);
                             char[] w = wordTextC.toCharArray(), p, m = wordTextM.toCharArray();
                             String mark = "", compare = "";
+                            String prodName, prodNameTextC, prodNameTextM;
 
                             do {
-                                String prodName = cursor.getString(2);
-                                String prodNameTextC = getChineseText(prodName);
-                                String prodNameTextE = getEnglishText(prodName);
-                                String prodNameTextM = getMarkText(prodName);
+                                prodName = cursor.getString(2);
+                                prodNameTextC = getChineseText(prodName);
+                                prodNameTextE = getEnglishText(prodName);
+                                prodNameTextM = getMarkText(prodName);
 
                                 if (!prodNameTextC.equals("") && !wordTextC.equals("")) {
                                     if(wordTextC.length() == prodNameTextC.length()) {
@@ -167,13 +178,10 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                             }
                                         }
                                         if (findChineseItem) {
-                                            findIndexArray.add(cursor.getInt(1));
-                                            findIndex.put(cursor.getInt(1), wordTextC.length());
-                                            findText.put(cursor.getInt(1), cursor.getString(2));
-                                            findPrice.put(cursor.getInt(1), cursor.getString(3));
+                                            countChinese = wordTextC.length() * 2;
                                             finding = true;
-                                            findingChinese = true;
-                                            findMatching = true;
+                                            findingText = true;
+                                            findChineseMatching = true;
                                         }
                                     }
                                     if (!findChineseItem) {
@@ -181,10 +189,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                         for (int i=0;i<wordTextC.length();i++) {
                                             for (int j=0;j<prodNameTextC.length();j++) {
                                                 if (w[i] == p[j]) {
-                                                    countChinese = countChinese + 1;
-                                                    findChineseItem = true;
+                                                    countChinese = countChinese + 2;
                                                     finding = true;
-                                                    findingChinese = true;
+                                                    findingText = true;
                                                     p[j] = 'f';     //finding
                                                     break;
                                                 }
@@ -192,12 +199,33 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                         }
                                     }
                                 }
-                                else if (!prodNameTextE.equals("") && !wordTextE.equals("")) {
-                                    if (wordTextE.equalsIgnoreCase(prodNameTextE)) {
-                                        Toast.makeText(SearchActivity.this, "find product: " + Word, Toast.LENGTH_SHORT).show();
-                                        finding = true;
-                                        resultTable.add(new ProductItem(BitmapFactory.decodeResource(getResources(), R.drawable.store_item), cursor.getString(2), cursor.getString(3), "待採購產品"));
-                                        adapter.notifyDataSetChanged();
+                                if (prodNameTextE.size() != 0 && wordTextE.size() != 0) {
+                                    if (prodNameTextE.size() == wordTextE.size()) {
+                                        findEnglishItem = true;
+                                        for (int i=0;i<wordTextE.size();i++) {
+                                            if (!wordTextE.get(i).equalsIgnoreCase(prodNameTextE.get(i))) {
+                                                findEnglishItem = false;
+                                            }
+                                        }
+                                        if (findEnglishItem) {
+                                            countEnglish = wordTextE.size() * 2;
+                                            finding = true;
+                                            findingText = true;
+                                            findEnglishMatching = true;
+                                        }
+                                    }
+                                    if (!findEnglishItem) {
+                                        for (int i = 0; i < wordTextE.size(); i++) {
+                                            for (int j = 0; j < prodNameTextE.size(); j++) {
+                                                if (wordTextE.get(i).equalsIgnoreCase(prodNameTextE.get(j))) {
+                                                    countEnglish = countEnglish + 2;
+                                                    finding = true;
+                                                    findingText = true;
+                                                    prodNameTextE.set(j, "");   //finding
+                                                    break;
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                                 if (!prodNameTextM.equals("") && !wordTextM.equals("")) {
@@ -217,7 +245,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                 if (mark.equals(compare)) {
                                                     countMark = countMark + 1;
                                                     finding = true;
-                                                    findingChinese = true;
+                                                    findingText = true;
                                                     p[j-1] = 'f';   //finding
                                                     p[j] = 'f';
                                                     break;
@@ -229,7 +257,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                 if (m[i] == p[j]) {
                                                     countMark = countMark + 1;
                                                     finding = true;
-                                                    findingChinese = true;
+                                                    findingText = true;
                                                     p[j] = 'f';
                                                     break;
                                                 }
@@ -237,34 +265,65 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                         }
                                     }
                                 }
-                                if ((countChinese > 0 || countMark > 0) && !findMatching) {
+                                if (countChinese > 0 || countMark > 0 || countEnglish > 0) {
                                     findIndexArray.add(cursor.getInt(1));
-                                    findIndex.put(cursor.getInt(1), countChinese +countMark);
+                                    findIndex.put(cursor.getInt(1), countChinese + countMark + countEnglish);
                                     findText.put(cursor.getInt(1), cursor.getString(2));
                                     findPrice.put(cursor.getInt(1), cursor.getString(3));
                                     countChinese = 0;
-                                    countMark = 0;
+                                    countEnglish = 0;
                                 }
-                                if (findMatching && countMark == 0 && countMatching == 0) {
-                                    if (wordTextM.equals("") && prodNameTextM.equals("")) {
-                                        findingIndex = cursor.getInt(1);
+                                if (wordTextC.equals("") && prodNameTextC.equals("") && findEnglishMatching) {
+                                    if (countMark == 0 && countMatching == 0) {
+                                        if (wordTextM.equals("") && prodNameTextM.equals("")) {
+                                            findingIndex = cursor.getInt(1);
+                                        }
+                                        else if (findingIndex == MaxStringIndex) {
+                                            findingIndex = cursor.getInt(1);
+                                        }
                                     }
-                                    else if (findingIndex == MaxStringIndex) {
-                                        findingIndex = cursor.getInt(1);
-                                    }
-                                }
-                                if (findMatching) {
                                     if (countMark > countMatching) {
                                         findingIndex = cursor.getInt(1);
                                         countMatching = countMark;
-                                        countMark = 0;
                                     }
                                 }
-                                findMatching = false;
+                                if (wordTextE.size() == 0 && prodNameTextE.size() == 0 && findChineseMatching) {
+                                    if (countMark == 0 && countMatching == 0) {
+                                        if (wordTextM.equals("") && prodNameTextM.equals("")) {
+                                            findingIndex = cursor.getInt(1);
+                                        }
+                                        else if (findingIndex == MaxStringIndex) {
+                                            findingIndex = cursor.getInt(1);
+                                        }
+                                    }
+                                    if (countMark > countMatching) {
+                                        findingIndex = cursor.getInt(1);
+                                        countMatching = countMark;
+                                    }
+                                }
+                                if (!wordTextC.equals("") && wordTextE.size() != 0 && findChineseMatching && findEnglishMatching) {
+                                    if (countMark == 0 && countMatching == 0) {
+                                        if (wordTextM.equals("") && prodNameTextM.equals("")) {
+                                            findingIndex = cursor.getInt(1);
+                                        }
+                                        else if (findingIndex == MaxStringIndex) {
+                                            findingIndex = cursor.getInt(1);
+                                        }
+                                    }
+                                    if (countMark > countMatching) {
+                                        findingIndex = cursor.getInt(1);
+                                        countMatching = countMark;
+                                    }
+                                }
+                                countMark = 0;
+                                findChineseMatching = false;
+                                findEnglishMatching = false;
                                 findChineseItem = false;
+                                findEnglishItem = false;
+                                prodNameTextE.clear();
                                 cursor.moveToNext();
                             } while (!cursor.isAfterLast());
-                            if (findingChinese) {
+                            if (findingText) {
                                 if (findingIndex != MaxStringIndex) {
                                     resultTable.add(new ProductItem(BitmapFactory.decodeResource(getResources(), R.drawable.store_item), findText.get(findingIndex), findPrice.get(findingIndex), "待採購產品"));
                                 }
@@ -317,14 +376,17 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 if (dbHelper != null) {
                     dbHelper.close();
                     finding = false;
-                    findingChinese = false;
+                    findingText = false;
                     findChineseItem = false;
+                    findEnglishItem = false;
                     findingIndex = MaxStringIndex;
                     findIndex.clear();
                     findText.clear();
                     findPrice.clear();
                     findIndexArray.clear();
                     findIndexSorted.clear();
+                    wordTextE.clear();
+                    prodNameTextE.clear();
                 }
                 break;
             case R.id.searchRtn_id:
