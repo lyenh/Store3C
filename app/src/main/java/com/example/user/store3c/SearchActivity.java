@@ -5,16 +5,31 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -33,6 +48,11 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private SearchRecyclerAdapter adapter = null;
     private static ArrayList<ProductItem> resultTable = new ArrayList<>();
     private ArrayList<String> wordTextE, prodNameTextE;
+    private DatabaseReference dishRef;
+    private StorageReference mStorageRef;
+    private FirebaseDatabase db = null;
+    private static String DishName = "", dNumber = "", dPrice = "", dIntro = "";
+    private final long ONE_MEGABYTE = 1024 * 1024;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -137,6 +157,19 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         return stringList;
     }
 
+    private String getNumberText(String str) {
+        Pattern pn = Pattern.compile("[0-9]");
+        String compareString, textString = "";
+
+        for (int i=0;i<str.length();i++) {
+            compareString = str.charAt(i) + "";
+            if (pn.matcher(compareString).find()) {
+                textString = textString.concat(compareString);
+            }
+        }
+        return textString;
+    }
+
     @Override
     public void onClick(View v) {
         Map<Integer, String> findText = new HashMap<>(), findPrice = new HashMap<>();
@@ -148,8 +181,132 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.searchBtn_id:
                 dbHelper = new AccountDbAdapter(this);
                 String Word = keyWord.getText().toString();
+                finding = false;
                 if (!Word.equals("")) {
+                    if (db == null) {
+                        db = FirebaseDatabase.getInstance();
+                    }
+                    try {
+                        if (!MainActivity.setFirebaseDbPersistence) {
+                            MainActivity.setFirebaseDbPersistence = true;
+                            db.setPersistenceEnabled(true);
+                        }
+                    }
+                    catch (Exception e) {
+                        Toast.makeText(SearchActivity.this, "Reload data.", Toast.LENGTH_SHORT).show();
+                        Log.i("Pick image timeout: " , "reload data.");
+                    }
+                    dishRef = db.getReference("dish");
+                    Query queryDish = dishRef.child("dishName").orderByValue().equalTo(Word);
+                    queryDish.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String dName = "";
+                            Query queryPrice;
+                            if (dataSnapshot.exists()) {
+                                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                    if (snapshot.getValue() != null) {
+                                        DishName = snapshot.getValue().toString();
+                                    }
+                                    if (snapshot.getKey() != null) {
+                                        dName = snapshot.getKey();
+                                        dNumber = getNumberText(dName);
+                                    }
+                                    if (!dNumber.equals("")) {
+                                        final String dPriceName = "p".concat(dNumber);
+                                        queryPrice = dishRef.child("dishPrice").orderByKey().equalTo(dPriceName);
+                                        queryPrice.addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                Query queryIntro;
+                                                if (snapshot.child(dPriceName).getValue() != null) {
+                                                    dPrice = Objects.requireNonNull(snapshot.child(dPriceName).getValue()).toString();
+                                                    final String dIntroName = "i".concat(dNumber);
+                                                    queryIntro = dishRef.child("dishIntro").orderByKey().equalTo(dIntroName);
+                                                    queryIntro.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            Query queryImage;
+                                                            if (snapshot.child(dIntroName).getValue() != null) {
+                                                                dIntro = Objects.requireNonNull(snapshot.child(dIntroName).getValue()).toString();
+                                                                final String dImage = "img".concat(dNumber);
+                                                                queryImage = dishRef.child("dishImgName").orderByKey().equalTo(dImage);
+                                                                queryImage.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        String dImgName = "";
+                                                                        mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
+                                                                        if (snapshot.child(dImage).getValue() != null) {
+                                                                            dImgName = Objects.requireNonNull(snapshot.child(dImage).getValue()).toString();
+                                                                            String dishImageName = "dish/" + dImgName;
+                                                                            mStorageRef.child(dishImageName).getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                                @Override
+                                                                                public void onSuccess(@NonNull byte[] bytes) {
+                                                                                    if (bytes.length != 0) {
+                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), DishName, dPrice, dIntro));
+                                                                                        adapter.notifyDataSetChanged();
+                                                                                    }
+                                                                                    else {
+                                                                                        Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                                    }
+                                                                                }
+                                                                            }).addOnFailureListener(new OnFailureListener() {
+                                                                                @Override
+                                                                                public void onFailure(@NonNull Exception exception) {
+                                                                                    Log.i("Firebase ==>", "Download image file fail.");
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                        else {
+                                                                            Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    }
 
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                                        Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                            }
+                                                            else {
+                                                                Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+                                                            Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                            else {
+                                if (!finding) {
+                                    Toast.makeText(SearchActivity.this, "Product not find! ", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(SearchActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
                     if (!dbHelper.IsDbMemoEmpty()) {
                         try {
@@ -360,9 +517,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                 }
                                 adapter.notifyDataSetChanged();
                             }
-                            if (!finding) {
-                                Toast.makeText(SearchActivity.this, "Product not find !", Toast.LENGTH_SHORT).show();
-                            }
                             keyWord.setText("");
                         } catch (SQLException e) {
                             e.printStackTrace();
@@ -375,7 +529,6 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 }
                 if (dbHelper != null) {
                     dbHelper.close();
-                    finding = false;
                     findingText = false;
                     findChineseItem = false;
                     findEnglishItem = false;
