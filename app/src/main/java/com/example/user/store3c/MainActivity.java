@@ -603,7 +603,7 @@ public class MainActivity extends AppCompatActivity
 
     static class Handler1 extends Handler {
         @Override
-        public void handleMessage(Message msg1) {
+        public void handleMessage(@NonNull Message msg1) {
             super.handleMessage(msg1);
 
             Long messageTransaction = (Long)msg1.obj;
@@ -654,7 +654,7 @@ public class MainActivity extends AppCompatActivity
 
     static class Handler2 extends Handler {
         @Override
-        public void handleMessage(Message msg2) {
+        public void handleMessage(@NonNull Message msg2) {
             super.handleMessage(msg2);
 
             String messageTransaction = (String)msg2.obj;
@@ -718,7 +718,7 @@ public class MainActivity extends AppCompatActivity
 
     static class Handler3 extends Handler {
         @Override
-        public void handleMessage(Message msg3) {
+        public void handleMessage(@NonNull Message msg3) {
             super.handleMessage(msg3);
 
             String messageTransaction = (String)msg3.obj;
@@ -781,8 +781,8 @@ public class MainActivity extends AppCompatActivity
     };
 
     static class Handler4 extends Handler {
-        private WeakReference<MainActivity> weakRefActivity;
-        private WeakReference<DishAdapter> weakRefDishAdapter;
+        private final WeakReference<MainActivity> weakRefActivity;
+        private final WeakReference<DishAdapter> weakRefDishAdapter;
 
         Handler4(MainActivity hActivity, DishAdapter hDishAdapter) {
             weakRefActivity = new WeakReference<>(hActivity);
@@ -790,7 +790,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        public void handleMessage(Message msg4) {
+        public void handleMessage(@NonNull Message msg4) {
             super.handleMessage(msg4);
 
             String messageTransaction = (String)msg4.obj;
@@ -847,7 +847,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     static Runnable runnable4 = new Runnable() {
-        String messageLoad = "Download Image file Complete";
+        final String messageLoad = "Download Image file Complete";
         int indexImg = 0;
         @Override
         public void run() {
@@ -885,7 +885,7 @@ public class MainActivity extends AppCompatActivity
 
     static class Handler5 extends Handler {
         @Override
-        public void handleMessage(Message msg5) {
+        public void handleMessage(@NonNull Message msg5) {
             super.handleMessage(msg5);
 
             String messageTransaction = (String)msg5.obj;
@@ -949,7 +949,7 @@ public class MainActivity extends AppCompatActivity
 
     static class Handler6 extends Handler {
         @Override
-        public void handleMessage(Message msg6) {
+        public void handleMessage(@NonNull Message msg6) {
             super.handleMessage(msg6);
 
             String messageTransaction = (String)msg6.obj;
@@ -1013,7 +1013,7 @@ public class MainActivity extends AppCompatActivity
 
     static class Handler7 extends Handler {
         @Override
-        public void handleMessage(Message msg7) {
+        public void handleMessage(@NonNull Message msg7) {
             super.handleMessage(msg7);
 
             String messageTransaction = (String)msg7.obj;
@@ -1160,7 +1160,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static class UserHandler extends Handler {
-        private WeakReference<ViewPager> weakRefPager;
+        private final WeakReference<ViewPager> weakRefPager;
 
         UserHandler (ViewPager hPager) {
             weakRefPager = new WeakReference<>(hPager);
