@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,18 +43,26 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
     private EditText keyWord;
     private RecyclerView SearchRecyclerView;
     private AccountDbAdapter dbHelper = null;
-    private Boolean finding = false, findingText = false, findChineseItem = false, findChineseMatching = false;
+    private static Boolean finding = false;
+    private Boolean findingText = false, findChineseItem = false, findChineseMatching = false;
     private Boolean findEnglishItem = false, findEnglishMatching = false;
     private final int MaxStringIndex = 1000;
     private int findingIndex = MaxStringIndex;
     private SearchRecyclerAdapter adapter = null;
     private static ArrayList<ProductItem> resultTable = new ArrayList<>();
     private ArrayList<String> wordTextE, prodNameTextE;
-    private DatabaseReference dishRef;
+    private DatabaseReference dishRef, cakeRef, phoneRef, cameraRef, bookRef;
     private StorageReference mStorageRef;
-    private FirebaseDatabase db = null;
-    private static String DishName = "", dNumber = "", dPrice = "", dIntro = "";
+    private static String DishName = "", dishNumber = "", dishPrice = "", dishIntro = "";
+    private static String CakeName = "", cakeNumber = "", cakePrice = "", cakeIntro = "";
+    private static String PhoneName = "", phoneNumber = "", phonePrice = "", phoneIntro = "";
+    private static String CameraName = "", cameraNumber = "", cameraPrice = "", cameraIntro = "";
+    private static String BookName = "", bookNumber = "", bookPrice = "", bookIntro = "";
     private final long ONE_MEGABYTE = 1024 * 1024;
+    private HandlerSearch handlerSearch;
+    private static int searchComplete = 0;
+    private final static int productMenuAmount = 5;
+    private static boolean findProduct = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,6 +96,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         adapter = new SearchRecyclerAdapter(SearchActivity.this, resultTable, menu_item);
         SearchRecyclerView.setAdapter(adapter);
         SearchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        handlerSearch = new HandlerSearch(SearchActivity.this);
     }
 
     private String getMarkText(String str) {
@@ -170,6 +181,38 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         return textString;
     }
 
+    static class HandlerSearch extends Handler {
+        private final WeakReference<SearchActivity> weakRefActivity;
+
+        HandlerSearch(SearchActivity searchActivity) {
+            weakRefActivity = new WeakReference<>(searchActivity);
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+
+            String messageSearchResult = (String)msg.obj;
+            if (messageSearchResult.equals("FindOnlineProduct")) {
+                findProduct = true;
+                searchComplete++;
+            }
+            else {
+                searchComplete++;
+            }
+            if (searchComplete == productMenuAmount) {
+                if (!findProduct && !finding) {
+                    SearchActivity searchActivity = weakRefActivity.get();
+                    if (searchActivity != null) {
+                        Toast.makeText(searchActivity, "Product not find! ", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                searchComplete = 0;
+                findProduct = false;
+            }
+        }
+    }
+
     @Override
     public void onClick(View v) {
         Map<Integer, String> findText = new HashMap<>(), findPrice = new HashMap<>();
@@ -183,20 +226,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 String Word = keyWord.getText().toString();
                 finding = false;
                 if (!Word.equals("")) {
-                    if (db == null) {
-                        db = FirebaseDatabase.getInstance();
-                    }
-                    try {
-                        if (!MainActivity.setFirebaseDbPersistence) {
-                            MainActivity.setFirebaseDbPersistence = true;
-                            db.setPersistenceEnabled(true);
-                        }
-                    }
-                    catch (Exception e) {
-                        Toast.makeText(SearchActivity.this, "Reload data.", Toast.LENGTH_SHORT).show();
-                        Log.i("Pick image timeout: " , "reload data.");
-                    }
-                    dishRef = db.getReference("dish");
+                    dishRef = FirebaseDatabase.getInstance().getReference("dish");
                     Query queryDish = dishRef.child("dishName").orderByValue().equalTo(Word);
                     queryDish.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -210,26 +240,26 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                     }
                                     if (snapshot.getKey() != null) {
                                         dName = snapshot.getKey();
-                                        dNumber = getNumberText(dName);
+                                        dishNumber = getNumberText(dName);
                                     }
-                                    if (!dNumber.equals("")) {
-                                        final String dPriceName = "p".concat(dNumber);
+                                    if (!dishNumber.equals("")) {
+                                        final String dPriceName = "p".concat(dishNumber);
                                         queryPrice = dishRef.child("dishPrice").orderByKey().equalTo(dPriceName);
                                         queryPrice.addListenerForSingleValueEvent(new ValueEventListener() {
                                             @Override
                                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                                 Query queryIntro;
                                                 if (snapshot.child(dPriceName).getValue() != null) {
-                                                    dPrice = Objects.requireNonNull(snapshot.child(dPriceName).getValue()).toString();
-                                                    final String dIntroName = "i".concat(dNumber);
+                                                    dishPrice = Objects.requireNonNull(snapshot.child(dPriceName).getValue()).toString();
+                                                    final String dIntroName = "i".concat(dishNumber);
                                                     queryIntro = dishRef.child("dishIntro").orderByKey().equalTo(dIntroName);
                                                     queryIntro.addListenerForSingleValueEvent(new ValueEventListener() {
                                                         @Override
                                                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                                                             Query queryImage;
                                                             if (snapshot.child(dIntroName).getValue() != null) {
-                                                                dIntro = Objects.requireNonNull(snapshot.child(dIntroName).getValue()).toString();
-                                                                final String dImage = "img".concat(dNumber);
+                                                                dishIntro = Objects.requireNonNull(snapshot.child(dIntroName).getValue()).toString();
+                                                                final String dImage = "img".concat(dishNumber);
                                                                 queryImage = dishRef.child("dishImgName").orderByKey().equalTo(dImage);
                                                                 queryImage.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                     @Override
@@ -243,8 +273,11 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                                                 @Override
                                                                                 public void onSuccess(@NonNull byte[] bytes) {
                                                                                     if (bytes.length != 0) {
-                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), DishName, dPrice, dIntro));
+                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), DishName, dishPrice, dishIntro));
                                                                                         adapter.notifyDataSetChanged();
+                                                                                        Message msg = new Message();
+                                                                                        msg.obj = "FindOnlineProduct";
+                                                                                        handlerSearch.sendMessage(msg);
                                                                                     }
                                                                                     else {
                                                                                         Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
@@ -296,9 +329,469 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                 }
                             }
                             else {
-                                if (!finding) {
-                                    Toast.makeText(SearchActivity.this, "Product not find! ", Toast.LENGTH_SHORT).show();
+                                Message msg = new Message();
+                                msg.obj = "ProductNotFind";
+                                handlerSearch.sendMessage(msg);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(SearchActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    cakeRef = FirebaseDatabase.getInstance().getReference("cake");
+                    Query queryCake = cakeRef.child("cakeName").orderByValue().equalTo(Word);
+                    queryCake.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String cName = "";
+                            Query queryPrice;
+                            if (dataSnapshot.exists()) {
+                                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                    if (snapshot.getValue() != null) {
+                                        CakeName = snapshot.getValue().toString();
+                                    }
+                                    if (snapshot.getKey() != null) {
+                                        cName = snapshot.getKey();
+                                        cakeNumber = getNumberText(cName);
+                                    }
+                                    if (!cakeNumber.equals("")) {
+                                        final String cPriceName = "p".concat(cakeNumber);
+                                        queryPrice = cakeRef.child("cakePrice").orderByKey().equalTo(cPriceName);
+                                        queryPrice.addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                Query queryIntro;
+                                                if (snapshot.child(cPriceName).getValue() != null) {
+                                                    cakePrice = Objects.requireNonNull(snapshot.child(cPriceName).getValue()).toString();
+                                                    final String cIntroName = "i".concat(cakeNumber);
+                                                    queryIntro = cakeRef.child("cakeIntro").orderByKey().equalTo(cIntroName);
+                                                    queryIntro.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            Query queryImage;
+                                                            if (snapshot.child(cIntroName).getValue() != null) {
+                                                                cakeIntro = Objects.requireNonNull(snapshot.child(cIntroName).getValue()).toString();
+                                                                final String cImage = "img".concat(cakeNumber);
+                                                                queryImage = cakeRef.child("cakeImgName").orderByKey().equalTo(cImage);
+                                                                queryImage.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        String cImgName = "";
+                                                                        mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
+                                                                        if (snapshot.child(cImage).getValue() != null) {
+                                                                            cImgName = Objects.requireNonNull(snapshot.child(cImage).getValue()).toString();
+                                                                            String cakeImageName = "cake/" + cImgName;
+                                                                            mStorageRef.child(cakeImageName).getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                                @Override
+                                                                                public void onSuccess(@NonNull byte[] bytes) {
+                                                                                    if (bytes.length != 0) {
+                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), CakeName, cakePrice, cakeIntro));
+                                                                                        adapter.notifyDataSetChanged();
+                                                                                        Message msg = new Message();
+                                                                                        msg.obj = "FindOnlineProduct";
+                                                                                        handlerSearch.sendMessage(msg);
+                                                                                    }
+                                                                                    else {
+                                                                                        Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                                    }
+                                                                                }
+                                                                            }).addOnFailureListener(new OnFailureListener() {
+                                                                                @Override
+                                                                                public void onFailure(@NonNull Exception exception) {
+                                                                                    Log.i("Firebase ==>", "Download image file fail.");
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                        else {
+                                                                            Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                                        Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                            }
+                                                            else {
+                                                                Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+                                                            Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
+                            }
+                            else {
+                                Message msg = new Message();
+                                msg.obj = "ProductNotFind";
+                                handlerSearch.sendMessage(msg);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(SearchActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    phoneRef = FirebaseDatabase.getInstance().getReference("phone");
+                    Query queryPhone = phoneRef.child("phoneName").orderByValue().equalTo(Word);
+                    queryPhone.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String pName = "";
+                            Query queryPrice;
+                            if (dataSnapshot.exists()) {
+                                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                    if (snapshot.getValue() != null) {
+                                        PhoneName = snapshot.getValue().toString();
+                                    }
+                                    if (snapshot.getKey() != null) {
+                                        pName = snapshot.getKey();
+                                        phoneNumber = getNumberText(pName);
+                                    }
+                                    if (!phoneNumber.equals("")) {
+                                        final String pPriceName = "p".concat(phoneNumber);
+                                        queryPrice = phoneRef.child("phonePrice").orderByKey().equalTo(pPriceName);
+                                        queryPrice.addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                Query queryIntro;
+                                                if (snapshot.child(pPriceName).getValue() != null) {
+                                                    phonePrice = Objects.requireNonNull(snapshot.child(pPriceName).getValue()).toString();
+                                                    final String pIntroName = "i".concat(phoneNumber);
+                                                    queryIntro = phoneRef.child("phoneIntro").orderByKey().equalTo(pIntroName);
+                                                    queryIntro.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            Query queryImage;
+                                                            if (snapshot.child(pIntroName).getValue() != null) {
+                                                                phoneIntro = Objects.requireNonNull(snapshot.child(pIntroName).getValue()).toString();
+                                                                final String pImage = "img".concat(phoneNumber);
+                                                                queryImage = phoneRef.child("phoneImgName").orderByKey().equalTo(pImage);
+                                                                queryImage.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        String pImgName = "";
+                                                                        mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
+                                                                        if (snapshot.child(pImage).getValue() != null) {
+                                                                            pImgName = Objects.requireNonNull(snapshot.child(pImage).getValue()).toString();
+                                                                            String phoneImageName = "phone/" + pImgName;
+                                                                            mStorageRef.child(phoneImageName).getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                                @Override
+                                                                                public void onSuccess(@NonNull byte[] bytes) {
+                                                                                    if (bytes.length != 0) {
+                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), PhoneName, phonePrice, phoneIntro));
+                                                                                        adapter.notifyDataSetChanged();
+                                                                                        Message msg = new Message();
+                                                                                        msg.obj = "FindOnlineProduct";
+                                                                                        handlerSearch.sendMessage(msg);
+                                                                                    }
+                                                                                    else {
+                                                                                        Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                                    }
+                                                                                }
+                                                                            }).addOnFailureListener(new OnFailureListener() {
+                                                                                @Override
+                                                                                public void onFailure(@NonNull Exception exception) {
+                                                                                    Log.i("Firebase ==>", "Download image file fail.");
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                        else {
+                                                                            Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                                        Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                            }
+                                                            else {
+                                                                Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+                                                            Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                            else {
+                                Message msg = new Message();
+                                msg.obj = "ProductNotFind";
+                                handlerSearch.sendMessage(msg);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(SearchActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    cameraRef = FirebaseDatabase.getInstance().getReference("camera");
+                    Query queryCamera = cameraRef.child("cameraName").orderByValue().equalTo(Word);
+                    queryCamera.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String caName = "";
+                            Query queryPrice;
+                            if (dataSnapshot.exists()) {
+                                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                    if (snapshot.getValue() != null) {
+                                        CameraName = snapshot.getValue().toString();
+                                    }
+                                    if (snapshot.getKey() != null) {
+                                        caName = snapshot.getKey();
+                                        cameraNumber = getNumberText(caName);
+                                    }
+                                    if (!cameraNumber.equals("")) {
+                                        final String cameraPriceName = "p".concat(cameraNumber);
+                                        queryPrice = cameraRef.child("cameraPrice").orderByKey().equalTo(cameraPriceName);
+                                        queryPrice.addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                Query queryIntro;
+                                                if (snapshot.child(cameraPriceName).getValue() != null) {
+                                                    cameraPrice = Objects.requireNonNull(snapshot.child(cameraPriceName).getValue()).toString();
+                                                    final String cameraIntroName = "i".concat(cameraNumber);
+                                                    queryIntro = cameraRef.child("cameraIntro").orderByKey().equalTo(cameraIntroName);
+                                                    queryIntro.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            Query queryImage;
+                                                            if (snapshot.child(cameraIntroName).getValue() != null) {
+                                                                cameraIntro = Objects.requireNonNull(snapshot.child(cameraIntroName).getValue()).toString();
+                                                                final String cameraImage = "img".concat(cameraNumber);
+                                                                queryImage = cameraRef.child("cameraImgName").orderByKey().equalTo(cameraImage);
+                                                                queryImage.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        String cameraImgName = "";
+                                                                        mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
+                                                                        if (snapshot.child(cameraImage).getValue() != null) {
+                                                                            cameraImgName = Objects.requireNonNull(snapshot.child(cameraImage).getValue()).toString();
+                                                                            String cameraImageName = "camera/" + cameraImgName;
+                                                                            mStorageRef.child(cameraImageName).getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                                @Override
+                                                                                public void onSuccess(@NonNull byte[] bytes) {
+                                                                                    if (bytes.length != 0) {
+                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), CameraName, cameraPrice, cameraIntro));
+                                                                                        adapter.notifyDataSetChanged();
+                                                                                        Message msg = new Message();
+                                                                                        msg.obj = "FindOnlineProduct";
+                                                                                        handlerSearch.sendMessage(msg);
+                                                                                    }
+                                                                                    else {
+                                                                                        Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                                    }
+                                                                                }
+                                                                            }).addOnFailureListener(new OnFailureListener() {
+                                                                                @Override
+                                                                                public void onFailure(@NonNull Exception exception) {
+                                                                                    Log.i("Firebase ==>", "Download image file fail.");
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                        else {
+                                                                            Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                                        Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                            }
+                                                            else {
+                                                                Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+                                                            Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                            else {
+                                Message msg = new Message();
+                                msg.obj = "ProductNotFind";
+                                handlerSearch.sendMessage(msg);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Toast.makeText(SearchActivity.this, "Database error: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    bookRef = FirebaseDatabase.getInstance().getReference("book");
+                    Query queryBook = bookRef.child("bookName").orderByValue().equalTo(Word);
+                    queryBook.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String bName = "";
+                            Query queryPrice;
+                            if (dataSnapshot.exists()) {
+                                for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                    if (snapshot.getValue() != null) {
+                                        BookName = snapshot.getValue().toString();
+                                    }
+                                    if (snapshot.getKey() != null) {
+                                        bName = snapshot.getKey();
+                                        bookNumber = getNumberText(bName);
+                                    }
+                                    if (!bookNumber.equals("")) {
+                                        final String bPriceName = "p".concat(bookNumber);
+                                        queryPrice = bookRef.child("bookPrice").orderByKey().equalTo(bPriceName);
+                                        queryPrice.addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                Query queryIntro;
+                                                if (snapshot.child(bPriceName).getValue() != null) {
+                                                    bookPrice = Objects.requireNonNull(snapshot.child(bPriceName).getValue()).toString();
+                                                    final String bIntroName = "i".concat(bookNumber);
+                                                    queryIntro = bookRef.child("bookIntro").orderByKey().equalTo(bIntroName);
+                                                    queryIntro.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                            Query queryImage;
+                                                            if (snapshot.child(bIntroName).getValue() != null) {
+                                                                bookIntro = Objects.requireNonNull(snapshot.child(bIntroName).getValue()).toString();
+                                                                final String bImage = "img".concat(bookNumber);
+                                                                queryImage = bookRef.child("bookImgName").orderByKey().equalTo(bImage);
+                                                                queryImage.addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                    @Override
+                                                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                                                        String bImgName = "";
+                                                                        mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
+                                                                        if (snapshot.child(bImage).getValue() != null) {
+                                                                            bImgName = Objects.requireNonNull(snapshot.child(bImage).getValue()).toString();
+                                                                            String bookImageName = "book/" + bImgName;
+                                                                            mStorageRef.child(bookImageName).getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                                                                @Override
+                                                                                public void onSuccess(@NonNull byte[] bytes) {
+                                                                                    if (bytes.length != 0) {
+                                                                                        resultTable.add(new ProductItem(BitmapFactory.decodeByteArray(bytes, 0, bytes.length), BookName, bookPrice, bookIntro));
+                                                                                        adapter.notifyDataSetChanged();
+                                                                                        Message msg = new Message();
+                                                                                        msg.obj = "FindOnlineProduct";
+                                                                                        handlerSearch.sendMessage(msg);
+                                                                                    }
+                                                                                    else {
+                                                                                        Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                                    }
+                                                                                }
+                                                                            }).addOnFailureListener(new OnFailureListener() {
+                                                                                @Override
+                                                                                public void onFailure(@NonNull Exception exception) {
+                                                                                    Log.i("Firebase ==>", "Download image file fail.");
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                        else {
+                                                                            Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                    }
+
+                                                                    @Override
+                                                                    public void onCancelled(@NonNull DatabaseError error) {
+                                                                        Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                                    }
+                                                                });
+                                                            }
+                                                            else {
+                                                                Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(@NonNull DatabaseError error) {
+                                                            Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        }
+                                                    });
+                                                }
+                                                else {
+                                                    Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull DatabaseError error) {
+                                                Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                                    }
+                                    else {
+                                        Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                            else {
+                                Message msg = new Message();
+                                msg.obj = "ProductNotFind";
+                                handlerSearch.sendMessage(msg);
                             }
                         }
 
