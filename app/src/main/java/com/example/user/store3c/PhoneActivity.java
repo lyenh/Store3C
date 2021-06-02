@@ -899,9 +899,12 @@ public class PhoneActivity extends AppCompatActivity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         final MenuItem searchMenuItem = menu.findItem(R.id.action_phone_search);
+        final MenuItem shoppingCarMenuItem = menu.findItem(R.id.action_phone_shopping_car);
         FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+        FrameLayout rootViewShoppingCar = (FrameLayout) shoppingCarMenuItem.getActionView();
 
         ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+        ImageView shoppingCarIcon = rootViewShoppingCar.findViewById(R.id.shopping_car_icon_id);
 
         rootView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -909,7 +912,12 @@ public class PhoneActivity extends AppCompatActivity
                 onOptionsItemSelected(searchMenuItem);
             }
         });
-
+        rootViewShoppingCar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(shoppingCarMenuItem);
+            }
+        });
 
         return super.onPrepareOptionsMenu(menu);
     }

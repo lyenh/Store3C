@@ -124,7 +124,7 @@
                         android:id="@+id/buyBtn_id"
                         android:clickable="true"
                         android:focusable="true"
-                        android:src="@drawable/shopping_car1"
+                        android:src="@drawable/shopping_car"
                         android:layout_marginRight="20dp" />
                 </LinearLayout>
 

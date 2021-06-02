@@ -73,7 +73,7 @@
                 android:id="@+id/addMemoText_id"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
-                app:srcCompat="@drawable/shopping_car1" />
+                app:srcCompat="@drawable/shopping_car" />
         </LinearLayout>
 
     </LinearLayout>

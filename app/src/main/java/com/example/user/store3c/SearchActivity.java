@@ -39,7 +39,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener {
-    private String menu_item;
+    private String menu_item, up_menu_item = "";
     private EditText keyWord;
     private RecyclerView SearchRecyclerView;
     private AccountDbAdapter dbHelper = null;
@@ -83,6 +83,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
 
         if (bundleItem != null) {
             menu_item = bundleItem.getString("Menu");
+            if (bundleItem.getString("upMenu") != null) {
+                up_menu_item = bundleItem.getString("upMenu");
+            }
         }
         searchBtn = findViewById(R.id.searchBtn_id);
         searchRtn = findViewById(R.id.searchRtn_id);
@@ -278,8 +281,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                                                         Message msg = new Message();
                                                                                         msg.obj = "FindOnlineProduct";
                                                                                         handlerSearch.sendMessage(msg);
-                                                                                    }
-                                                                                    else {
+                                                                                    } else {
                                                                                         Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
                                                                                     }
                                                                                 }
@@ -289,8 +291,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                                                     Log.i("Firebase ==>", "Download image file fail.");
                                                                                 }
                                                                             });
-                                                                        }
-                                                                        else {
+                                                                        } else {
                                                                             Toast.makeText(SearchActivity.this, "Database data error!", Toast.LENGTH_SHORT).show();
                                                                         }
                                                                     }
@@ -300,8 +301,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                                         Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                                                     }
                                                                 });
-                                                            }
-                                                            else {
+                                                            } else {
                                                                 Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
                                                             }
                                                         }
@@ -311,8 +311,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                             Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                                         }
                                                     });
-                                                }
-                                                else {
+                                                } else {
                                                     Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
@@ -322,9 +321,11 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                                 Toast.makeText(SearchActivity.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                             }
                                         });
-                                    }
-                                    else {
+                                    } else {
                                         Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                    if (dataSnapshot.getChildrenCount() > 1) {
+                                        break;
                                     }
                                 }
                             }
@@ -441,6 +442,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                     else {
                                         Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
                                     }
+                                    if (dataSnapshot.getChildrenCount() > 1) {
+                                        break;
+                                    }
                                 }
                             }
                             else {
@@ -555,6 +559,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                     }
                                     else {
                                         Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                    if (dataSnapshot.getChildrenCount() > 1) {
+                                        break;
                                     }
                                 }
                             }
@@ -671,6 +678,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                     else {
                                         Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
                                     }
+                                    if (dataSnapshot.getChildrenCount() > 1) {
+                                        break;
+                                    }
                                 }
                             }
                             else {
@@ -785,6 +795,9 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                     }
                                     else {
                                         Toast.makeText(SearchActivity.this, "Database data error! ", Toast.LENGTH_SHORT).show();
+                                    }
+                                    if (dataSnapshot.getChildrenCount() > 1) {
+                                        break;
                                     }
                                 }
                             }
@@ -1066,6 +1079,15 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case "BOOK":
                 intent.setClass(SearchActivity.this, BookActivity.class);
+                break;
+            case "MEMO":
+                Bundle bundleItem;
+                bundleItem = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundleItem.putString("Menu", up_menu_item);
+                    intent.putExtras(bundleItem);
+                }
+                intent.setClass(SearchActivity.this, MemoActivity.class);
                 break;
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
