@@ -1271,17 +1271,25 @@ public class MainActivity extends AppCompatActivity
         //menu.findItem(R.id.action_login_status).setIconTintList(Color.BLUE);
 
         final MenuItem searchMenuItem = menu.findItem(R.id.action_main_search);
-        FrameLayout rootView = (FrameLayout) searchMenuItem.getActionView();
+        final MenuItem shoppingCarMenuItem = menu.findItem(R.id.action_main_shopping_car);
+        FrameLayout rootViewSearch = (FrameLayout) searchMenuItem.getActionView();
+        FrameLayout rootViewShoppingCar = (FrameLayout) shoppingCarMenuItem.getActionView();
 
-        ImageView searchIcon = rootView.findViewById(R.id.search_icon_id);
+        ImageView searchIcon = rootViewSearch.findViewById(R.id.search_icon_id);
+        ImageView shoppingCarIcon = rootViewShoppingCar.findViewById(R.id.shopping_car_icon_id);
 
-        rootView.setOnClickListener(new View.OnClickListener() {
+        rootViewSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onOptionsItemSelected(searchMenuItem);
             }
         });
-
+        rootViewShoppingCar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onOptionsItemSelected(shoppingCarMenuItem);
+            }
+        });
 
         return super.onPrepareOptionsMenu(menu);
     }

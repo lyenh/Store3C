@@ -286,19 +286,27 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         int id = item.getItemId();
         Intent intent;
 
-        if (id == R.id.action_memo_shopping_car) {
-            intent = new Intent();
-            bundle = new Bundle();
-            bundle.putString("Menu", "MEMO");
-            bundle.putString("upMenu", menu_item);
-            intent.putExtras(bundle);
-            intent.setClass(MemoActivity.this, OrderActivity.class);
-            startActivity(intent);
-            MemoActivity.this.finish();
-        }
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_memo_shopping_car:
+                intent = new Intent();
+                bundle = new Bundle();
+                bundle.putString("Menu", "MEMO");
+                bundle.putString("upMenu", menu_item);
+                intent.putExtras(bundle);
+                intent.setClass(MemoActivity.this, OrderActivity.class);
+                startActivity(intent);
+                MemoActivity.this.finish();
+                break;
+            case R.id.action_memo_search:
+                intent = new Intent();
+                bundle = new Bundle();
+                bundle.putString("Menu", "MEMO");
+                bundle.putString("upMenu", menu_item);
+                intent.putExtras(bundle);
+                intent.setClass(MemoActivity.this, SearchActivity.class);
+                startActivity(intent);
+                MemoActivity.this.finish();
+                break;
         }
 
         return super.onOptionsItemSelected(item);

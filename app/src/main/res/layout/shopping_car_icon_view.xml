@@ -6,10 +6,10 @@
     android:layout_gravity="center">
 
     <ImageView
-        android:id="@+id/search_icon_id"
+        android:id="@+id/shopping_car_icon_id"
         android:layout_width="@dimen/menu_item_icon_size"
         android:layout_height="@dimen/menu_item_icon_size"
         android:layout_gravity="center"
-        android:src="@drawable/search_icon"/>
+        android:src="@drawable/shopping_car"/>
 
 </FrameLayout>

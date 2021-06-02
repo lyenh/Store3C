@@ -59,7 +59,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:srcCompat="@drawable/shopping_car1"
+                app:srcCompat="@drawable/shopping_car"
                 android:id="@+id/buyBook_id"
                 android:layout_gravity="end"
                 android:clickable="true"

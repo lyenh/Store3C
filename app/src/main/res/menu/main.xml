@@ -26,6 +26,6 @@
         android:id="@+id/action_main_shopping_car"
         android:orderInCategory="600"
         android:title="@string/action_order_list"
-        android:icon="@drawable/shopping_car1"
+        app:actionLayout="@layout/shopping_car_icon_view"
         app:showAsAction="ifRoom" />
 </menu>
