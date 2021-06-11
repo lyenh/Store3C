@@ -21,13 +21,14 @@ import androidx.recyclerview.widget.RecyclerView;
 public class SearchRecyclerAdapter extends  RecyclerView.Adapter<SearchRecyclerAdapter.ViewHolder>{
     private ArrayList<ProductItem> resultTable;
     private SearchActivity searchActivity;
-    private String menuItem;
+    private String menuItem, upMenuItem;
     public static int screenWidth;
 
-    SearchRecyclerAdapter(SearchActivity a, ArrayList<ProductItem> productData, String menuItem) {
+    SearchRecyclerAdapter(SearchActivity a, ArrayList<ProductItem> productData, String menuItem, String upMenuItem) {
         this.resultTable = productData;
         this.searchActivity = a;
         this.menuItem = menuItem;
+        this.upMenuItem = upMenuItem;
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
     }
 
@@ -85,6 +86,9 @@ public class SearchRecyclerAdapter extends  RecyclerView.Adapter<SearchRecyclerA
                 Bundle bundle = new Bundle();
 
                 bundle.putString("Menu", menuItem);
+                if (!upMenuItem.equals("")) {
+                    bundle.putString("upMenu", upMenuItem);
+                }
                 bundle.putByteArray("Pic", Bitmap2Bytes(resultTable.get(position).getImg()));
                 bundle.putString("Name", resultTable.get(position).getName());
                 bundle.putString("Price", resultTable.get(position).getPrice());

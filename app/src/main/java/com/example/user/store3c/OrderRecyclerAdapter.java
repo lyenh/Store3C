@@ -20,13 +20,14 @@ import java.util.ArrayList;
 public class OrderRecyclerAdapter extends  RecyclerView.Adapter<OrderRecyclerAdapter.ViewHolder>{
     private ArrayList<ProductItem> orderTable;
     private OrderActivity orderActivity;
-    private String menuItem;
+    private String menuItem, upMenuItem;
     public static int screenWidth;
 
-    OrderRecyclerAdapter(OrderActivity a, ArrayList<ProductItem> productData, String menuItem) {
+    OrderRecyclerAdapter(OrderActivity a, ArrayList<ProductItem> productData, String menuItem, String upMenuItem) {
         this.orderTable = productData;
         this.orderActivity = a;
         this.menuItem = menuItem;
+        this.upMenuItem = upMenuItem;
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
     }
 
@@ -87,6 +88,9 @@ public class OrderRecyclerAdapter extends  RecyclerView.Adapter<OrderRecyclerAda
                 Bundle bundle = new Bundle();
 
                 bundle.putString("Menu", menuItem);
+                if (!upMenuItem.equals("")) {
+                    bundle.putString("upMenu", upMenuItem);
+                }
                 bundle.putByteArray("Pic", Bitmap2Bytes(orderTable.get(position).getImg()));
                 bundle.putString("Name", orderTable.get(position).getName());
                 bundle.putString("Price", orderTable.get(position).getPrice());

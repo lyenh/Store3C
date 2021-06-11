@@ -25,6 +25,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -33,7 +34,7 @@ import static com.example.user.store3c.MainActivity.mAuth;
 public class OrderActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
     private TextView orderText;
-    private String menu_item = "DISH", up_menu_item = "DISH", search_list = "";
+    private String menu_item = "DISH", up_menu_item = "", search_list = "";
     private String orderTextList = "";
     private OrderRecyclerAdapter adapter = null;
     private float total_price = 0;
@@ -65,6 +66,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         float price = 0;
         //int imgHeight, screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int index;
+        ArrayList<String> checkBoxNameList, checkBoxPriceList;
 
         Bundle bundle = getIntent().getExtras();
         SortedMap<Integer, ProductItem> itemText = new TreeMap<>();
@@ -79,7 +81,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 if (bundle.getString("Search") != null) {
                     search_list = bundle.getString("Search");
                 }
-                menu_item = bundle.getString("Menu");
+                if (bundle.getString("Menu") != null) {
+                    menu_item = bundle.getString("Menu");
+                }
+                if (bundle.getString("upMenu") != null) {
+                    up_menu_item = bundle.getString("upMenu");
+                }
                 product_pic = bundle.getByteArray("Pic");
                 product_name = bundle.getString("Name");
                 product_price = bundle.getString("Price");
@@ -92,7 +99,33 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 else {
                     Toast.makeText(OrderActivity.this, "欲購買的產品無資料 !", Toast.LENGTH_SHORT).show();
                 }
-            } else if (bundle.getString("Menu") != null) {
+            } else if (bundle.getStringArrayList("MultiName") != null) {
+                checkBoxNameList = bundle.getStringArrayList("MultiName");
+                checkBoxPriceList = bundle.getStringArrayList("MultiPrice");
+                product_pic = bundle.getByteArray("Pic");
+                product_intro = bundle.getString("Intro");
+                if (bundle.getString("Menu") != null) {
+                    menu_item = bundle.getString("Menu");
+                }
+                if (bundle.getString("upMenu") != null) {
+                    up_menu_item = bundle.getString("upMenu");
+                }
+                int size;
+                for (int i = 0; i< Objects.requireNonNull(checkBoxNameList).size(); i++) {
+                    product_name = checkBoxNameList.get(i);
+                    product_price = Objects.requireNonNull(checkBoxPriceList).get(i);
+                    if (product_pic != null && product_name != null && product_price != null && product_intro != null) {
+                        size = dbhelper.DbOrderAmount();
+                        product_price = product_price + "元";
+                        if (dbhelper.createOrder(size, product_pic, product_name, product_price, product_intro) == 0)
+                            Log.i("db", "Insert   fail" + product_name + product_price + product_intro);
+                    }
+                    else {
+                        Toast.makeText(OrderActivity.this, "欲購買的產品無資料 !", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+            else if (bundle.getString("Menu") != null) {
                 menu_item = bundle.getString("Menu");
                 if (bundle.getString("upMenu") != null) {
                     up_menu_item = bundle.getString("upMenu");
@@ -104,7 +137,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 Cursor cursor = dbhelper.listAllOrder();
                 if (cursor.getCount() > 0) {
                     do {
-                        index = Integer.valueOf(cursor.getString(1));
+                        index = Integer.parseInt(cursor.getString(1));
                         byte[] product_img = cursor.getBlob(2);
                         itemText.put(index, new ProductItem(BitmapFactory.decodeByteArray(product_img, 0 , product_img.length), cursor.getString(3), cursor.getString(4), cursor.getString(5)));
                         str_price = cursor.getString(4);
@@ -132,7 +165,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
         orderTextList = "總共 " + ((int)total_price) + " 元 !";
 
-        adapter = new OrderRecyclerAdapter(OrderActivity.this, orderTable, menu_item);
+        adapter = new OrderRecyclerAdapter(OrderActivity.this, orderTable, menu_item, up_menu_item);
     /* if (screenWidth > 800) {
             imgHeight = 430;
             OrderRecyclerView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
@@ -264,6 +297,10 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                         if (total_price > 0) {
                             Bundle bundle = new Bundle();
                             bundle.putString("totalPrice", String.valueOf(total_price));
+                            bundle.putString("Menu", menu_item);
+                            if (!up_menu_item.equals("")) {
+                                bundle.putString("upMenu", up_menu_item);
+                            }
                             intentItem.putExtras(bundle);
                             intentItem.setClass(OrderActivity.this, PromotionActivity.class);
                             dbhelper.close();
@@ -287,6 +324,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 if (search_list.equals("SEARCH")) {
                     Bundle bundle = new Bundle();
                     bundle.putString("Menu", menu_item);
+                    if (!up_menu_item.equals("")) {
+                        bundle.putString("upMenu", up_menu_item);
+                    }
                     intentItem.putExtras(bundle);
                     intentItem.setClass(OrderActivity.this, SearchActivity.class);
                 }
@@ -335,6 +375,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         if (search_list.equals("SEARCH")) {
             bundle = new Bundle();
             bundle.putString("Menu", menu_item);
+            if (!up_menu_item.equals("")) {
+                bundle.putString("upMenu", up_menu_item);
+            }
             intent.putExtras(bundle);
             intent.setClass(OrderActivity.this, SearchActivity.class);
         }
