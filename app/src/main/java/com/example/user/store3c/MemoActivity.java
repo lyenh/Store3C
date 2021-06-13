@@ -207,7 +207,6 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 update = false;
                 memoAdapter.ResetCheckBox();
                 //MemoRecyclerAdapter.checkBoxList.clear();
-                //MemoRecyclerAdapter.totalPrice = 0;
                 //memoAdapter.notifyDataSetChanged();
                 break;
             case R.id.memoSave_id:
@@ -276,7 +275,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         dbhelper.close();
         MemoRecyclerAdapter.checkBoxList.clear();
-        MemoRecyclerAdapter.totalPrice = 0;
+        memoAdapter.ResetCheckBox();
         memoCheckNameList.clear();
         memoCheckPriceList.clear();
     }

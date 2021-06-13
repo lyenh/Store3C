@@ -74,6 +74,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:buttonTint="#7D1698"
+                android:checked="false"
+                android:clickable="true"
+                android:focusable="true"
                 android:duplicateParentState="false"
                 android:gravity="center_horizontal|center_vertical" />
 
