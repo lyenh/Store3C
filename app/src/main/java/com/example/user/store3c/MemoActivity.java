@@ -3,6 +3,8 @@ package com.example.user.store3c;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,20 +19,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class MemoActivity extends AppCompatActivity implements View.OnClickListener{
-    private String menu_item;
-
+    private String menu_item = "DISH";
     String updateMemo, updateMemoPrice;
     AccountDbAdapter dbhelper = null;
     MemoRecyclerAdapter memoAdapter = null;
     ArrayList<String> memoList = new ArrayList<>(), memoPriceList = new ArrayList<>();
+    ArrayList<String> memoCheckNameList = new ArrayList<>(), memoCheckPriceList = new ArrayList<>();
     EditText memoText, memoPrice;
     boolean update = false;
     int updateArrayIndex = 0;
@@ -40,7 +44,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Button memoReturnBtn, memoSaveBtn, memoClearBtn;
+        Button memoReturnBtn, memoSaveBtn, memoClearBtn, memoBuyBtn;
         RecyclerView MemoRecyclerView;
         setContentView(R.layout.activity_memo);
 
@@ -62,6 +66,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         memoClearBtn = findViewById(R.id.memoClear_id);
         memoSaveBtn = findViewById(R.id.memoSave_id);
         memoReturnBtn = findViewById(R.id.memoRtb_id);
+        memoBuyBtn = findViewById(R.id.memoBuy_id);
         MemoRecyclerView = findViewById(R.id.memoRecyclerView_id);
 
         memoText.setText("");
@@ -72,7 +77,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 Cursor cursor = dbhelper.listAllMemo();
                 if (cursor.getCount() > 0) {
                     do {
-                        index = Integer.valueOf(cursor.getString(1));
+                        index = cursor.getInt(1);
                         dbMemoText = cursor.getString(2);
                         dbMemoPrice = cursor.getString(3);
                         itemText.put(index, dbMemoText);
@@ -89,7 +94,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        memoAdapter = new MemoRecyclerAdapter(MemoActivity.this, memoList, memoPriceList, menu_item);
+        memoAdapter = new MemoRecyclerAdapter(MemoActivity.this, memoList, memoPriceList);
         MemoRecyclerView.setAdapter(memoAdapter);
         MemoRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         MemoRecyclerView.setHasFixedSize(true);
@@ -98,8 +103,8 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         ItemTouchHelper.Callback ithCallback = new ItemTouchHelper.Callback() {
             //and in your imlpementaion of  get the viewHolder's and target's positions in your adapter data, swap them
             public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                final int fromPosition = viewHolder.getAdapterPosition();
-                final int toPosition = target.getAdapterPosition();
+                final int fromPosition = viewHolder.getAbsoluteAdapterPosition();
+                final int toPosition = target.getAbsoluteAdapterPosition();
 
                 if (!dbhelper.moveMemo(fromPosition, toPosition)) {
                     Log.i("move Memo: ", "no data change!");
@@ -107,6 +112,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 String sourceText = memoList.remove(fromPosition), sourcePrice = memoPriceList.remove(fromPosition);
                 memoList.add(toPosition, sourceText);
                 memoPriceList.add(toPosition, sourcePrice);
+                memoAdapter.ReorderCheckBoxList(fromPosition, toPosition);
 
                 // and notify the adapter that its dataset has changed
                 memoAdapter.notifyItemMoved(fromPosition, toPosition);
@@ -116,10 +122,11 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                int index = viewHolder.getAdapterPosition();
+                int index = viewHolder.getAbsoluteAdapterPosition();
                 if (dbhelper.deleteMemo(index, memoList.size()) == 0) {
                     Log.i("delete Memo: ", "no data change!");
                 }
+                memoAdapter.RemoveCheckBox(index);
                 memoList.remove(index);
                 memoPriceList.remove(index);
                 update = false;
@@ -157,16 +164,50 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         memoClearBtn.setOnClickListener(this);
         memoSaveBtn.setOnClickListener(this);
         memoReturnBtn.setOnClickListener(this);
-
+        memoBuyBtn.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.memoBuy_id:
+                if (!MemoRecyclerAdapter.checkBoxList.isEmpty()) {
+                    int checkBoxNum;
+                    Intent intent = new Intent();
+                    Bundle bundle = new Bundle();
+                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_item);
+
+                    for (TreeMap.Entry<Integer, CheckBox> entry : MemoRecyclerAdapter.checkBoxList.entrySet()) {
+                        checkBoxNum = entry.getKey();
+                        memoCheckNameList.add(memoList.get(checkBoxNum));
+                        memoCheckPriceList.add(memoPriceList.get(checkBoxNum));
+                    }
+                    update = false;
+                    memoText.setText("");
+                    memoPrice.setText("");
+                    bundle.putStringArrayList("MultiName", memoCheckNameList);
+                    bundle.putStringArrayList("MultiPrice", memoCheckPriceList);
+                    bundle.putByteArray("Pic", Bitmap2Bytes(bitmap));
+                    bundle.putString("Intro", "待採購產品");
+                    bundle.putString("Menu", "MEMO");
+                    bundle.putString("upMenu", menu_item);
+                    intent.putExtras(bundle);
+                    Toast.makeText(MemoActivity.this, "已加入購物車!", Toast.LENGTH_SHORT).show();
+                    intent.setClass(MemoActivity.this, OrderActivity.class);
+                    startActivity(intent);
+                    MemoActivity.this.finish();
+                }
+                else {
+                    Toast.makeText(MemoActivity.this, "請先勾選產品!", Toast.LENGTH_SHORT).show();
+                }
+                break;
             case R.id.memoClear_id:
                 memoText.setText("");
                 memoPrice.setText("");
                 update = false;
+                memoAdapter.ResetCheckBox();
+                //MemoRecyclerAdapter.checkBoxList.clear();     another scheme
+                //memoAdapter.notifyDataSetChanged();
                 break;
             case R.id.memoSave_id:
                 if (update) {
@@ -233,6 +274,10 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
     protected void onDestroy() {
         super.onDestroy();
         dbhelper.close();
+        MemoRecyclerAdapter.checkBoxList.clear();
+        memoAdapter.ResetCheckBox();
+        memoCheckNameList.clear();
+        memoCheckPriceList.clear();
     }
 
     @Override
@@ -311,4 +356,11 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
 
         return super.onOptionsItemSelected(item);
     }
+
+    private byte [] Bitmap2Bytes(Bitmap bm){
+        ByteArrayOutputStream baos =  new  ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.PNG,  100 , baos);
+        return  baos.toByteArray();
+    }
+
 }

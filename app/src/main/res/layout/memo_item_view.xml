@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:width="300dp"
+                android:width="250dp"
                 android:gravity="start"
                 android:maxLength="38"
                 android:paddingLeft="10dp"
@@ -48,14 +48,13 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="56dp"
+            android:layout_width="65dp"
             android:layout_height="match_parent"
             android:orientation="horizontal">
 
-
             <TextView
                 android:id="@+id/memoPriceList_id"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
@@ -64,16 +63,20 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="40dp"
+            android:layout_width="50dp"
             android:layout_height="match_parent"
             android:gravity="right|center_vertical"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/addMemoText_id"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                app:srcCompat="@drawable/shopping_car" />
+            <CheckBox
+                android:id="@+id/memoCheckBox_id"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:buttonTint="#7D1698"
+                android:checked="false"
+                android:gravity="center_horizontal|center_vertical" />
+
         </LinearLayout>
 
     </LinearLayout>

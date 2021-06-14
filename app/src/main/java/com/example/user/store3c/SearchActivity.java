@@ -39,7 +39,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class SearchActivity extends AppCompatActivity implements View.OnClickListener {
-    private String menu_item, up_menu_item = "";
+    private String menu_item = "DISH", up_menu_item = "";
     private EditText keyWord;
     private RecyclerView SearchRecyclerView;
     private AccountDbAdapter dbHelper = null;
@@ -96,7 +96,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         searchBtn.setOnClickListener(this);
         searchRtn.setOnClickListener(this);
         searchClearBtn.setOnClickListener(this);
-        adapter = new SearchRecyclerAdapter(SearchActivity.this, resultTable, menu_item);
+        adapter = new SearchRecyclerAdapter(SearchActivity.this, resultTable, menu_item, up_menu_item);
         SearchRecyclerView.setAdapter(adapter);
         SearchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         handlerSearch = new HandlerSearch(SearchActivity.this);

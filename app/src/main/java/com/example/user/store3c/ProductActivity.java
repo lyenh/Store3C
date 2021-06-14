@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private String menu_item, product_name, product_price, product_intro, order_list = "", search_list = "";
+    private String menu_item, up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
     private byte[] product_pic;
 
     @Override
@@ -52,6 +52,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 search_list = bundle.getString("Search");
             }
             menu_item = bundle.getString("Menu");
+            if (bundle.getString("upMenu") != null) {
+                up_menu_item = bundle.getString("upMenu");
+            }
             //product_pic = bundle.getInt("Pic");
             //pic.setImageResource(product_pic);
             product_pic = bundle.getByteArray("Pic");
@@ -88,12 +91,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (order_list.equals("ORDER")) {
                     Bundle bundle = new Bundle();
                     bundle.putString("Menu", menu_item);
+                    if (!up_menu_item.equals("")) {
+                        bundle.putString("upMenu", up_menu_item);
+                    }
                     intentItem.putExtras(bundle);
                     intentItem.setClass(ProductActivity.this, OrderActivity.class);
                 }
                 else if (search_list.equals("SEARCH")) {
                     Bundle bundle = new Bundle();
                     bundle.putString("Menu", menu_item);
+                    if (!up_menu_item.equals("")) {
+                        bundle.putString("upMenu", up_menu_item);
+                    }
                     intentItem.putExtras(bundle);
                     intentItem.setClass(ProductActivity.this, SearchActivity.class);
                 }
@@ -130,6 +139,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     bundle.putString("Search", "SEARCH");
                 }
                 bundle.putString("Menu", menu_item);
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("upMenu", up_menu_item);
+                }
                 bundle.putByteArray("Pic", product_pic);
                 bundle.putString("Name", product_name);
                 bundle.putString("Price", product_price);
@@ -151,12 +163,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (order_list.equals("ORDER")) {
             Bundle bundle = new Bundle();
             bundle.putString("Menu", menu_item);
+            if (!up_menu_item.equals("")) {
+                bundle.putString("upMenu", up_menu_item);
+            }
             intent.putExtras(bundle);
             intent.setClass(ProductActivity.this, OrderActivity.class);
         }
         else if (search_list.equals("SEARCH")) {
             Bundle bundle = new Bundle();
             bundle.putString("Menu", menu_item);
+            if (!up_menu_item.equals("")) {
+                bundle.putString("upMenu", up_menu_item);
+            }
             intent.putExtras(bundle);
             intent.setClass(ProductActivity.this, SearchActivity.class);
         }

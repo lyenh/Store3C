@@ -34,7 +34,7 @@ import java.util.TimeZone;
 import static com.example.user.store3c.MainActivity.mAuth;
 
 public class PromotionActivity extends AppCompatActivity implements View.OnClickListener{
-
+    private String menu_item = "DISH", up_menu_item = "";
     private DatabaseReference promotionRef, userUidRef, uidRef;
     private static int totalOrderAmount = 0;
     private String totalPrice, userToken;
@@ -53,6 +53,12 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             totalPrice = bundle.getString("totalPrice");
+            if (bundle.getString("Menu") != null) {
+                menu_item = bundle.getString("Menu");
+            }
+            if (bundle.getString("upMenu") != null) {
+                up_menu_item = bundle.getString("upMenu");
+            }
         }
         promotionRef = db.getReference("promotion");
         promotionRef.keepSynced(true);
@@ -183,24 +189,44 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
 
     @Override
     public void onClick(View v) {
-        Intent intentItem = new Intent();
-        switch (v.getId()) {
-            case R.id.promotionRtn_id:
-                intentItem.setClass(PromotionActivity.this, MainActivity.class);
-                startActivity(intentItem);
-                PromotionActivity.this.finish();
-                break;
-
+        if (v.getId() == R.id.promotionRtn_id) {
+            onBackPressed();
         }
     }
 
     @Override
     public void onBackPressed() {
         Intent intentItem = new Intent();
-        intentItem.setClass(PromotionActivity.this, MainActivity.class);
+        switch (menu_item) {
+            case "DISH":
+                intentItem.setClass(PromotionActivity.this, MainActivity.class);
+                break;
+            case "CAKE":
+                intentItem.setClass(PromotionActivity.this, CakeActivity.class);
+                break;
+            case "PHONE":
+                intentItem.setClass(PromotionActivity.this, PhoneActivity.class);
+                break;
+            case "CAMERA":
+                intentItem.setClass(PromotionActivity.this, CameraActivity.class);
+                break;
+            case "BOOK":
+                intentItem.setClass(PromotionActivity.this, BookActivity.class);
+                break;
+            case "MEMO":
+                Bundle bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, MemoActivity.class);
+                break;
+            default:
+                Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
+                intentItem.setClass(PromotionActivity.this, MainActivity.class);
+        }
         startActivity(intentItem);
         PromotionActivity.this.finish();
-
     }
 
 }
