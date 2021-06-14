@@ -171,13 +171,13 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.memoBuy_id:
-                if (!memoAdapter.checkBoxList.isEmpty()) {
+                if (!MemoRecyclerAdapter.checkBoxList.isEmpty()) {
                     int checkBoxNum;
                     Intent intent = new Intent();
                     Bundle bundle = new Bundle();
                     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_item);
 
-                    for (TreeMap.Entry<Integer, CheckBox> entry : memoAdapter.checkBoxList.entrySet()) {
+                    for (TreeMap.Entry<Integer, CheckBox> entry : MemoRecyclerAdapter.checkBoxList.entrySet()) {
                         checkBoxNum = entry.getKey();
                         memoCheckNameList.add(memoList.get(checkBoxNum));
                         memoCheckPriceList.add(memoPriceList.get(checkBoxNum));
@@ -206,7 +206,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 memoPrice.setText("");
                 update = false;
                 memoAdapter.ResetCheckBox();
-                //MemoRecyclerAdapter.checkBoxList.clear();
+                //MemoRecyclerAdapter.checkBoxList.clear();     another scheme
                 //memoAdapter.notifyDataSetChanged();
                 break;
             case R.id.memoSave_id:

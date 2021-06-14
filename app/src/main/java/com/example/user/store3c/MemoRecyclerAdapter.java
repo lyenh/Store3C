@@ -27,7 +27,6 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
     public static SortedMap<Integer, CheckBox> checkBoxList = new TreeMap<>();
     private static int totalPrice = 0;
     private final CheckBoxHandler cbHander;
-    private int num;
 
     MemoRecyclerAdapter(MemoActivity a, ArrayList<String> memoData, ArrayList<String> memoPriceData) {
         this.memoTable = memoData;
@@ -65,8 +64,8 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
                 })) {
                     Toast.makeText(memoActivity, "Runnable fail ! ", Toast.LENGTH_SHORT).show();
                 }
-                Log.i("Reset key =>  ", String.valueOf(keyNum));
-                Log.i("Reset value =>  ", Objects.requireNonNull(Objects.requireNonNull(checkBoxList.get(keyNum)).toString()));
+                //Log.i("Reset key =>  ", String.valueOf(keyNum));
+                //Log.i("Reset value =>  ", Objects.requireNonNull(Objects.requireNonNull(checkBoxList.get(keyNum)).toString()));
             }
         }
         else {
@@ -76,7 +75,6 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
 
     public void ReorderCheckBoxList(int fromPosition, int toPosition) {
         CheckBox cbFrom;
-        CheckBox unityCB = new CheckBox(memoActivity);   // will reassign on onBindViewHolder
 
         cbFrom = checkBoxList.get(fromPosition);
         if (fromPosition > toPosition) {
@@ -90,15 +88,10 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
                 checkBoxList.put(i, cbTemp);
             }
         }
-
         checkBoxList.put(toPosition, cbFrom);
-
         for (int i = 0; i < memoTable.size(); i++) {
             if (checkBoxList.containsKey(i) && checkBoxList.get(i) == null) {
                 checkBoxList.remove(i);
-            }
-            if (checkBoxList.containsKey(i) && checkBoxList.get(i) != null) {
-                checkBoxList.put(i,unityCB);
             }
         }
 
@@ -107,7 +100,6 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
     public void RemoveCheckBox(int index) {
         boolean shift = false;
         int memoTableCount = memoTable.size();
-        CheckBox unityCB = new CheckBox(memoActivity);   // will reassign on onBindViewHolder
 
         checkBoxList.remove(index);
         for (int i=0;index < memoTableCount-1;i++,index++) {
@@ -127,9 +119,6 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
         for (int i=0; i<memoTableCount; i++) {
             if (checkBoxList.containsKey(i) && checkBoxList.get(i) == null) {
                 checkBoxList.remove(i);
-            }
-            if (checkBoxList.containsKey(i) && checkBoxList.get(i) != null) {
-                checkBoxList.put(i,unityCB);
             }
         }
 
@@ -194,10 +183,12 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
             if (checkBoxList.containsKey(position)) {
                 holder.memoCheckBox.setChecked(true);
                 checkBoxList.put(position, holder.memoCheckBox);
-                Log.i("onBind position =>  ", String.valueOf(position));
-                Log.i("onBind value =>  ", holder.memoCheckBox.toString());
+                //Log.i("onBind position =>  ", String.valueOf(position));
+                //Log.i("onBind value =>  ", holder.memoCheckBox.toString());
             }
-            int size = checkBoxList.size();
+            else {
+                holder.memoCheckBox.setChecked(false);
+            }
         }
         else {
             Log.i("position => error", Integer.toString(position));
@@ -216,8 +207,8 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
                         memoActivity.updateMemoPrice = String.valueOf(totalPrice);
                         memoActivity.memoPrice.setText(memoActivity.updateMemoPrice);
                         checkBoxList.put(checkBoxNum, checkBox);
-                        Log.i("onClick key =>  ", String.valueOf(checkBoxNum));
-                        Log.i("onClick value =>  ", checkBox.toString());
+                        //Log.i("onClick key =>  ", String.valueOf(checkBoxNum));
+                        //Log.i("onClick value =>  ", checkBox.toString());
                     }
                     else {
                         String addMemoPrice = memoPriceTable.get(checkBoxNum);
