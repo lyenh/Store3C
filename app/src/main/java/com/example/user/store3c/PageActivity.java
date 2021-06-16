@@ -9,9 +9,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.lifecycle.Lifecycle;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -49,19 +49,19 @@ public class PageActivity extends AppCompatActivity {
     /**
      * The {@link androidx.viewpager.widget.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
+     * {@link FragmentStateAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link androidx.fragment.app.FragmentStatePagerAdapter}.
+     * {@link androidx.viewpager2.adapter.FragmentStateAdapter}.
      */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private PagePagerAdapter mPagerAdapter;
 
     /**
-     * The {@link ViewPager} that will host the section contents.
+     * The {@link ViewPager2} that will host the section contents.
      */
-    private ViewPager mViewPager;
+    private ViewPager2 mViewPager;
     private static int bookPosition;
-    private static ArrayList<String> bookPageVolume = new ArrayList<>();
+    private static final ArrayList<String> bookPageVolume = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,9 +103,9 @@ public class PageActivity extends AppCompatActivity {
                                     }
                                     Log.v("data=", response);
                                 }
-                                mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+                                mPagerAdapter = new PagePagerAdapter(getSupportFragmentManager(), getLifecycle());
                                 mViewPager = findViewById(R.id.container);
-                                mViewPager.setAdapter(mSectionsPagerAdapter);
+                                mViewPager.setAdapter(mPagerAdapter);
                             }catch (JSONException e) {
                                 Toast.makeText(PageActivity.this, "getJsonObject error :  " + e.getClass().getName(), Toast.LENGTH_SHORT).show();
                                 e.printStackTrace();
@@ -142,7 +142,7 @@ public class PageActivity extends AppCompatActivity {
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig){
-        mSectionsPagerAdapter.notifyDataSetChanged();
+        mPagerAdapter.notifyDataSetChanged();
         Log.v("===>","ORIENTATION");
         super.onConfigurationChanged(newConfig);
     }
@@ -213,19 +213,24 @@ public class PageActivity extends AppCompatActivity {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_page, container, false);
+        public void onCreate(@Nullable Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
 
             if (getArguments() != null) {
                 fragmentPosition = getArguments().getInt(ARG_SECTION_NUMBER);
             }
-            return rootView;
         }
 
         @Override
-        public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-            super.onActivityCreated(savedInstanceState);
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+
+            return inflater.inflate(R.layout.fragment_page, container, false);
+        }
+
+        @Override
+        public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
 
             if (getView() != null) {
                 bookImg = getView().findViewById(R.id.bookImgPage_id);
@@ -238,49 +243,30 @@ public class PageActivity extends AppCompatActivity {
             Glide.with(this)
                     .load(bookPageVolume.get(fragmentPosition-1))
                     .into(bookPage);
+
         }
+
     }
 
     /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
+     * A {@link FragmentStateAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    private static class SectionsPagerAdapter extends FragmentStatePagerAdapter {
+    private static class PagePagerAdapter extends FragmentStateAdapter {
 
-        private SectionsPagerAdapter(FragmentManager fm) {
-            super(fm, FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        public PagePagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
+            super(fragmentManager, lifecycle);
         }
 
+        @NonNull
         @Override
-        public @NonNull Fragment getItem( int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
+        public Fragment createFragment(int position) {
             return PlaceholderFragment.newInstance(position + 1);
         }
 
         @Override
-        public int getCount() {
-            // Show total pages amount.
+        public int getItemCount() {
             return bookPageVolume.size();
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "SECTION 1";
-                case 1:
-                    return "SECTION 2";
-                case 2:
-                    return "SECTION 3";
-                case 3:
-                    return "SECTION 4";
-                case 4:
-                    return "SECTION 5";
-                default:
-                    return  "SECTION";
-            }
-
         }
     }
 }
