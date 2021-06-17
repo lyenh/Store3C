@@ -9,9 +9,10 @@ import android.os.Handler;
 import android.os.Message;
 
 import androidx.annotation.NonNull;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,11 +31,12 @@ import java.util.ArrayList;
 public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
     private ArrayList<ProductItem> ProductData;
     private Context mContext;
-    public static int screenWidth, screenHeight;
+    public static int screenWidth;
     private String menuItem;
     private static MainActivity activity = null;
     private ImageView dot1, dot2, dot3, dot4, dot5;
     static userAdapterHandler userAdAdapterHandler;
+    private PageAdapter mPagerAdapter;
 
     DishAdapter(ArrayList<ProductItem> ProductData, Context c, String menuItem) {
         this.ProductData = ProductData;
@@ -44,7 +46,6 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
             activity = (MainActivity) c;
         }
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -81,8 +82,8 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
 
     @Override
     public DishAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ViewPager pager;
-        PagerAdapter mPagerAdapter;
+        ViewPager2 pager;
+
         Context context = parent.getContext();
         View view;
         ViewHolder viewHolder;
@@ -91,16 +92,9 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
             view = LayoutInflater.from(context).inflate(R.layout.content_ad_view, parent, false);
 
             if (MainActivity.adapterLayout == 1) {
-                /*List<Fragment> fragments = new Vector<Fragment>();
-                fragments.add(Fragment.instantiate(activity, Slide1Fragment.class.getName()));
-                fragments.add(Fragment.instantiate(activity, Slide2Fragment.class.getName()));
-                fragments.add(Fragment.instantiate(activity, Slide3Fragment.class.getName()));
-                fragments.add(Fragment.instantiate(activity, Slide4Fragment.class.getName()));
-                fragments.add(Fragment.instantiate(activity, Slide5Fragment.class.getName()));*/
-
                 pager = view.findViewById(R.id.viewPager_id);
                 userAdAdapterHandler = new userAdapterHandler(pager);
-                mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), MainActivity.fragments);
+                mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), MainActivity.fragments, activity.getLifecycle());
                 pager.setAdapter(mPagerAdapter);
 
                 UserTimerThread adTimerThread = new UserTimerThread(activity);
@@ -113,7 +107,7 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
                 dot4 = view.findViewById(R.id.imgIcon4_id);
                 dot5 = view.findViewById(R.id.imgIcon5_id);
 
-                pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+                pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
                     @Override
                     public void onPageSelected(int position) {
                         //invalidateOptionsMenu();
@@ -202,16 +196,16 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
     }
 
     public static class userAdapterHandler extends Handler {
-        private WeakReference<ViewPager> weakRefPager;
+        private WeakReference<ViewPager2> weakRefPager;
 
-        userAdapterHandler (ViewPager hPager) {
+        userAdapterHandler (ViewPager2 hPager) {
             weakRefPager = new WeakReference<>(hPager);
         }
 
         @Override
         public void handleMessage(Message msg) {
             MainActivity.appRntTimer = msg.what;
-            ViewPager hmPager = weakRefPager.get();
+            ViewPager2 hmPager = weakRefPager.get();
             if (hmPager != null) {
                 switch (msg.what) {
                     case 0:
@@ -248,8 +242,10 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
         int imgWidth, imgHeight;
 
         if (position == 0 ) {
-          //  imgHeight = (screenWidth / 4) * 3 + 20;
-          //  holder.itemView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, imgHeight));
+            imgHeight = (screenWidth / 4) * 3;
+            holder.itemView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, imgHeight));
+            //ViewPager2 pager = holder.itemView.findViewById(R.id.viewPager_id);
+            //pager.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, imgHeight-20));
         }
         else if (position > 0) {
             ProductItem product = ProductData.get(position-1);

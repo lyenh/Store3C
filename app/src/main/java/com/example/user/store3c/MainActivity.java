@@ -19,8 +19,7 @@ import android.os.Handler;
 import android.os.Message;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -32,6 +31,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager2.widget.ViewPager2;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -98,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     private static Handler6 handlerDownload6 = new Handler6();
     private static Handler7 handlerDownload7 = new Handler7();
 
-    private DishAdapter dishAdapter = null;
+    private static DishAdapter dishAdapter = null;
     private ImageView logoImage;
     private NavigationView navigationView;
     private String dbUserEmail, dbUserPassword;
@@ -363,7 +364,6 @@ public class MainActivity extends AppCompatActivity
             } else {
                 adapterLayout = 1;
                 setUserAccountText();
-
                 dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
                 dishAdapter = new DishAdapter(ProductData, this, "DISH");
                 layoutManager = new GridLayoutManager(this, 2);
@@ -529,7 +529,7 @@ public class MainActivity extends AppCompatActivity
         }
         dishRef = db.getReference("dish");
         dishRef.keepSynced(true);
-        handlerDownload4 = new Handler4(MainActivity.this, dishAdapter);
+        handlerDownload4 = new Handler4(MainActivity.this, dishAdapter, getLifecycle());
         new Thread(runnable1).start();
         dialog = new ProgressDialog(MainActivity.this);
         dialog.setMessage("正在載入...");
@@ -783,10 +783,12 @@ public class MainActivity extends AppCompatActivity
     static class Handler4 extends Handler {
         private final WeakReference<MainActivity> weakRefActivity;
         private final WeakReference<DishAdapter> weakRefDishAdapter;
+        private final WeakReference<Lifecycle> weakRefLifecycle;
 
-        Handler4(MainActivity hActivity, DishAdapter hDishAdapter) {
+        Handler4(MainActivity hActivity, DishAdapter hDishAdapter, Lifecycle hLifecycle) {
             weakRefActivity = new WeakReference<>(hActivity);
             weakRefDishAdapter = new WeakReference<>(hDishAdapter);
+            weakRefLifecycle = new WeakReference<>(hLifecycle);
         }
 
         @Override
@@ -816,8 +818,30 @@ public class MainActivity extends AppCompatActivity
                     Reload = 1;
                 }
                 MainActivity hmActivity = weakRefActivity.get();
+                Lifecycle hmLifecycle = weakRefLifecycle.get();
+                ViewPager2 pager;
+                PageAdapter mPagerAdapter;
                 if (hmActivity != null) {
-                    iniUpperPage(hmActivity);
+                    /*
+                    fragments = new Vector<>();
+                    fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+                    fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+                    fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+                    fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+                    fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+
+                    pager = hmActivity.findViewById(R.id.viewPager_id);
+                    mPagerAdapter = new PageAdapter(hmActivity.getSupportFragmentManager(), fragments, hmLifecycle);
+                    pager.setAdapter(mPagerAdapter);
+
+                    userAdHandler = new UserHandler(pager);
+                    UserTimerThread adTimerThread = new UserTimerThread(hmActivity);
+                    TimerThread = 1;
+                    adTimerThread.start();
+
+                    DishAdapter.mPagerAdapter.notifyDataSetChanged();
+*/
+                    iniUpperPage(hmActivity, hmLifecycle);
                 }
                 DishAdapter hmDishAdapter = weakRefDishAdapter.get();
                 if (hmDishAdapter != null) {
@@ -1077,15 +1101,9 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    private static void iniUpperPage(MainActivity activity) {
-        /*fragments = new Vector<>();
-        fragments.add(Fragment.instantiate(this, Slide1Fragment.class.getName()));
-        fragments.add(Fragment.instantiate(this, Slide2Fragment.class.getName()));
-        fragments.add(Fragment.instantiate(this, Slide3Fragment.class.getName()));
-        fragments.add(Fragment.instantiate(this, Slide4Fragment.class.getName()));
-        fragments.add(Fragment.instantiate(this, Slide5Fragment.class.getName()));*/
-        PagerAdapter mPagerAdapter;
-        ViewPager pager;
+    private static void iniUpperPage(MainActivity activity, Lifecycle lifecycle) {
+        PageAdapter mPagerAdapter;
+        ViewPager2 pager;
 
         fragments = new Vector<>();
         fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
@@ -1095,7 +1113,7 @@ public class MainActivity extends AppCompatActivity
         fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
 
         pager = activity.findViewById(R.id.viewPager_id);
-        mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), fragments);
+        mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), fragments, lifecycle);
         pager.setAdapter(mPagerAdapter);
         userAdHandler = new UserHandler(pager);
         UserTimerThread adTimerThread = new UserTimerThread(activity);
@@ -1111,7 +1129,7 @@ public class MainActivity extends AppCompatActivity
         dot4 = activity.findViewById(R.id.imgIcon4_id);
         dot5 = activity.findViewById(R.id.imgIcon5_id);
 
-        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 //invalidateOptionsMenu();
@@ -1160,16 +1178,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static class UserHandler extends Handler {
-        private final WeakReference<ViewPager> weakRefPager;
+        private final WeakReference<ViewPager2> weakRefPager;
 
-        UserHandler (ViewPager hPager) {
+        UserHandler (ViewPager2 hPager) {
             weakRefPager = new WeakReference<>(hPager);
         }
 
         @Override
         public void handleMessage(Message msg) {
             appRntTimer = msg.what;
-            ViewPager hmPager = weakRefPager.get();
+            ViewPager2 hmPager = weakRefPager.get();
             if (hmPager != null) {
                 switch (msg.what) {
                     case 0:

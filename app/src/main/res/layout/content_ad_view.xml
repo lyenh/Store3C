@@ -5,71 +5,86 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="250dp">
+        android:layout_height="0dp"
+        android:layout_weight="0.9"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/imgIcon1_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/viewPager_id"
-            android:layout_toStartOf="@+id/imgIcon2_id"
-            app:srcCompat="@drawable/dot1" />
-
-        <ImageView
-            android:id="@+id/imgIcon2_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/viewPager_id"
-            android:layout_toStartOf="@+id/imgIcon3_id"
-            app:srcCompat="@drawable/dot2" />
-
-        <ImageView
-            android:id="@+id/imgIcon3_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/imgIcon4_id"
-            android:layout_marginEnd="13dp"
-            android:layout_toStartOf="@+id/imgIcon5_id"
-            app:srcCompat="@drawable/dot2" />
-
-        <ImageView
-            android:id="@+id/imgIcon4_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignTop="@+id/imgIcon5_id"
-            android:layout_toStartOf="@+id/imgIcon5_id"
-            app:srcCompat="@drawable/dot2" />
-
-        <ImageView
-            android:id="@+id/imgIcon5_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/viewPager_id"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="12dp"
-            app:srcCompat="@drawable/dot2" />
-
-        <view
-            android:id="@+id/viewPager_id"
-            class="androidx.viewpager.widget.ViewPager"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:background="#83a06a" />
+            android:layout_height="match_parent">
 
-    </RelativeLayout>
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/viewPager_id"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:background="#83a06a" />
 
-    <TextView
-        android:id="@+id/titleDish_id"
+            <ImageView
+                android:id="@+id/imgIcon1_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/viewPager_id"
+                android:layout_toStartOf="@+id/imgIcon2_id"
+                app:srcCompat="@drawable/dot1" />
+
+            <ImageView
+                android:id="@+id/imgIcon2_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/viewPager_id"
+                android:layout_toStartOf="@+id/imgIcon3_id"
+                app:srcCompat="@drawable/dot2" />
+
+            <ImageView
+                android:id="@+id/imgIcon3_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/imgIcon4_id"
+                android:layout_marginEnd="13dp"
+                android:layout_toStartOf="@+id/imgIcon5_id"
+                app:srcCompat="@drawable/dot2" />
+
+            <ImageView
+                android:id="@+id/imgIcon4_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignTop="@+id/imgIcon5_id"
+                android:layout_toStartOf="@+id/imgIcon5_id"
+                app:srcCompat="@drawable/dot2" />
+
+            <ImageView
+                android:id="@+id/imgIcon5_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/viewPager_id"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="12dp"
+                app:srcCompat="@drawable/dot2" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal|center_vertical"
-        android:text="@string/dish"
-        android:textColor="#501d96"
-        android:textSize="18sp"
-        android:textStyle="bold|italic" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/titleDish_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|center_vertical"
+            android:gravity="center_horizontal|center_vertical"
+            android:text="@string/dish"
+            android:textColor="#501d96"
+            android:textSize="18sp"
+            android:textStyle="bold|italic" />
+
+    </LinearLayout>
 
 </LinearLayout>
