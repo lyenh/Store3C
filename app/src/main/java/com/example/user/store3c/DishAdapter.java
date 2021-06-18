@@ -5,13 +5,10 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 
 import androidx.annotation.NonNull;
 
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.ref.WeakReference;
+
 import java.util.ArrayList;
 
 /**
@@ -29,14 +26,11 @@ import java.util.ArrayList;
  */
 
 public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
-    private ArrayList<ProductItem> ProductData;
-    private Context mContext;
+    private final ArrayList<ProductItem> ProductData;
+    private final Context mContext;
     public static int screenWidth;
-    private String menuItem;
+    private final String menuItem;
     private static MainActivity activity = null;
-    private ImageView dot1, dot2, dot3, dot4, dot5;
-    static userAdapterHandler userAdAdapterHandler;
-    private PageAdapter mPagerAdapter;
 
     DishAdapter(ArrayList<ProductItem> ProductData, Context c, String menuItem) {
         this.ProductData = ProductData;
@@ -79,86 +73,21 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
 
     }
 
-
+    @NonNull
     @Override
     public DishAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ViewPager2 pager;
-
         Context context = parent.getContext();
         View view;
         ViewHolder viewHolder;
 
         if (viewType == 1) {
             view = LayoutInflater.from(context).inflate(R.layout.content_ad_view, parent, false);
-
             if (MainActivity.adapterLayout == 1) {
-                pager = view.findViewById(R.id.viewPager_id);
-                userAdAdapterHandler = new userAdapterHandler(pager);
-                mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), MainActivity.fragments, activity.getLifecycle());
-                pager.setAdapter(mPagerAdapter);
-
-                UserTimerThread adTimerThread = new UserTimerThread(activity);
-                activity.TimerThread = 1;
-                adTimerThread.start();
-
-                dot1 = view.findViewById(R.id.imgIcon1_id);
-                dot2 = view.findViewById(R.id.imgIcon2_id);
-                dot3 = view.findViewById(R.id.imgIcon3_id);
-                dot4 = view.findViewById(R.id.imgIcon4_id);
-                dot5 = view.findViewById(R.id.imgIcon5_id);
-
-                pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-                    @Override
-                    public void onPageSelected(int position) {
-                        //invalidateOptionsMenu();
-
-                        switch (position) {
-                            case 0:
-                                dot1.setImageResource(R.drawable.dot1);
-                                dot2.setImageResource(R.drawable.dot2);
-                                dot3.setImageResource(R.drawable.dot2);
-                                dot4.setImageResource(R.drawable.dot2);
-                                dot5.setImageResource(R.drawable.dot2);
-                                break;
-                            case 1:
-                                dot1.setImageResource(R.drawable.dot2);
-                                dot2.setImageResource(R.drawable.dot1);
-                                dot3.setImageResource(R.drawable.dot2);
-                                dot4.setImageResource(R.drawable.dot2);
-                                dot5.setImageResource(R.drawable.dot2);
-                                break;
-                            case 2:
-                                dot1.setImageResource(R.drawable.dot2);
-                                dot2.setImageResource(R.drawable.dot2);
-                                dot3.setImageResource(R.drawable.dot1);
-                                dot4.setImageResource(R.drawable.dot2);
-                                dot5.setImageResource(R.drawable.dot2);
-                                break;
-                            case 3:
-                                dot1.setImageResource(R.drawable.dot2);
-                                dot2.setImageResource(R.drawable.dot2);
-                                dot3.setImageResource(R.drawable.dot2);
-                                dot4.setImageResource(R.drawable.dot1);
-                                dot5.setImageResource(R.drawable.dot2);
-                                break;
-                            case 4:
-                                dot1.setImageResource(R.drawable.dot2);
-                                dot2.setImageResource(R.drawable.dot2);
-                                dot3.setImageResource(R.drawable.dot2);
-                                dot4.setImageResource(R.drawable.dot2);
-                                dot5.setImageResource(R.drawable.dot1);
-                                break;
-                        }
-                        //Toast.makeText(MainActivity.this, "The top fragment "+ position, Toast.LENGTH_SHORT).show();
-                    }
-                });
-
+                MainActivity.iniUpperPage(activity, activity.getLifecycle(), view);
             }
-
             viewHolder = new ViewHolder(view, new ViewHolder.MyViewHolderClick() {
                 @Override
                 public void clickOnView(View v, int position) {
-
                     //Log.i("position => ", Integer.toString(position));
                 }
             }, viewType);
@@ -180,12 +109,10 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
                     intentItem.putExtras(bundle);
                     intentItem.setClass(activity, ProductActivity.class);
                     if (menuItem.equals("DISH")) {
-                        activity.TimerThread = 0;
+                        MainActivity.TimerThread = 0;
                     }
                     mContext.startActivity(intentItem);
                     activity.finish();
-                    //mContext.startActivity(intentItem);
-                    //((Activity)mContext).finish();
 
                     //Log.i("position => ", Integer.toString(position));
                 }
@@ -195,48 +122,6 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
         return viewHolder;
     }
 
-    public static class userAdapterHandler extends Handler {
-        private WeakReference<ViewPager2> weakRefPager;
-
-        userAdapterHandler (ViewPager2 hPager) {
-            weakRefPager = new WeakReference<>(hPager);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            MainActivity.appRntTimer = msg.what;
-            ViewPager2 hmPager = weakRefPager.get();
-            if (hmPager != null) {
-                switch (msg.what) {
-                    case 0:
-                        //Toast.makeText(MainActivity.this, "The picture number is 1" , Toast.LENGTH_SHORT).show();
-                        hmPager.setCurrentItem(0);
-                        break;
-                    case 1:
-                        //Toast.makeText(MainActivity.this, "The picture number is 2" , Toast.LENGTH_SHORT).show();
-                        hmPager.setCurrentItem(1);
-                        break;
-                    case 2:
-                        //Toast.makeText(MainActivity.this, "The picture number is 3" , Toast.LENGTH_SHORT).show();
-                        hmPager.setCurrentItem(2);
-                        break;
-                    case 3:
-                        //Toast.makeText(MainActivity.this, "The picture number is 4" , Toast.LENGTH_SHORT).show();
-                        hmPager.setCurrentItem(3);
-                        break;
-                    case 4:
-                        //Toast.makeText(MainActivity.this, "The picture number is 5" , Toast.LENGTH_SHORT).show();
-                        hmPager.setCurrentItem(4);
-                        break;
-                }
-                if (MainActivity.appRntTimer == (MainActivity.returnApp % 5)) {
-                    MainActivity.returnApp = 0;
-                }
-            }
-            super.handleMessage(msg);
-        }
-    }
-
     @Override
     public void onBindViewHolder(@NonNull DishAdapter.ViewHolder holder, int position) {
         int imgWidth, imgHeight;
@@ -244,8 +129,6 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
         if (position == 0 ) {
             imgHeight = (screenWidth / 4) * 3;
             holder.itemView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, imgHeight));
-            //ViewPager2 pager = holder.itemView.findViewById(R.id.viewPager_id);
-            //pager.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, imgHeight-20));
         }
         else if (position > 0) {
             ProductItem product = ProductData.get(position-1);
@@ -284,7 +167,6 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
         bm.compress(Bitmap.CompressFormat.PNG,  100 , baos);
         return  baos.toByteArray();
     }
-
 
 }
 

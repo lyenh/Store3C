@@ -73,41 +73,40 @@ public class MainActivity extends AppCompatActivity
         Slide4Fragment.OnFragmentInteractionListener, Slide5Fragment.OnFragmentInteractionListener,
         View.OnClickListener{
 
-    private static ArrayList<ProductItem> ProductData = new ArrayList<>();
+    private static final ArrayList<ProductItem> ProductData = new ArrayList<>();
     private static FirebaseDatabase db = null;
-    private static ArrayList<Integer> picShowIndex = new ArrayList<> ();
+    private static final ArrayList<Integer> picShowIndex = new ArrayList<> ();
     private static ProgressDialog dialog;
     private static int dishProductAmount = 0;
     private static int Reload = 0;
     private static DatabaseReference dishRef;
     private static StorageReference mStorageRef;
-    private static ArrayList<StorageReference> imagesRef = new ArrayList<> ();
-    private static ArrayList<String> picListName = new ArrayList<> ();
-    private static ArrayList<Bitmap> picListImg = new ArrayList<> ();
-    private static ArrayList<String> picListPrice = new ArrayList<> ();
-    private static ArrayList<String> picListIntro = new ArrayList<> ();
-    private static ArrayList<Integer> picListIndex = new ArrayList<> ();
+    private static final ArrayList<StorageReference> imagesRef = new ArrayList<> ();
+    private static final ArrayList<String> picListName = new ArrayList<> ();
+    private static final ArrayList<Bitmap> picListImg = new ArrayList<> ();
+    private static final ArrayList<String> picListPrice = new ArrayList<> ();
+    private static final ArrayList<String> picListIntro = new ArrayList<> ();
+    private static final ArrayList<Integer> picListIndex = new ArrayList<> ();
     private static final long ONE_MEGABYTE = 1024 * 1024;
     private static final int DISH_SHOW_COUNT = 5;
     private static int dishProductImgCount = 0, dishProductPriceCount = 0;
     private static int dishProductNameCount = 0, dishProductIntroCount = 0, dishProductShowCount = 0;
     private static int threadComplete = 0;
-    private static Handler2 handlerDownload2 = new Handler2();
-    private static Handler3 handlerDownload3 = new Handler3();
+    private static final Handler2 handlerDownload2 = new Handler2();
+    private static final Handler3 handlerDownload3 = new Handler3();
     private static Handler4 handlerDownload4;
-    private static Handler5 handlerDownload5 = new Handler5();
-    private static Handler6 handlerDownload6 = new Handler6();
-    private static Handler7 handlerDownload7 = new Handler7();
+    private static final Handler5 handlerDownload5 = new Handler5();
+    private static final Handler6 handlerDownload6 = new Handler6();
+    private static final Handler7 handlerDownload7 = new Handler7();
 
-    private static DishAdapter dishAdapter = null;
+    private DishAdapter dishAdapter = null;
     private ImageView logoImage;
     private NavigationView navigationView;
     private String dbUserEmail, dbUserPassword;
-    private byte[] dbUserPicture;
     private Context mContext;
     //private String versionName;
     private int versionCode = 0;
-    private Handler1 handlerDownload1 = new Handler1();
+    private final Handler1 handlerDownload1 = new Handler1();
     private AccountDbAdapter dbHelper = null;
 
     public static FirebaseAuth mAuth = null;
@@ -118,13 +117,13 @@ public class MainActivity extends AppCompatActivity
     public static List<Fragment> fragments;
     public static boolean setFirebaseDbPersistence;
     public static UserHandler userAdHandler;
-
     public static Bitmap userImg = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         RecyclerView dishRecyclerView;
         GridLayoutManager layoutManager;
+        byte[] dbUserPicture;
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -143,9 +142,9 @@ public class MainActivity extends AppCompatActivity
             appRntTimer = 0;
             navigationView = findViewById(R.id.nav_view_main);
             navigationView.setNavigationItemSelectedListener(this);
-
             navigationView.setItemIconTintList(null);
             //navigationView.setItemBackgroundResource(R.drawable.menu_icon_img);
+
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setLogo(R.drawable.store_logo);
                 //getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -355,15 +354,12 @@ public class MainActivity extends AppCompatActivity
                             checkVersion();
                             startDownload();
                         }
-
                     }
                 } else {
                     Toast.makeText(MainActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
                 }
-
             } else {
                 adapterLayout = 1;
-                setUserAccountText();
                 dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
                 dishAdapter = new DishAdapter(ProductData, this, "DISH");
                 layoutManager = new GridLayoutManager(this, 2);
@@ -375,6 +371,7 @@ public class MainActivity extends AppCompatActivity
                 });
                 dishRecyclerView.setLayoutManager(layoutManager);
                 dishRecyclerView.setAdapter(dishAdapter);
+                setUserAccountText();
             }
             //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
             //dishRecyclerView.addItemDecoration(itemDecoration);
@@ -494,7 +491,6 @@ public class MainActivity extends AppCompatActivity
 
                                 }
                             });
-
                         }
                     }
                 } catch (Throwable e) {
@@ -592,9 +588,6 @@ public class MainActivity extends AppCompatActivity
         if (userAdHandler != null) {
             userAdHandler.removeCallbacksAndMessages(null);
         }
-        if (DishAdapter.userAdAdapterHandler != null) {
-            DishAdapter.userAdAdapterHandler.removeCallbacksAndMessages(null);
-        }
         if (dbHelper != null) {
             dbHelper.close();
         }
@@ -672,7 +665,7 @@ public class MainActivity extends AppCompatActivity
             dishName = dishRef.child("dishName").getRef();
             dishName.keepSynced(true);
             dishName.addChildEventListener(new ChildEventListener() {
-                String messageLoad = "Download Product Name Complete";
+                final String messageLoad = "Download Product Name Complete";
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                     String dishProductName = dataSnapshot.getValue(String.class);
@@ -737,7 +730,7 @@ public class MainActivity extends AppCompatActivity
             dishImgName = dishRef.child("dishImgName").getRef();
             dishImgName.keepSynced(true);
             dishImgName.addChildEventListener(new ChildEventListener() {
-                String messageLoad = "Download Image Name Complete";
+                final String messageLoad = "Download Image Name Complete";
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                     String ImgFileName = dataSnapshot.getValue(String.class);
@@ -819,29 +812,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 MainActivity hmActivity = weakRefActivity.get();
                 Lifecycle hmLifecycle = weakRefLifecycle.get();
-                ViewPager2 pager;
-                PageAdapter mPagerAdapter;
                 if (hmActivity != null) {
-                    /*
-                    fragments = new Vector<>();
-                    fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-                    fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-                    fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-                    fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-                    fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
-
-                    pager = hmActivity.findViewById(R.id.viewPager_id);
-                    mPagerAdapter = new PageAdapter(hmActivity.getSupportFragmentManager(), fragments, hmLifecycle);
-                    pager.setAdapter(mPagerAdapter);
-
-                    userAdHandler = new UserHandler(pager);
-                    UserTimerThread adTimerThread = new UserTimerThread(hmActivity);
-                    TimerThread = 1;
-                    adTimerThread.start();
-
-                    DishAdapter.mPagerAdapter.notifyDataSetChanged();
-*/
-                    iniUpperPage(hmActivity, hmLifecycle);
+                    iniUpperPage(hmActivity, hmLifecycle, null);
                 }
                 DishAdapter hmDishAdapter = weakRefDishAdapter.get();
                 if (hmDishAdapter != null) {
@@ -882,7 +854,7 @@ public class MainActivity extends AppCompatActivity
                 imagesRef.get(indexImg).getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     int indexLoad = indexImg;
                     @Override
-                    public void onSuccess(byte[] bytes) {
+                    public void onSuccess(@NonNull byte[] bytes) {
                         // Data for "images/island.jpg" is returns, use this as needed
 
                         if (bytes.length != 0) {
@@ -927,7 +899,7 @@ public class MainActivity extends AppCompatActivity
             dishPrice = dishRef.child("dishPrice").getRef();
             dishPrice.keepSynced(true);
             dishPrice.addChildEventListener(new ChildEventListener() {
-                String messageLoad = "Download Product Price Complete";
+                final String messageLoad = "Download Product Price Complete";
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                     String dishPrice = dataSnapshot.getValue(String.class);
@@ -991,7 +963,7 @@ public class MainActivity extends AppCompatActivity
             dishIntro = dishRef.child("dishIntro").getRef();
             dishIntro.keepSynced(true);
             dishIntro.addChildEventListener(new ChildEventListener() {
-                String messageLoad = "Download Product Introduction Complete";
+                final String messageLoad = "Download Product Introduction Complete";
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                     String dishIntro = dataSnapshot.getValue(String.class);
@@ -1055,7 +1027,7 @@ public class MainActivity extends AppCompatActivity
             dishShowId = dishRef.child("dishShowId").getRef();
             dishShowId.keepSynced(true);
             dishShowId.addChildEventListener(new ChildEventListener() {
-                String messageLoad = "Download Showing Product index Complete";
+                final String messageLoad = "Download Showing Product index Complete";
                 @Override
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, String s) {
                     Long showIndex = dataSnapshot.getValue(Long.class);
@@ -1101,18 +1073,33 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    private static void iniUpperPage(MainActivity activity, Lifecycle lifecycle) {
+    public static void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
         PageAdapter mPagerAdapter;
         ViewPager2 pager;
+        final ImageView dot1, dot2, dot3, dot4, dot5;
 
-        fragments = new Vector<>();
-        fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-        fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-        fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-        fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-        fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
-
-        pager = activity.findViewById(R.id.viewPager_id);
+        if (adapterLayout == 0) {
+            fragments = new Vector<>();
+            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+            pager = activity.findViewById(R.id.viewPager_id);
+            dot1 = activity.findViewById(R.id.imgIcon1_id);
+            dot2 = activity.findViewById(R.id.imgIcon2_id);
+            dot3 = activity.findViewById(R.id.imgIcon3_id);
+            dot4 = activity.findViewById(R.id.imgIcon4_id);
+            dot5 = activity.findViewById(R.id.imgIcon5_id);
+        }
+        else {
+            pager = view.findViewById(R.id.viewPager_id);
+            dot1 = view.findViewById(R.id.imgIcon1_id);
+            dot2 = view.findViewById(R.id.imgIcon2_id);
+            dot3 = view.findViewById(R.id.imgIcon3_id);
+            dot4 = view.findViewById(R.id.imgIcon4_id);
+            dot5 = view.findViewById(R.id.imgIcon5_id);
+        }
         mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), fragments, lifecycle);
         pager.setAdapter(mPagerAdapter);
         userAdHandler = new UserHandler(pager);
@@ -1120,19 +1107,9 @@ public class MainActivity extends AppCompatActivity
         TimerThread = 1;
         adTimerThread.start();
 
-        //pager.setCurrentItem(0);
-        // pager.setOnClickListener(getActivity().this);
-        final ImageView dot1, dot2, dot3, dot4, dot5;
-        dot1 = activity.findViewById(R.id.imgIcon1_id);
-        dot2 = activity.findViewById(R.id.imgIcon2_id);
-        dot3 = activity.findViewById(R.id.imgIcon3_id);
-        dot4 = activity.findViewById(R.id.imgIcon4_id);
-        dot5 = activity.findViewById(R.id.imgIcon5_id);
-
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
-                //invalidateOptionsMenu();
                 switch (position) {
                     case 0:
                         dot1.setImageResource(R.drawable.dot1);
@@ -1172,7 +1149,6 @@ public class MainActivity extends AppCompatActivity
                 }
                 //Toast.makeText(MainActivity.this, "The top fragment "+ position, Toast.LENGTH_SHORT).show();
             }
-
         });
 
     }
