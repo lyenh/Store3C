@@ -15,13 +15,8 @@ public class UserTimerThread extends Thread{
     @Override
     public void run() {
         //super.run();
-        while(activity.TimerThread == 1) {
-            if (MainActivity.adapterLayout == 1) {
-                DishAdapter.userAdAdapterHandler.sendEmptyMessage((what++) % 5);
-            }
-            else {
-                MainActivity.userAdHandler.sendEmptyMessage((what++) % 5);
-            }
+        while(MainActivity.TimerThread == 1) {
+            MainActivity.userAdHandler.sendEmptyMessage((what++) % 5);
             try{
                 Thread.sleep(4000);
             }catch (Exception e) {
