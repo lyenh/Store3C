@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
+import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
     private ArrayList<ProductItem> ProductData;
     private Context mContext;
-    public static int screenWidth;
+    public static int screenWidth, screenHeight;
     private String menuItem;
     private static MainActivity activity = null;
     private ImageView dot1, dot2, dot3, dot4, dot5;
@@ -42,6 +44,7 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
             activity = (MainActivity) c;
         }
         screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+        screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -241,10 +244,14 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(DishAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull DishAdapter.ViewHolder holder, int position) {
         int imgWidth, imgHeight;
 
-        if (position > 0) {
+        if (position == 0 ) {
+          //  imgHeight = (screenWidth / 4) * 3 + 20;
+          //  holder.itemView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, imgHeight));
+        }
+        else if (position > 0) {
             ProductItem product = ProductData.get(position-1);
             imgWidth = (screenWidth / 2) - 8;
             imgHeight = imgWidth - 1;

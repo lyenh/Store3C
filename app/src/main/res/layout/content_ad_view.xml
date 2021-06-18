@@ -1,74 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="250dp">
 
-        <view class="androidx.viewpager.widget.ViewPager"
-            android:id="@+id/viewPager_id"
-            android:layout_width="match_parent"
-            android:background="#83a06a"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_height="wrap_content" />
-
         <ImageView
             android:id="@+id/imgIcon1_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/dot1"
             android:layout_alignBottom="@+id/viewPager_id"
-            android:layout_toStartOf="@+id/imgIcon2_id" />
+            android:layout_toStartOf="@+id/imgIcon2_id"
+            app:srcCompat="@drawable/dot1" />
 
         <ImageView
             android:id="@+id/imgIcon2_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/dot2"
             android:layout_alignBottom="@+id/viewPager_id"
-            android:layout_toStartOf="@+id/imgIcon3_id" />
+            android:layout_toStartOf="@+id/imgIcon3_id"
+            app:srcCompat="@drawable/dot2" />
 
         <ImageView
             android:id="@+id/imgIcon3_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/dot2"
-            android:layout_marginEnd="13dp"
             android:layout_alignTop="@+id/imgIcon4_id"
-            android:layout_toStartOf="@+id/imgIcon5_id" />
+            android:layout_marginEnd="13dp"
+            android:layout_toStartOf="@+id/imgIcon5_id"
+            app:srcCompat="@drawable/dot2" />
 
         <ImageView
             android:id="@+id/imgIcon4_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/dot2"
             android:layout_alignTop="@+id/imgIcon5_id"
-            android:layout_toStartOf="@+id/imgIcon5_id" />
+            android:layout_toStartOf="@+id/imgIcon5_id"
+            app:srcCompat="@drawable/dot2" />
 
         <ImageView
             android:id="@+id/imgIcon5_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/dot2"
-            android:layout_marginEnd="12dp"
             android:layout_alignBottom="@+id/viewPager_id"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="12dp"
+            app:srcCompat="@drawable/dot2" />
+
+        <view
+            android:id="@+id/viewPager_id"
+            class="androidx.viewpager.widget.ViewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:background="#83a06a" />
 
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/titleDish_id"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/titleDish_id"
+        android:gravity="center_horizontal|center_vertical"
         android:text="@string/dish"
         android:textColor="#501d96"
         android:textSize="18sp"
-        android:textStyle="bold|italic"
-        android:gravity="center_horizontal"/>
+        android:textStyle="bold|italic" />
 
 </LinearLayout>
