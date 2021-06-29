@@ -13,23 +13,26 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class PromotionList {
     public String emailAccount;
-    public String userName;
     public String listDate;
-    public String totalPrice;
-    public String userToken;
     public ArrayList<ListItem> listItem;
+    public String totalPrice;
+    public String userId;
+    public String userName;
+    public String userToken;
+
 
     public PromotionList() {
 
     }
 
-    public PromotionList(String Account, String Name, String Date, String Price, String Token, ArrayList<ListItem> Item) {
+    public PromotionList(String Account, String Date, ArrayList<ListItem> Item, String Price, String Id, String Name, String Token) {
         this.emailAccount = Account;
-        this.userName = Name;
         this.listDate = Date;
-        this.totalPrice = Price;
-        this.userToken = Token;
         this.listItem = Item;
+        this.totalPrice = Price;
+        this.userId = Id;
+        this.userName = Name;
+        this.userToken = Token;
     }
 
     public String getEmailAccount() {
@@ -52,6 +55,14 @@ public class PromotionList {
         return userToken;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     public ArrayList<ListItem> getListItem() {
         return listItem;
     }
@@ -60,11 +71,12 @@ public class PromotionList {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("emailAccount", this.emailAccount);
-        result.put("userName", this.userName);
         result.put("listDate", this.listDate);
-        result.put("totalPrice", this.totalPrice);
-        result.put("userToken", this.userToken);
         result.put("listItem", this.listItem);
+        result.put("totalPrice", this.totalPrice);
+        result.put("userId", this.userId);
+        result.put("userName", this.userName);
+        result.put("userToken", this.userToken);
         return result;
     }
 

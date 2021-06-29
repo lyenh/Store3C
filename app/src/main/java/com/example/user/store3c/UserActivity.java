@@ -20,7 +20,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
@@ -33,7 +32,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -48,8 +46,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.ByteArrayOutputStream;
@@ -63,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import static androidx.core.content.FileProvider.getUriForFile;
@@ -408,10 +406,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
         userRef = db.getReference("user");
         userRef.keepSynced(true);
         totalUidRef.keepSynced(true);
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
             @Override
-            public void onSuccess(InstanceIdResult instanceIdResult) {
-                userToken = instanceIdResult.getToken();
+            public void onComplete(@NonNull Task<String> task) {
+                userToken = task.getResult();
                 totalUidRef.runTransaction(new Transaction.Handler() {
                     @Override
                     public @NonNull Transaction.Result doTransaction(@NonNull MutableData mutableData) {
@@ -542,10 +540,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                         if (task.isSuccessful()) {
                                                             Log.i("Profile===>", "User profile updated.");
                                                             //Toast.makeText(UserActivity.this, "profile updated. ", Toast.LENGTH_SHORT).show();
-                                                            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                                            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                                 @Override
-                                                                public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                                    final String refreshedToken = instanceIdResult.getToken();
+                                                                public void onComplete(@NonNull Task<String> task) {
+                                                                    final String refreshedToken = task.getResult();
 
                                                                     userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                         @Override
@@ -562,7 +560,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                                         //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                                         if (c.getUserToken().equals(refreshedToken)) {
                                                                                             //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
-                                                                                            UserItem newUser = new UserItem(refreshedToken, userEmail, userName);
+                                                                                            UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), refreshedToken, userEmail, userName);
                                                                                             Map<String, Object> userValues = newUser.toMap();
                                                                                             Map<String, Object> userUpdates = new HashMap<>();
                                                                                             userUpdates.put("/token/" + key, userValues);
@@ -581,7 +579,6 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                                     }
                                                                                 }
                                                                             }
-
 
                                                                         }
 
@@ -647,10 +644,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                     if (task.isSuccessful()) {
                                                         Log.i("Profile===>", "User profile update success.");
                                                         //Toast.makeText(UserActivity.this, "profile updated. ", Toast.LENGTH_SHORT).show();
-                                                        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                                        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                             @Override
-                                                            public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                                final String refreshedToken = instanceIdResult.getToken();
+                                                            public void onComplete(@NonNull Task<String> task) {
+                                                                final String refreshedToken = task.getResult();
 
                                                                 userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                     @Override
@@ -667,7 +664,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                                     //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                                     if (c.getUserToken().equals(refreshedToken)) {
                                                                                         //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
-                                                                                        UserItem newUser = new UserItem(refreshedToken, userEmail, userName);
+                                                                                        UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), refreshedToken, userEmail, userName);
                                                                                         Map<String, Object> userValues = newUser.toMap();
                                                                                         Map<String, Object> userUpdates = new HashMap<>();
                                                                                         userUpdates.put("/token/" + key, userValues);
@@ -761,10 +758,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                             if (task.isSuccessful()) {
                                                                 Log.i("Profile===>", "User profile updated.");
                                                                 //Toast.makeText(UserActivity.this, "profile updated. ", Toast.LENGTH_SHORT).show();
-                                                                FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                                                FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                                     @Override
-                                                                    public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                                        final String refreshedToken = instanceIdResult.getToken();
+                                                                    public void onComplete(@NonNull Task<String> task) {
+                                                                        final String refreshedToken = task.getResult();
 
                                                                         userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                             @Override
@@ -781,7 +778,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                                             //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                                             if (c.getUserToken().equals(refreshedToken)) {
                                                                                                 //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
-                                                                                                UserItem newUser = new UserItem(refreshedToken, userEmail, userName);
+                                                                                                UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), refreshedToken, userEmail, userName);
                                                                                                 Map<String, Object> userValues = newUser.toMap();
                                                                                                 Map<String, Object> userUpdates = new HashMap<>();
                                                                                                 userUpdates.put("/token/" + key, userValues);
@@ -911,10 +908,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                         if (task.isSuccessful()) {
                                                             Log.i("Profile===>", "User profile update success.");
                                                             //Toast.makeText(UserActivity.this, "profile updated. ", Toast.LENGTH_SHORT).show();
-                                                            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                                            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                                 @Override
-                                                                public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                                    final String refreshedToken = instanceIdResult.getToken();
+                                                                public void onComplete(@NonNull Task<String> task) {
+                                                                    final String refreshedToken = task.getResult();
 
                                                                     userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                         @Override
@@ -931,7 +928,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                                         //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                                         if (c.getUserToken().equals(refreshedToken)) {
                                                                                             //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
-                                                                                            UserItem newUser = new UserItem(refreshedToken, userEmail, userName);
+                                                                                            UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), refreshedToken, userEmail, userName);
                                                                                             Map<String, Object> userValues = newUser.toMap();
                                                                                             Map<String, Object> userUpdates = new HashMap<>();
                                                                                             userUpdates.put("/token/" + key, userValues);
@@ -1296,10 +1293,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                             key = mAuth.getCurrentUser().getUid();
                         }
                         if (currentUser != null && !currentUser.isAnonymous()) {
-                            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                 @Override
-                                public void onSuccess(InstanceIdResult instanceIdResult) {
-                                    userToken = instanceIdResult.getToken();
+                                public void onComplete(@NonNull Task<String> task) {
+                                    userToken = task.getResult();
 
                                     userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                         @Override
@@ -1456,10 +1453,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                             public void onComplete(@NonNull Task<Void> task) {
                                                 if (task.isSuccessful()) {
                                                     Log.i("Update===>", "User name update success.");
-                                                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                                    FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                         @Override
-                                                        public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                            userToken = instanceIdResult.getToken();
+                                                        public void onComplete(@NonNull Task<String> task) {
+                                                            userToken = task.getResult();
 
                                                             userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                 @Override
@@ -1476,7 +1473,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                                 //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                                 if (c.getUserToken().equals(userToken)) {
                                                                                     //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
-                                                                                    UserItem newUser = new UserItem(userToken, dbUserEmail, userName);
+                                                                                    UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), userToken, dbUserEmail, userName);
                                                                                     Map<String, Object> userValues = newUser.toMap();
                                                                                     Map<String, Object> userUpdates = new HashMap<>();
                                                                                     userUpdates.put("/token/" + key, userValues);
@@ -1581,10 +1578,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
                                             Log.i("Update===>", "User email address update success.");
-                                            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                 @Override
-                                                public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                    userToken = instanceIdResult.getToken();
+                                                public void onComplete(@NonNull Task<String> task) {
+                                                    userToken = task.getResult();
 
                                                     userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                         @Override
@@ -1601,7 +1598,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                                         //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                         if (c.getUserToken().equals(userToken)) {
                                                                             //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
-                                                                            UserItem newUser = new UserItem(userToken, userEmail, dbUserName);
+                                                                            UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), userToken, userEmail, dbUserName);
                                                                             Map<String, Object> userValues = newUser.toMap();
                                                                             Map<String, Object> userUpdates = new HashMap<>();
                                                                             userUpdates.put("/token/" + key, userValues);
@@ -1768,10 +1765,10 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                             public void onComplete(@NonNull Task<Void> task) {
                                                                 if (task.isSuccessful()) {
                                                                     Log.i("Update===>", "User password update success.");
-                                                                    FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                                                    FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                                                         @Override
-                                                                        public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                                            userToken = instanceIdResult.getToken();
+                                                                        public void onComplete(@NonNull Task<String> task) {
+                                                                            userToken = task.getResult();
 
                                                                             userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                                                 @Override

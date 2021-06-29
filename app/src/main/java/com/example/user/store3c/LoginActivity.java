@@ -16,7 +16,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,8 +25,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
@@ -35,6 +33,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import static com.example.user.store3c.MainActivity.mAuth;
@@ -180,10 +179,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                             }
                                         }
 
-                                        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                                        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
                                             @Override
-                                            public void onSuccess(InstanceIdResult instanceIdResult) {
-                                                userToken = instanceIdResult.getToken();
+                                            public void onComplete(@NonNull Task<String> task) {
+                                                userToken = task.getResult();
 
                                                 userTokenRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                                     @Override
@@ -198,12 +197,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                                             if (c != null) {
                                                                 if (c.getUserToken() != null) {
                                                                     Log.d("user: ", c.getUserToken() + "  " + c.getUserEmail() + "  " + c.getUserName());
-                                                                    //String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-                                                                    //Toast.makeText(UserActivity.this, "refreshed: " + refreshedToken, Toast.LENGTH_SHORT).show();
                                                                     if (c.getUserToken().equals(userToken) && (!c.getUserName().equals(user) || !c.getUserEmail().equals(email))) {
                                                                         //Toast.makeText(UserActivity.this, "update: ", Toast.LENGTH_SHORT).show();
                                                                         updateTokenData = true;
-                                                                        UserItem newUser = new UserItem(userToken, email, user);
+                                                                        UserItem newUser = new UserItem(Objects.requireNonNull(mAuth.getCurrentUser()).getUid(), userToken, email, user);
                                                                         Map<String, Object> userValues = newUser.toMap();
                                                                         Map<String, Object> userUpdates = new HashMap<>();
                                                                         userUpdates.put("/token/" + key, userValues);

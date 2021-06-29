@@ -11,6 +11,7 @@ import java.util.Map;
 @Keep
 @IgnoreExtraProperties
 public class UserItem {
+    public String userId;
     public String userToken;
     public String userEmail;
     public String userName;
@@ -19,10 +20,19 @@ public class UserItem {
 
     }
 
-    public UserItem (String token, String email, String name) {
+    public UserItem (String id, String token, String email, String name) {
+        this.userId = id;
         this.userToken = token;
         this.userEmail = email;
         this.userName = name;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getUserToken() {
@@ -52,6 +62,7 @@ public class UserItem {
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
+        result.put("userId", this.userId);
         result.put("userToken", this.userToken);
         result.put("userEmail", this.userEmail);
         result.put("userName", this.userName);
