@@ -22,15 +22,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -49,7 +49,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     private static int totalUserAmount = 0;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
-    public String instanceId;
+    public String userId = "defaultId";
     public String refreshedToken;
 
     @Override
@@ -297,19 +297,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
 
-        /*if (InternetConnection.checkConnection(PromotionFirebaseInstanceIdService.this)) {
-            mAuth = FirebaseAuth.getInstance();
-        }
-        if (mAuth.getCurrentUser() == null) {
-            mAuth.signInAnonymously();
-        }*/
         FirebaseDatabase db = FirebaseDatabase.getInstance();
         final DatabaseReference totalTokenRef;
 
-
-        // If you want to send messages to this application instance or
-        // manage this apps subscriptions on the server side, send the
-        // Instance ID token to your app server.
         try {
             if (!setFirebaseDbPersistence) {
                 db.setPersistenceEnabled(true);
@@ -325,27 +315,22 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         userTokenRef.keepSynced(true);
         totalTokenRef.keepSynced(true);
 
-        // Get updated InstanceID token.
-        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+        // Get updated Instance token.
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(new OnCompleteListener<String>() {
             @Override
-            public void onSuccess(InstanceIdResult instanceIdResult) {
-                refreshedToken = instanceIdResult.getToken();
-                instanceId = FirebaseInstanceId.getInstance().getId();
-
+            public void onComplete(@NonNull Task<String> task) {
+                refreshedToken = task.getResult();
                 Log.i("InstanceId===> ", "refresh token: "+refreshedToken);
-                Log.i("InstanceId===> ", "instance Id: "+instanceId);
 
                 totalTokenRef.runTransaction(new Transaction.Handler() {
                     @Override
                     public @NonNull Transaction.Result doTransaction(@NonNull MutableData mutableData) {
                         Integer counter = mutableData.getValue(Integer.class);
                         boolean findToken = false;
-
                         dbhelper = new AccountDbAdapter(PromotionFirebaseMessagingService.this);
                         if (counter == null) {
-                            Log.i("Firebase ==>", "Total User Amount is: null");
-                        }
-                        else {
+                            Log.i("Firebase ==>", "Total User Amount is null");
+                        } else {
                             totalUserAmount = counter;
                             Log.i("Firebase ==>", "Total User Amount is: " + totalUserAmount);
                             if (totalUserAmount == 0) {
@@ -353,7 +338,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                 if (dbhelper.IsDbUserEmpty()) {
                                     //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, "defaultEmail", "defaultName"));
 
-                                    UserItem newUser = new UserItem(refreshedToken, "defaultEmail", "defaultName");
+                                    UserItem newUser = new UserItem(userId, refreshedToken, "defaultEmail", "defaultName");
                                     Map<String, Object> userValues = newUser.toMap();
                                     Map<String, Object> userUpdates = new HashMap<>();
                                     userUpdates.put("/token/" + key, userValues);
@@ -369,8 +354,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         }
                                     });
 
-                                }
-                                else {
+                                } else {
                                     try {
                                         Cursor cursor = dbhelper.getSimpleUserData();
                                         dbUserName = cursor.getString(1);
@@ -380,7 +364,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     }
                                     //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, dbUserEmail, dbUserName));
 
-                                    UserItem newUser = new UserItem(refreshedToken, dbUserEmail, dbUserName);
+                                    UserItem newUser = new UserItem(userId, refreshedToken, dbUserEmail, dbUserName);
                                     Map<String, Object> userValues = newUser.toMap();
                                     Map<String, Object> userUpdates = new HashMap<>();
                                     userUpdates.put("/token/" + key, userValues);
@@ -398,8 +382,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
                                 }
                                 mutableData.setValue(++totalUserAmount);
-                            }
-                            else {
+                            } else {
                                 MutableData tokenSnapshot = mutableData.child("token");
                                 Iterable<MutableData> tokenChildren = tokenSnapshot.getChildren();
                                 for (MutableData token : tokenChildren) {
@@ -417,7 +400,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     if (dbhelper.IsDbUserEmpty()) {
                                         //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, "defaultEmail", "defaultName"));
 
-                                        UserItem newUser = new UserItem(refreshedToken, "defaultEmail", "defaultName");
+                                        UserItem newUser = new UserItem(userId, refreshedToken, "defaultEmail", "defaultName");
                                         Map<String, Object> userValues = newUser.toMap();
                                         Map<String, Object> userUpdates = new HashMap<>();
                                         userUpdates.put("/token/" + key, userValues);
@@ -443,7 +426,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         }
                                         //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, dbUserEmail, dbUserName));
 
-                                        UserItem newUser = new UserItem(refreshedToken, dbUserEmail, dbUserName);
+                                        UserItem newUser = new UserItem(userId, refreshedToken, dbUserEmail, dbUserName);
                                         Map<String, Object> userValues = newUser.toMap();
                                         Map<String, Object> userUpdates = new HashMap<>();
                                         userUpdates.put("/token/" + key, userValues);
@@ -485,7 +468,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 });
             }
         });
-
 
     }
 
