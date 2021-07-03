@@ -1023,12 +1023,12 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                                 }
                                 adapter.notifyDataSetChanged();
                             }
-                            keyWord.setText("");
                         } catch (SQLException e) {
                             e.printStackTrace();
                             Toast.makeText(SearchActivity.this, "db get error", Toast.LENGTH_SHORT).show();
                         }
                     }
+                    keyWord.setText("");
                 }
                 else {
                     Toast.makeText(SearchActivity.this, "Input can't be empty.", Toast.LENGTH_SHORT).show();
@@ -1044,14 +1044,19 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
                     findPrice.clear();
                     findIndexArray.clear();
                     findIndexSorted.clear();
-                    wordTextE.clear();
-                    prodNameTextE.clear();
+                    if (wordTextE != null ) {
+                        wordTextE.clear();
+                    }
+                    if (prodNameTextE != null) {
+                        prodNameTextE.clear();
+                    }
                 }
                 break;
             case R.id.searchRtn_id:
                 onBackPressed();
                 break;
             case R.id.searchClear_id:
+                keyWord.setText("");
                 resultTable.clear();
                 adapter.notifyDataSetChanged();
                 break;
