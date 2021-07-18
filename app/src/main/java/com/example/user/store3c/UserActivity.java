@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -17,6 +18,11 @@ import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -67,7 +73,7 @@ import static androidx.core.content.FileProvider.getUriForFile;
 import static com.example.user.store3c.MainActivity.mAuth;
 import static com.example.user.store3c.MainActivity.userImg;
 
-public class UserActivity extends AppCompatActivity implements View.OnClickListener{
+public class UserActivity extends AppCompatActivity implements View.OnClickListener {
     private AccountDbAdapter dbHelper = null;
     private EditText editName = null;
     private EditText editPassword = null;
@@ -92,6 +98,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
     private Bitmap selectedUserImg;
     private Uri imageUri = null, fileUri = null;
     private File filePath, file;
+    private ActivityResultLauncher<Intent> loadImgResultLauncher, cropImgResultLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +107,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
 
         String osVersion, osName, Device, Product, Hardware, Manufacturer, Model;
         int SDKversion;
+        int Maxbyte = 10*1024*1024;
         Button btnName, btnEmail, btnPassword, btnPicture;
         Intent intentItem = getIntent();
         Bundle bundleItem = intentItem.getExtras();
@@ -350,6 +358,176 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
         else {
             Toast.makeText(UserActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
         }
+
+        loadImgResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            // There are no request codes
+                            Intent data = result.getData();
+                            if (data != null){
+                                imageUri = data.getData();
+                            }
+                            if (imageUri != null) {
+                                Log.i("===> Image Uri: ", imageUri.toString());
+                                try {
+                                    file = new File(getExternalFilesDir(null), "image");
+                                    //file = new File(filePath, "faceImg");
+                                    Log.i("===> File Path: ", file.getPath());
+                                    Log.i("===> File Uri: ", Uri.fromFile(file).toString());
+
+                                    if (file.exists()) {
+                                        if (file.delete()) {
+                                            if (file.createNewFile()) {
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                                    // Android 7.0 : file access per mission
+                                                    fileUri = getUriForFile(UserActivity.this,
+                                                            "com.example.user.store3c.fileProvider", file);
+                                                    Log.i("===> Manifest FileUri:", fileUri.toString());
+                                                } else {
+                                                    fileUri = Uri.fromFile(file);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        if (file.createNewFile()) {
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                                // Android 7.0 : file access permission
+                                                fileUri = getUriForFile(UserActivity.this,
+                                                        "com.example.user.store3c.fileProvider", file);
+                                                Log.i("===> Manifest FileUri:", fileUri.toString());
+                                            } else {
+                                                fileUri = Uri.fromFile(file);
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(UserActivity.this, "file I/O error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+
+                                try {
+                                    Intent cropIntent = new Intent("com.android.camera.action.CROP");
+                                    cropIntent.setType("image/*");
+                                    List<ResolveInfo> list = getPackageManager().queryIntentActivities(cropIntent, PackageManager.MATCH_DEFAULT_ONLY);
+                                    int size = list.size();
+                                    //Toast.makeText(this, "There are " + size + " image crop app", Toast.LENGTH_LONG).show();
+                                    if (size == 0) {
+                                        try {
+                                            CropImage.activity(imageUri)
+                                                    .start(UserActivity.this);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                        }
+                                        //Toast.makeText(this, "There are no default image crop app, using cropImage api", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        if (fileUri != null) {
+                                            cropIntent.setData(imageUri);
+                                            cropIntent.putExtra("crop", "true");
+                                            cropIntent.putExtra("circleCrop", "true");
+                                            cropIntent.putExtra("outputX", 200);
+                                            cropIntent.putExtra("outputY", 200);
+                                            cropIntent.putExtra("aspectX", 1);
+                                            cropIntent.putExtra("aspectY", 1);
+                                            cropIntent.putExtra("scale", "true");
+                                            cropIntent.putExtra("return-data", "false");
+                                            cropIntent.putExtra("output", fileUri);
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                                cropIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                                        | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                            }
+                                            //if (size > 1) {
+                                            //Toast.makeText(this, "There are more than one image crop app: " + size, Toast.LENGTH_LONG).show();
+                                            //}
+                                            Intent picIntent = new Intent(cropIntent);
+                                            ResolveInfo res = list.get(0);
+                                            String packageName = res.activityInfo.packageName;
+                                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                                UserActivity.this.grantUriPermission(packageName, imageUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                UserActivity.this.grantUriPermission(packageName, fileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                picIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                            }
+                                            picIntent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+                                            cropImgResultLauncher.launch(picIntent);
+                                        }
+                                    }
+                                }
+                                catch (ActivityNotFoundException e) {
+                                    String errorMessage = "your device doesn't support the crop action!";
+                                    Toast toast = Toast.makeText(UserActivity.this, errorMessage, Toast.LENGTH_SHORT);
+                                    toast.show();
+                                }
+                            }
+                        }
+                    }
+                });
+
+        cropImgResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            // There are no request codes
+                            Intent data = result.getData();
+                            if (data != null && fileUri != null){
+                                try {
+                                    ParcelFileDescriptor parcelFileDescriptor =
+                                            getContentResolver().openFileDescriptor(fileUri, "r");
+                                    if (parcelFileDescriptor != null) {
+                                        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+                                        selectedUserImg = BitmapFactory.decodeFileDescriptor(fileDescriptor,null, null);
+                                        parcelFileDescriptor.close();
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                            }
+                            selectedUserImg = getRoundedCroppedBitmap(selectedUserImg);
+                            userPicture.setImageBitmap(selectedUserImg);
+
+                            byte[] img = Bitmap2Bytes(selectedUserImg);
+                            if (img.length > Maxbyte) {
+                                Toast.makeText(UserActivity.this, "The image size is too large. Do not save for the performance", Toast.LENGTH_SHORT).show();
+                            }
+                            else {
+                                if (dbUserName == null || dbUserEmail == null || dbUserPassword == null) {
+                                    Toast.makeText(UserActivity.this, "檔案已載入, 請新增使用者資料", Toast.LENGTH_SHORT).show();
+                                }
+                                else {
+                                    if (dbHelper.updateUser(index, dbUserName, dbUserEmail, dbUserPassword, img) == 0) {
+                                        Toast.makeText(UserActivity.this, "db update error", Toast.LENGTH_SHORT).show();
+                                        Log.i("update User: ", "no data change!");
+                                    }
+                                    else {
+                                        MainActivity.userImg = selectedUserImg;
+                                        if (file.exists()) {
+                                            if (file.delete()) {
+                                                Log.i("===> Deleted File Path:", file.getPath());
+                                            }
+                                        }
+                                    }
+                                    //Toast.makeText(UserActivity.this, "image size: " + img.length/1024 + "k", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+                        else if (result.getResultCode() == RESULT_CANCELED && result.getData() == null) {
+                            try {
+                                CropImage.activity(imageUri)
+                                        .start(UserActivity.this);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                            //Toast.makeText(this, "There are no usefull default image crop app", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
     }
 
@@ -1043,150 +1221,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        int Maxbyte = 10*1024*1024;
-        int RESULT_LOAD_IMG = 1, RESULT_CROP = 2;
-
-        if (resultCode == RESULT_OK && requestCode == RESULT_LOAD_IMG) {
-            if (data != null){
-                imageUri = data.getData();
-            }
-            if (imageUri != null) {
-                Log.i("===> Image Uri: ", imageUri.toString());
-                try {
-                    file = new File(getExternalFilesDir(null), "image");
-                    //file = new File(filePath, "faceImg");
-                    Log.i("===> File Path: ", file.getPath());
-                    Log.i("===> File Uri: ", Uri.fromFile(file).toString());
-
-                    if (file.exists()) {
-                        if (file.delete()) {
-                            if (file.createNewFile()) {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    // Android 7.0 : file access per mission
-                                    fileUri = getUriForFile(this,
-                                            "com.example.user.store3c.fileProvider", file);
-                                    Log.i("===> Manifest FileUri:", fileUri.toString());
-                                } else {
-                                    fileUri = Uri.fromFile(file);
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        if (file.createNewFile()) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                // Android 7.0 : file access permission
-                                fileUri = getUriForFile(this,
-                                        "com.example.user.store3c.fileProvider", file);
-                                Log.i("===> Manifest FileUri:", fileUri.toString());
-                            } else {
-                                fileUri = Uri.fromFile(file);
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(UserActivity.this, "file I/O error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-
-                try {
-                    Intent cropIntent = new Intent("com.android.camera.action.CROP");
-                    cropIntent.setType("image/*");
-                    List<ResolveInfo> list = getPackageManager().queryIntentActivities(cropIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                    int size = list.size();
-                    //Toast.makeText(this, "There are " + size + " image crop app", Toast.LENGTH_LONG).show();
-                    if (size == 0) {
-                        try {
-                            CropImage.activity(imageUri)
-                                    .start(this);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                        //Toast.makeText(this, "There are no default image crop app, using cropImage api", Toast.LENGTH_SHORT).show();
-                    } else {
-                        if (fileUri != null) {
-                            cropIntent.setData(imageUri);
-                            cropIntent.putExtra("crop", "true");
-                            cropIntent.putExtra("circleCrop", "true");
-                            cropIntent.putExtra("outputX", 200);
-                            cropIntent.putExtra("outputY", 200);
-                            cropIntent.putExtra("aspectX", 1);
-                            cropIntent.putExtra("aspectY", 1);
-                            cropIntent.putExtra("scale", "true");
-                            cropIntent.putExtra("return-data", "false");
-                            cropIntent.putExtra("output", fileUri);
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                cropIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                                        | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            }
-                            //if (size > 1) {
-                            //Toast.makeText(this, "There are more than one image crop app: " + size, Toast.LENGTH_LONG).show();
-                            //}
-                            Intent picIntent = new Intent(cropIntent);
-                            ResolveInfo res = list.get(0);
-                            String packageName = res.activityInfo.packageName;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                this.grantUriPermission(packageName, imageUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                this.grantUriPermission(packageName, fileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                picIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                            }
-                            picIntent.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
-                            startActivityForResult(picIntent, RESULT_CROP);
-                        }
-                    }
-                }
-                catch (ActivityNotFoundException e) {
-                    String errorMessage = "your device doesn't support the crop action!";
-                    Toast toast = Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            }
-        }
-        else if (resultCode == RESULT_OK && requestCode == RESULT_CROP) {
-            if (data != null && fileUri != null){
-                try {
-                    ParcelFileDescriptor parcelFileDescriptor =
-                            getContentResolver().openFileDescriptor(fileUri, "r");
-                    if (parcelFileDescriptor != null) {
-                        FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-                        selectedUserImg = BitmapFactory.decodeFileDescriptor(fileDescriptor,null, null);
-                        parcelFileDescriptor.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            }
-            selectedUserImg = getRoundedCroppedBitmap(selectedUserImg);
-            userPicture.setImageBitmap(selectedUserImg);
-
-            byte[] img = Bitmap2Bytes(selectedUserImg);
-            if (img.length > Maxbyte) {
-                Toast.makeText(UserActivity.this, "The image size is too large. Do not save for the performance", Toast.LENGTH_SHORT).show();
-            }
-            else {
-                if (dbUserName == null || dbUserEmail == null || dbUserPassword == null) {
-                    Toast.makeText(UserActivity.this, "檔案已載入, 請新增使用者資料", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    if (dbHelper.updateUser(index, dbUserName, dbUserEmail, dbUserPassword, img) == 0) {
-                        Toast.makeText(UserActivity.this, "db update error", Toast.LENGTH_SHORT).show();
-                        Log.i("update User: ", "no data change!");
-                    }
-                    else {
-                        MainActivity.userImg = selectedUserImg;
-                        if (file.exists()) {
-                            if (file.delete()) {
-                                Log.i("===> Deleted File Path:", file.getPath());
-                            }
-                        }
-                    }
-                    //Toast.makeText(UserActivity.this, "image size: " + img.length/1024 + "k", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-        else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK && result != null) {
                 Uri resultUri = result.getUri();
@@ -1201,21 +1236,11 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE && result != null) {
                 Exception error = result.getError();
                 Toast.makeText(UserActivity.this, "decodeFile error: " + error.getMessage(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == RESULT_CANCELED && result == null) {
+                Toast.makeText(UserActivity.this, "You haven't picked Image",Toast.LENGTH_SHORT).show();
             }
         }
-        else if (resultCode == RESULT_CANCELED && requestCode == RESULT_CROP && data == null) {
-            try {
-                CropImage.activity(imageUri)
-                        .start(this);
-            } catch (Exception e) {
-                e.printStackTrace();
-                Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-            //Toast.makeText(this, "There are no usefull default image crop app", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            Toast.makeText(UserActivity.this, "You haven't picked Image",Toast.LENGTH_SHORT).show();
-        }
+
     }
 
     void cropImgSave (File cropFile) {
@@ -1881,7 +1906,6 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     break;
                 case R.id.pictureBtn_id:
-                    int RESULT_LOAD_IMG = 1;
                     Intent photoPickerIntent;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         photoPickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -1891,7 +1915,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                         photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
                     }
                     photoPickerIntent.setType("image/*");
-                    startActivityForResult(photoPickerIntent, RESULT_LOAD_IMG);
+                    loadImgResultLauncher.launch(photoPickerIntent);
                     break;
                 default:
                     Log.i("Submit===>", "Undefined case.");
@@ -2069,7 +2093,7 @@ class FileResizeTask extends AsyncTask<ParcelFileDescriptor, Void, File> {
                 image = BitmapFactory.decodeFileDescriptor(fileDescriptor,null, bmOptions);
 
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                image.compress(Bitmap.CompressFormat.JPEG, 100 /*ignored for PNG*/, bos);
+                image.compress(Bitmap.CompressFormat.JPEG, 100 , bos);  //ignored for PNG
                 byte[] bitmapdata = bos.toByteArray();
                 FileOutputStream fos = new FileOutputStream(imageFile);
                 fos.write(bitmapdata);
