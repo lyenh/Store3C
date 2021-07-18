@@ -177,8 +177,8 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         ItemTouchHelper.Callback ithCallback = new ItemTouchHelper.Callback() {
             //and in your imlpementaion of  get the viewHolder's and target's positions in your adapter data, swap them
             public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                final int fromPosition = viewHolder.getAdapterPosition();
-                final int toPosition = target.getAdapterPosition();
+                final int fromPosition = viewHolder.getAbsoluteAdapterPosition();
+                final int toPosition = target.getAbsoluteAdapterPosition();
 
                 if (!dbhelper.moveOrder(fromPosition, toPosition)) {
                     Log.i("move Order item: ", "no data change!");
@@ -200,7 +200,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                int index = viewHolder.getAdapterPosition();
+                int index = viewHolder.getAbsoluteAdapterPosition();
                 String str_price;
                 String[] tokens;
                 float price = 0;
