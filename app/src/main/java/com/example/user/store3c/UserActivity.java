@@ -3,6 +3,7 @@ package com.example.user.store3c;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -28,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.Menu;
@@ -37,6 +39,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.canhub.cropper.CropImage;
+import com.canhub.cropper.CropImageContract;
+import com.canhub.cropper.CropImageContractOptions;
+import com.canhub.cropper.CropImageOptions;
+import com.canhub.cropper.CropImageView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -53,12 +61,13 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
@@ -72,6 +81,7 @@ import java.util.TimeZone;
 import static androidx.core.content.FileProvider.getUriForFile;
 import static com.example.user.store3c.MainActivity.mAuth;
 import static com.example.user.store3c.MainActivity.userImg;
+
 
 public class UserActivity extends AppCompatActivity implements View.OnClickListener {
     private AccountDbAdapter dbHelper = null;
@@ -94,11 +104,30 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
     private boolean relogin = false;
     private boolean userAccountExist = true;
     private String key = "uid";
+    private final int MaxByte = 512*1024;
     private UserInfo.UserDeviceInfo deviceInfo;
     private Bitmap selectedUserImg;
     private Uri imageUri = null, fileUri = null;
     private File filePath, file;
     private ActivityResultLauncher<Intent> loadImgResultLauncher, cropImgResultLauncher;
+
+    private final ActivityResultLauncher<CropImageContractOptions> cropImage =
+            registerForActivityResult(new CropImageContract(),
+                    result -> {
+                        if (result.isSuccessful()) {
+                            if (Objects.equals(Objects.requireNonNull(result.getUriContent()).getPath(), fileUri.getPath())) {
+                                Log.i("Crop  ==>", "output file is the same !");
+                            }
+                            else {
+                                Log.i("Crop  ==>", "output file is different !");
+                            }
+                            cropImgSave(result.getUriFilePath(UserActivity.this, false), result.getUriContent());
+                        } else if (result.equals(CropImage.CancelledResult.INSTANCE)) {
+                            Toast.makeText(UserActivity.this, "You haven't picked Image !", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(UserActivity.this, "Cropping image failed !", Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,7 +136,6 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
 
         String osVersion, osName, Device, Product, Hardware, Manufacturer, Model;
         int SDKversion;
-        int Maxbyte = 10*1024*1024;
         Button btnName, btnEmail, btnPassword, btnPicture;
         Intent intentItem = getIntent();
         Bundle bundleItem = intentItem.getExtras();
@@ -372,6 +400,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                             }
                             if (imageUri != null) {
                                 Log.i("===> Image Uri: ", imageUri.toString());
+                                //Toast.makeText(UserActivity.this, "Uri: " + imageUri.toString(), Toast.LENGTH_LONG).show();
                                 try {
                                     file = new File(getExternalFilesDir(null), "image");
                                     //file = new File(filePath, "faceImg");
@@ -415,10 +444,19 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                     List<ResolveInfo> list = getPackageManager().queryIntentActivities(cropIntent, PackageManager.MATCH_DEFAULT_ONLY);
                                     int size = list.size();
                                     //Toast.makeText(this, "There are " + size + " image crop app", Toast.LENGTH_LONG).show();
-                                    if (size == 0) {
+                                    if (size == 0 || imageUri.toString().startsWith("content://com.google.android.apps.photos.content")) {
                                         try {
-                                            CropImage.activity(imageUri)
-                                                    .start(UserActivity.this);
+                                            CropImageContractOptions options = new CropImageContractOptions(imageUri, new CropImageOptions())
+                                                    .setScaleType(CropImageView.ScaleType.FIT_CENTER)
+                                                    .setCropShape(CropImageView.CropShape.RECTANGLE)
+                                                    .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                                                    .setAutoZoomEnabled(true)
+                                                    .setRequestedSize(360, 360)
+                                                    .setAllowRotation(true)
+                                                    .setAllowFlipping(true)
+                                                    .setNoOutputImage(false)
+                                                    .setOutputUri(fileUri);
+                                            cropImage.launch(options);
                                         } catch (Exception e) {
                                             e.printStackTrace();
                                             Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -429,8 +467,8 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                             cropIntent.setData(imageUri);
                                             cropIntent.putExtra("crop", "true");
                                             cropIntent.putExtra("circleCrop", "true");
-                                            cropIntent.putExtra("outputX", 200);
-                                            cropIntent.putExtra("outputY", 200);
+                                            cropIntent.putExtra("outputX", 360);
+                                            cropIntent.putExtra("outputY", 360);
                                             cropIntent.putExtra("aspectX", 1);
                                             cropIntent.putExtra("aspectY", 1);
                                             cropIntent.putExtra("scale", "true");
@@ -492,10 +530,19 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                             userPicture.setImageBitmap(selectedUserImg);
 
                             byte[] img = Bitmap2Bytes(selectedUserImg);
-                            if (img.length > Maxbyte) {
-                                Toast.makeText(UserActivity.this, "The image size is too large. Do not save for the performance", Toast.LENGTH_SHORT).show();
+                            if (img.length > MaxByte) {
+                                try {
+                                    ParcelFileDescriptor parcelFileDescriptor =
+                                            getContentResolver().openFileDescriptor(fileUri, "r");
+                                    new FileResizeTask(UserActivity.this, file).execute(parcelFileDescriptor);
+                                    Log.i("Resize ==>", "file resize !");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                }
                             }
                             else {
+                                //Toast.makeText(UserActivity.this, "Image size: " + img.length, Toast.LENGTH_LONG).show();
                                 if (dbUserName == null || dbUserEmail == null || dbUserPassword == null) {
                                     Toast.makeText(UserActivity.this, "檔案已載入, 請新增使用者資料", Toast.LENGTH_SHORT).show();
                                 }
@@ -518,13 +565,23 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                         }
                         else if (result.getResultCode() == RESULT_CANCELED && result.getData() == null) {
                             try {
-                                CropImage.activity(imageUri)
-                                        .start(UserActivity.this);
+                                CropImageContractOptions options = new CropImageContractOptions(imageUri, new CropImageOptions())
+                                        .setScaleType(CropImageView.ScaleType.FIT_CENTER)
+                                        .setCropShape(CropImageView.CropShape.RECTANGLE)
+                                        .setGuidelines(CropImageView.Guidelines.ON_TOUCH)
+                                        .setAutoZoomEnabled(true)
+                                        .setRequestedSize(360, 360)
+                                        .setAllowRotation(true)
+                                        .setAllowFlipping(true)
+                                        .setNoOutputImage(false)
+                                        .setOutputUri(fileUri);
+                                cropImage.launch(options);
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                Toast.makeText(UserActivity.this, "Crop image error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                Log.i("CropImgKt error ===>", Objects.requireNonNull(e.getMessage()));
                             }
-                            //Toast.makeText(this, "There are no usefull default image crop app", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "There are no useful default image crop app", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -1217,44 +1274,25 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK && result != null) {
-                Uri resultUri = result.getUri();
-                try {
-                    ParcelFileDescriptor parcelFileDescriptor =
-                            getContentResolver().openFileDescriptor(resultUri, "r");
-                    new FileResizeTask(UserActivity.this, file).execute(parcelFileDescriptor);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE && result != null) {
-                Exception error = result.getError();
-                Toast.makeText(UserActivity.this, "decodeFile error: " + error.getMessage(), Toast.LENGTH_LONG).show();
-            } else if (resultCode == RESULT_CANCELED && result == null) {
-                Toast.makeText(UserActivity.this, "You haven't picked Image",Toast.LENGTH_SHORT).show();
-            }
-        }
-
-    }
-
-    void cropImgSave (File cropFile) {
-        int Maxbyte = 10*1024*1024;
-
-        selectedUserImg = BitmapFactory.decodeFile(cropFile.getPath());
+    void cropImgSave (String filePath, Uri fileUri) {
+        selectedUserImg = BitmapFactory.decodeFile(filePath);
         selectedUserImg = getRoundedCroppedBitmap(selectedUserImg);
         userPicture.setImageBitmap(selectedUserImg);
 
         byte[] img = Bitmap2Bytes(selectedUserImg);
-        if (img.length > Maxbyte) {
-            Toast.makeText(UserActivity.this, "The image size is too large. Do not save for the performance", Toast.LENGTH_SHORT).show();
+        if (img.length > MaxByte) {
+            try {
+                ParcelFileDescriptor parcelFileDescriptor =
+                        getContentResolver().openFileDescriptor(fileUri, "r");
+                new FileResizeTask(UserActivity.this, file).execute(parcelFileDescriptor);
+                Log.i("Resize ==>", "file resize !");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         }
         else {
+            //Toast.makeText(UserActivity.this, "Image_crop size: " + img.length, Toast.LENGTH_LONG).show();
             if (dbUserName == null || dbUserEmail == null || dbUserPassword == null) {
                 Toast.makeText(UserActivity.this, "檔案已載入, 請新增使用者資料", Toast.LENGTH_SHORT).show();
             }
@@ -1265,15 +1303,42 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 else {
                     MainActivity.userImg = selectedUserImg;
-                    if (cropFile.exists()) {
-                        if (cropFile.delete()) {
-                            Log.i("===> Deleted File Path:", cropFile.getPath());
+                    if (file.exists()) {
+                        if (file.delete()) {
+                            Log.i("===> Deleted File Path:", file.getPath());
                         }
                     }
                 }
                 //Toast.makeText(UserActivity.this, "image size: " + img.length/1024 + "k", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    void ResizeCropImgSave (File cropFile) {
+        selectedUserImg = BitmapFactory.decodeFile(cropFile.getPath());
+        selectedUserImg = getRoundedCroppedBitmap(selectedUserImg);
+        userPicture.setImageBitmap(selectedUserImg);
+        byte[] img = Bitmap2Bytes(selectedUserImg);
+
+        if (dbUserName == null || dbUserEmail == null || dbUserPassword == null) {
+            Toast.makeText(UserActivity.this, "檔案已載入, 請新增使用者資料", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            if (dbHelper.updateUser(index, dbUserName, dbUserEmail, dbUserPassword, img) == 0) {
+                Toast.makeText(UserActivity.this, "db update error", Toast.LENGTH_SHORT).show();
+                Log.i("update User: ", "no data change!");
+            }
+            else {
+                MainActivity.userImg = selectedUserImg;
+                if (cropFile.exists()) {
+                    if (cropFile.delete()) {
+                        Log.i("===> Deleted File Path:", cropFile.getPath());
+                    }
+                }
+            }
+            //Toast.makeText(UserActivity.this, "image size: " + img.length/1024 + "k", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     private Bitmap getRoundedCroppedBitmap(Bitmap bitmap) {
@@ -1909,12 +1974,13 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                     Intent photoPickerIntent;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         photoPickerIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                        photoPickerIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        photoPickerIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                                 | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     } else {
                         photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
                     }
                     photoPickerIntent.setType("image/*");
+                    photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
                     loadImgResultLauncher.launch(photoPickerIntent);
                     break;
                 default:
@@ -2040,8 +2106,8 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
 }
 
 class FileResizeTask extends AsyncTask<ParcelFileDescriptor, Void, File> {
-    private WeakReference<UserActivity> weakRefActivity;
-    private WeakReference<File> weakRefFile;
+    private final WeakReference<UserActivity> weakRefActivity;
+    private final WeakReference<File> weakRefFile;
 
     FileResizeTask(UserActivity activity, File file) {
         weakRefActivity = new WeakReference<>(activity);
@@ -2112,8 +2178,9 @@ class FileResizeTask extends AsyncTask<ParcelFileDescriptor, Void, File> {
     @Override
     protected void onPostExecute(File resizeFile) {
         UserActivity activity = weakRefActivity.get();
-        activity.cropImgSave(resizeFile);
+        activity.ResizeCropImgSave(resizeFile);
     }
+
 }
 
 

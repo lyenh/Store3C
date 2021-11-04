@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -73,10 +74,16 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 if (messageType.equals("promotion")) {
                     messageText = data.get("messageText");
                     subText = data.get("subText");
-                    Intent intent = new Intent(PromotionFirebaseMessagingService.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    PendingIntent pendingIntent = PendingIntent.getActivity(PromotionFirebaseMessagingService.this, 0 /* Request code */, intent,
-                            PendingIntent.FLAG_ONE_SHOT);
+
+                    // Create an Intent for the activity you want to start
+                    Intent resultIntent = new Intent(this, OrderActivity.class);
+                    // Create the TaskStackBuilder and add the intent, which inflates the back stack
+                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+                    stackBuilder.addNextIntentWithParentStack(resultIntent);
+                    // Get the PendingIntent containing the entire back stack
+                    PendingIntent resultPendingIntent =
+                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
@@ -90,7 +97,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setStyle(new NotificationCompat.BigTextStyle().bigText(messageText))
                                     .setAutoCancel(true)
                                     .setSound(defaultSoundUri)
-                                    .setContentIntent(pendingIntent);
+                                    .setContentIntent(resultPendingIntent);
 
                     int smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
                     Notification notification = notificationBuilder.build();
@@ -130,14 +137,19 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
 
-                } else {
+                } else {        //broadcast message
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
                     picture = getBitmapfromUrl(imageUrl);
-                    Intent intent = new Intent(this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                            PendingIntent.FLAG_ONE_SHOT);
+
+                    // Create an Intent for the activity you want to start
+                    Intent resultIntent = new Intent(this, OrderActivity.class);
+                    // Create the TaskStackBuilder and add the intent, which inflates the back stack
+                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+                    stackBuilder.addNextIntentWithParentStack(resultIntent);
+                    // Get the PendingIntent containing the entire back stack
+                    PendingIntent resultPendingIntent =
+                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -156,7 +168,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
                                     .setAutoCancel(true)
                                     .setSound(defaultSoundUri)
-                                    .setContentIntent(pendingIntent).build();
+                                    .setContentIntent(resultPendingIntent).build();
 
                     int smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
 
@@ -211,10 +223,14 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         else if (remoteMessage.getNotification() != null) {
             Log.i("Messaging===> ", "Message Notification Body:  "+remoteMessage.getNotification().getBody());
 
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                    PendingIntent.FLAG_ONE_SHOT);
+            // Create an Intent for the activity you want to start
+            Intent resultIntent = new Intent(this, OrderActivity.class);
+            // Create the TaskStackBuilder and add the intent, which inflates the back stack
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+            stackBuilder.addNextIntentWithParentStack(resultIntent);
+            // Get the PendingIntent containing the entire back stack
+            PendingIntent resultPendingIntent =
+                    stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
             title = remoteMessage.getNotification().getTitle();
             message = remoteMessage.getNotification().getBody();
@@ -236,7 +252,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
                             .setAutoCancel(true)
                             .setSound(defaultSoundUri)
-                            .setContentIntent(pendingIntent).build();
+                            .setContentIntent(resultPendingIntent).build();
 
             int smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
 
@@ -483,5 +499,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             return null;
         }
     }
+
+
+    public PromotionFirebaseMessagingService() {
+        super();
+    }
+
 
 }
