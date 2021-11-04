@@ -1,4 +1,12 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
+
+repositories {
+    google()
+    mavenCentral()
+}
 
 android {
     signingConfigs {
@@ -19,6 +27,7 @@ android {
         versionName "Store3C_v3.3.2"
         signingConfig signingConfigs.release
         ndkVersion '22.1.7171670'
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -28,50 +37,69 @@ android {
     }
     productFlavors {
     }
-
+    ndkVersion '22.1.7171670'
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_11
+    }
+    if(JavaVersion.current() != JavaVersion.VERSION_11){
+        throw new GradleException("This build must be run with java 8 - JDK_11")
+    }
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    testImplementation 'junit:junit:4.13.2'
+    implementation 'androidx.test:core-ktx:1.4.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.appcompat:appcompat-resources:1.3.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     implementation 'androidx.coordinatorlayout:coordinatorlayout:1.1.0'
     implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'androidx.core:core:1.6.0'
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.activity:activity:1.3.0'
+    implementation 'androidx.activity:activity-ktx:1.3.0'
     implementation 'androidx.fragment:fragment:1.3.6'
-    implementation 'androidx.media:media:1.4.1'
+    implementation 'androidx.fragment:fragment-ktx:1.3.6'
+    implementation 'androidx.media:media:1.4.3'
     implementation 'androidx.transition:transition:1.4.1'
     implementation 'androidx.viewpager:viewpager:1.0.0'
     implementation 'androidx.annotation:annotation:1.2.0'
+    implementation 'androidx.contentpager:contentpager:1.0.0'
     implementation 'com.google.android.material:material:1.4.0'
-    implementation 'com.android.volley:volley:1.2.0'
+    implementation 'androidx.legacy:legacy-support-core-utils:1.0.0'
+    implementation 'com.android.volley:volley:1.2.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
-    implementation 'com.google.firebase:firebase-database:20.0.1'
+    implementation 'com.google.firebase:firebase-database:20.0.2'
     implementation 'com.google.firebase:firebase-storage:20.0.0'
     implementation 'com.google.firebase:firebase-iid:21.1.0'
     implementation 'com.google.firebase:firebase-messaging:22.0.0'
-    implementation 'com.google.firebase:firebase-functions:20.0.0'
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.1'
-    implementation 'com.google.firebase:firebase-analytics:19.0.0'
+    implementation 'com.google.firebase:firebase-functions:20.0.1'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.3'
+    implementation 'com.google.firebase:firebase-analytics:19.0.2'
     implementation 'com.google.android.gms:play-services-maps:17.0.1'
     implementation 'com.google.android.gms:play-services-base:17.6.0'
     implementation 'com.google.android.gms:play-services-auth:19.2.0'
     implementation 'com.google.android.gms:play-services-identity:17.0.1'
-    implementation 'com.google.android.gms:play-services-analytics:17.0.0'
-    implementation 'com.google.android.gms:play-services-ads:20.2.0'
+    implementation 'com.google.android.gms:play-services-analytics:17.0.1'
+    implementation 'com.google.android.gms:play-services-ads:20.4.0'
     implementation 'com.google.android.gms:play-services-cronet:17.0.1'
-    implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
+    implementation 'com.github.CanHub:Android-Image-Cropper:3.3.5'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31'
 }
 
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'
 
-repositories {
-    mavenCentral()
-}
+
+
