@@ -1232,7 +1232,7 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         }
         else {
-            if (returnApp == 0) {
+            if (isTaskRoot() && returnApp == 0) {
                 returnApp = appRntTimer + 1;
                 Toast.makeText(this.getBaseContext(), "再按一次, 可退出3C生活百貨! ", Toast.LENGTH_LONG).show();
             } else {
