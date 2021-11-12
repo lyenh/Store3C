@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -414,4 +416,32 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_order, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Intent intent;
+        Bundle bundle;
+        int id = item.getItemId();
+        if (id == R.id.action_order_form) {
+            intent = new Intent();
+            bundle = new Bundle();
+            bundle.putString("Menu", menu_item);
+            if (!up_menu_item.equals("")) {
+                bundle.putString("upMenu", up_menu_item);
+            }
+            intent.putExtras(bundle);
+            intent.setClass(OrderActivity.this, OrderFormActivity.class);
+            startActivity(intent);
+            OrderActivity.this.finish();
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 }

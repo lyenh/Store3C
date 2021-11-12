@@ -7,6 +7,7 @@
     <string name="title_activity_user">UserActivity</string>
     <string name="action_user_account">使用者帳戶</string>
     <string name="action_order_list">購物車</string>
+    <string name="action_order_form">訂購單</string>
     <string name="action_delete">Delete this data</string>
     <string name="action_return">返回</string>
     <string name="title_activity_cake">3C生活百貨</string>
@@ -37,6 +38,7 @@
     <string name="save">儲存</string>
     <string name="buy">加入購物車</string>
     <string name="want_to_buy">有購買意願的產品</string>
+    <string name="order_form_list">已購買的產品</string>
     <string name="promotion">預購促銷</string>
     <string name="hundred">100</string>
     <string name="price">價格</string>
