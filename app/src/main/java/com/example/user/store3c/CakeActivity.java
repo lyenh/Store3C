@@ -60,6 +60,7 @@ import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 import static com.example.user.store3c.DeveloperKey.YOUTUBE_API_KEY;
+import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.mAuth;
 import static com.example.user.store3c.MainActivity.userImg;
 
@@ -365,7 +366,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
 
         if (!wasRestored) {
             YPlayer = player;
-            if (screenWidth > 800) {
+            if (screenWidth > 800 && !isTab) {
                 if (YPlayer.isPlaying()) {
                     YPlayer.setFullscreen(true);
                     YPlayer.play();

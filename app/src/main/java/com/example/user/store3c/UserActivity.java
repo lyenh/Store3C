@@ -1980,7 +1980,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                         photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
                     }
                     photoPickerIntent.setType("image/*");
-                    photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                    //photoPickerIntent.addCategory(Intent.CATEGORY_OPENABLE);
                     loadImgResultLauncher.launch(photoPickerIntent);
                     break;
                 default:

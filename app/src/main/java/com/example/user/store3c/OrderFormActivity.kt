@@ -1,6 +1,10 @@
 package com.example.user.store3c
 
+import android.app.ActivityManager
+import android.app.ActivityManager.AppTask
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,6 +13,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
@@ -17,15 +22,17 @@ import com.google.firebase.ktx.Firebase
 class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
     companion object {
-        lateinit var orderTextList: String
         private var orderFormList: String = "購買資料: "
     }
 
     private var menuItem = "DISH"
-    private var upMenuItem = ""
+    private var upMenuItem = ""; private var searchItem = ""
     private lateinit var orderText:TextView
     private lateinit var userRef: DatabaseReference
     private var orderFromFullData: String = "購買明細資料: "
+    private var notification_list = ""
+    private var preTask: AppTask? = null
+    private var upActivityName = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,13 +40,147 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
         val bundle = intent.extras
         if (bundle != null) {
-            if (bundle.getString("Menu") != null)
-                menuItem = bundle.getString("Menu")!!
-            if (bundle.getString("upMenu") != null)
-                upMenuItem = bundle.getString("upMenu")!!
+            notification_list = bundle.getString("Notification").toString()
+            if (notification_list != "") {   // notification promotion product
+                orderFormList = orderFormList + "\n\n" + PromotionFirebaseMessagingService.orderMessageText
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                    val tasks = am.appTasks
+                    if (tasks.size > 1) {
+                        preTask = tasks[1] // Should be the main task
+                    }
+                    Log.i("=====> ", "task size: " + tasks.size)
+                    var appActivity: String
+                    var numActivity: Int
+                    var eachTask: AppTask
+                    for (i in tasks.indices) {
+                        eachTask = tasks[i]
+                        Log.i("Message Task Num ===> ", "num: $i")
+                        numActivity = eachTask.taskInfo.numActivities
+                        Log.i("NumActivity ===> ", "NumActivity: $numActivity")
+                        if (eachTask.taskInfo.baseActivity != null) {
+                            appActivity = (eachTask.taskInfo.baseActivity)!!.shortClassName.substring(1)
+                            Log.i("BaseActivity ===> ", "BaseActivity: $appActivity")
+                        }
+                        if (eachTask.taskInfo.topActivity != null) {
+                            appActivity = (eachTask.taskInfo.topActivity)!!.shortClassName.substring(1)
+                            Log.i("TopActivity ===> ", "TopActivity: $appActivity")
+                        }
+                    }
 
-        } else {
-            orderFormList = orderFormList + "\n\n" + orderTextList
+                    val upActivity = tasks[0].taskInfo.topActivity?.shortClassName
+                    if (upActivity != null) {
+                        upActivityName = upActivity.substring(1)
+                        Log.i("=====> ", "activity: $upActivityName")
+                       // Toast.makeText(
+                       //     this@OrderFormActivity,
+                       //     "TopActivity: " + upActivityName,
+                       //     Toast.LENGTH_SHORT
+                       // ).show()
+                    }
+                    else {
+                        upActivityName = "MainActivity"
+                    }
+                    when (upActivityName) {
+                        "MainActivity" -> menuItem = "DISH"
+                        "CakeActivity" -> {
+                            menuItem = "CAKE"
+                            if (YouTubeFragment.YPlayer != null) {
+                                try {
+                                    if (YouTubeFragment.YPlayer.isPlaying) {
+                                        YouTubeFragment.YPlayer.pause()
+                                        Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        this@OrderFormActivity,
+                                        "YPayer have released: " + e.message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                        "PhoneActivity" -> menuItem = "PHONE"
+                        "CameraActivity" -> {
+                            menuItem = "CAMERA"
+                            if (YouTubeFragment.YPlayer != null) {
+                                try {
+                                    if (YouTubeFragment.YPlayer.isPlaying) {
+                                        YouTubeFragment.YPlayer.pause()
+                                        Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        this@OrderFormActivity,
+                                        "YPayer have released: " + e.message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                        "BookActivity" -> menuItem = "BOOK"
+                        "MemoActivity" -> {
+                            menuItem = "MEMO"
+                            upMenuItem = "DISH"
+                        }
+                        "SearchActivity" -> {
+                            searchItem = "SEARCH"
+                            menuItem = "DISH"
+                        }
+                        "UserActivity" -> {
+                            menuItem = "USER"
+                            upMenuItem = "DISH"
+                        }
+                        "PositionActivity" -> {
+                            menuItem = "POSITION"
+                            upMenuItem = "DISH"
+                            if (YouTubeFragment.YPlayer != null) {
+                                try {
+                                    if (YouTubeFragment.YPlayer.isPlaying) {
+                                        YouTubeFragment.YPlayer.pause()
+                                        Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        this@OrderFormActivity,
+                                        "YPayer have released: " + e.message,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        }
+                        "ProductActivity" -> {
+                            menuItem = "PRODUCT"
+                            upMenuItem = "DISH"
+                        }
+                        "MapsActivity" -> {
+                            menuItem = "MAP"
+                            upMenuItem = "DISH"
+                        }
+                        "LoginActivity" -> {
+                            menuItem = "LOGIN"
+                            upMenuItem = "DISH"
+                        }
+                        "PageActivity" -> {
+                            menuItem = "PAGE"
+                            upMenuItem = "DISH"
+                        }
+                        else -> menuItem = "DISH"
+                    }
+                }
+                else {
+                    menuItem = "DISH"
+                }
+            }
+            else {
+                if (bundle.getString("Menu") != null)
+                    menuItem = bundle.getString("Menu")!!
+                if (bundle.getString("upMenu") != null)
+                    upMenuItem = bundle.getString("upMenu")!!
+            }
+        }
+        else {
+            Toast.makeText(this@OrderFormActivity,"orderForm bundle null ", Toast.LENGTH_SHORT).show()
         }
         val toolbar = findViewById<Toolbar>(R.id.toolbarOrderForm)
         setSupportActionBar(toolbar)
@@ -52,10 +193,10 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
         userRef = Firebase.database.reference.child("user")
         userRef.child("Uid").get().addOnSuccessListener {
-            val currentUser = MainActivity.mAuth.currentUser
+            val currentUser = FirebaseAuth.getInstance().currentUser
             if (currentUser != null) {
                 if (!currentUser.isAnonymous) {
-                    val key:String = MainActivity.mAuth.currentUser!!.uid
+                    val key:String = currentUser.uid
                     var findOrderData = false
                     var orderFormEmail:String ; var orderFormName:String ; var orderFromDate:String ; var orderFormPrice:String
                     var orderFormData:String ; var orderFormProductData:String
@@ -94,11 +235,11 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     }
                 } else {
                     orderText.text = orderFormList
-                    Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
                 }
             } else {
                 orderText.text = orderFormList
-                Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
             }
         }.addOnFailureListener{
             orderText.text = orderFormList
@@ -113,14 +254,35 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         val intent = Intent()
         val bundle: Bundle?
         bundle = Bundle()
+        if (searchItem != "") {
+            bundle.putString("Search", searchItem)
+        }
         bundle.putString("Menu", menuItem)
         if (upMenuItem != "") {
             bundle.putString("upMenu", upMenuItem)
         }
         intent.putExtras(bundle)
         intent.setClass(this@OrderFormActivity, OrderActivity::class.java)
-        startActivity(intent)
-        this@OrderFormActivity.finish()
+
+        if (notification_list != "") {
+            if (notification_list == "IN_APP") {
+                if (preTask != null) {
+                    preTask?.moveToFront()
+                    intent.replaceExtras(Bundle())
+                    this@OrderFormActivity.finish()
+                }
+                else {
+                    startActivity(intent)
+                    this@OrderFormActivity.finish()
+                }
+            } else {
+                startActivity(intent)
+                this@OrderFormActivity.finish()
+            }
+        } else {
+            startActivity(intent)
+            this@OrderFormActivity.finish()
+        }
 
     }
 
