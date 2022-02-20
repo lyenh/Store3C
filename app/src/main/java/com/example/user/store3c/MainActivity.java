@@ -118,6 +118,10 @@ public class MainActivity extends AppCompatActivity
     public static boolean setFirebaseDbPersistence;
     public static UserHandler userAdHandler;
     public static Bitmap userImg = null;
+    public static boolean isTab;
+
+    // TODO: shopping car check box, rotation on Tab (800*1280),
+    //  volley timeout, orderForm return before page, firebase notification message
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,6 +135,10 @@ public class MainActivity extends AppCompatActivity
         try {
             Toolbar toolbar = findViewById(R.id.toolbarMain);
             setSupportActionBar(toolbar);
+            isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+            //if (isTab) {
+            //     Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
+            //}
 
             DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

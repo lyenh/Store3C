@@ -2,6 +2,7 @@ package com.example.user.store3c;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
@@ -27,6 +28,9 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.google.android.youtube.player.YouTubePlayerSupportFragmentX;
 
 import java.util.Objects;
+
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static com.example.user.store3c.MainActivity.isTab;
 
 public class YouTubeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
@@ -133,7 +137,7 @@ public class YouTubeFragment extends Fragment {
 
                             if (!b) {
                                 YPlayer = youTubePlayer;
-                                if (screenWidth > 800) {
+                                if (screenWidth > 800 && !isTab) {
                                     if (YPlayer.isPlaying()) {
                                         YPlayer.setFullscreen(true);
                                         YPlayer.play();

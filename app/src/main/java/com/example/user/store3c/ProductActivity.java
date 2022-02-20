@@ -1,11 +1,19 @@
 package com.example.user.store3c;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
+
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -14,10 +22,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+import java.util.Objects;
+
+import static com.example.user.store3c.MainActivity.isTab;
+
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private String menu_item, up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
+    private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
+    private String notification_list = "";
     private byte[] product_pic;
+    private ActivityManager.AppTask preTask = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,18 +60,113 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         Intent Intent = getIntent();
         Bundle bundle = Intent.getExtras();
         if (bundle != null) {
-            if (bundle.getString("Order") != null) {
-                order_list = bundle.getString("Order");
+            notification_list = bundle.getString("Notification");
+            if (notification_list != null) {   // notification promotion product
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    String Activity;
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    if (tasks.size() > 1) {
+                        preTask = tasks.get(1); // Should be the main task
+                    }
+                    String appActivity;
+                    int numActivity;
+                    ActivityManager.AppTask eachTask;
+                    for (int i = 0; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        Log.i("Product Task Num ===> ", "num: " + i);
+                        numActivity = eachTask.getTaskInfo().numActivities;
+                        Log.i("NumActivity ===> ", "NumActivity: " + numActivity);
+                        if (eachTask.getTaskInfo().baseActivity != null) {
+                            appActivity = Objects.requireNonNull(eachTask.getTaskInfo().baseActivity).getShortClassName().substring(1);
+                            Log.i("BaseActivity ===> ", "BaseActivity: " + appActivity);
+                        }
+                        if (eachTask.getTaskInfo().topActivity != null) {
+                            appActivity = Objects.requireNonNull(eachTask.getTaskInfo().topActivity).getShortClassName().substring(1);
+                            Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
+                        }
+                    }
+                    if (notification_list.equals("IN_APP") && preTask != null && preTask.getTaskInfo().topActivity != null) {
+                        String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
+                        Activity = upActivity.substring(1);
+                        Log.i("Notification===> ", "currentActivity: " + Activity);
+                    }
+                    else {
+                        Activity = "MainActivity";
+                    }
+                    switch(Activity) {
+                        case "MainActivity":
+                            menu_item = "DISH";
+                            break;
+                        case "CakeActivity":
+                            menu_item = "CAKE";
+                            break;
+                        case "PhoneActivity":
+                            menu_item = "PHONE";
+                            break;
+                        case "CameraActivity":
+                            menu_item = "CAMERA";
+                            break;
+                        case "BookActivity":
+                            menu_item = "BOOK";
+                            break;
+                        case "MemoActivity":
+                            menu_item = "MEMO";
+                            up_menu_item = "MEMO";
+                            break;
+                        case "SearchActivity":
+                            search_list = "SEARCH";
+                            menu_item = "DISH";
+                            break;
+                        case "UserActivity":
+                            menu_item = "USER";
+                            up_menu_item = "USER";
+                            break;
+                        case "PositionActivity":
+                            menu_item = "POSITION";
+                            up_menu_item = "POSITION";
+                            break;
+                        case "ProductActivity":
+                            menu_item = "PRODUCT";
+                            up_menu_item = "PRODUCT";
+                            break;
+                        case "MapsActivity":
+                            menu_item = "MAP";
+                            up_menu_item = "MAP";
+                            break;
+                        case "LoginActivity":
+                            menu_item = "LOGIN";
+                            up_menu_item = "LOGIN";
+                            break;
+                        case "PageActivity":
+                            menu_item = "PAGE";
+                            up_menu_item = "PAGE";
+                            break;
+                        case "OrderFormActivity":
+                            menu_item = "ORDER_FORM";
+                            up_menu_item = "ORDER_FORM";
+                            break;
+                        default:
+                            menu_item = "DISH";
+                            break;
+                    }
+                }
+                else {
+                    menu_item = "DISH";
+                }
             }
-            if (bundle.getString("Search") != null) {
-                search_list = bundle.getString("Search");
+            else {
+                if (bundle.getString("Order") != null) {
+                    order_list = bundle.getString("Order");
+                }
+                if (bundle.getString("Search") != null) {
+                    search_list = bundle.getString("Search");
+                }
+                menu_item = bundle.getString("Menu");
+                if (bundle.getString("upMenu") != null) {
+                    up_menu_item = bundle.getString("upMenu");
+                }
             }
-            menu_item = bundle.getString("Menu");
-            if (bundle.getString("upMenu") != null) {
-                up_menu_item = bundle.getString("upMenu");
-            }
-            //product_pic = bundle.getInt("Pic");
-            //pic.setImageResource(product_pic);
             product_pic = bundle.getByteArray("Pic");
             if (product_pic != null) {
                 product_img = BitmapFactory.decodeByteArray(product_pic, 0, product_pic.length);
@@ -68,9 +178,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             price.setText(product_price);
             product_intro = bundle.getString("Intro");
         }
+
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
-        if (screenWidth > 800) {
+        if (screenWidth > 800 && !isTab) {
             imgHeight = (product_intro.length() / 27 + 1) * 60;
             introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
 
@@ -87,49 +198,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         switch (view.getId()) {
             case R.id.productReturnBtn_id:
-                Intent intentItem = new Intent();
-                if (order_list.equals("ORDER")) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("Menu", menu_item);
-                    if (!up_menu_item.equals("")) {
-                        bundle.putString("upMenu", up_menu_item);
-                    }
-                    intentItem.putExtras(bundle);
-                    intentItem.setClass(ProductActivity.this, OrderActivity.class);
-                }
-                else if (search_list.equals("SEARCH")) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("Menu", menu_item);
-                    if (!up_menu_item.equals("")) {
-                        bundle.putString("upMenu", up_menu_item);
-                    }
-                    intentItem.putExtras(bundle);
-                    intentItem.setClass(ProductActivity.this, SearchActivity.class);
-                }
-                else {
-                    switch (menu_item) {
-                        case "DISH":
-                            intentItem.setClass(ProductActivity.this, MainActivity.class);
-                            break;
-                        case "CAKE":
-                            intentItem.setClass(ProductActivity.this, CakeActivity.class);
-                            break;
-                        case "PHONE":
-                            intentItem.setClass(ProductActivity.this, PhoneActivity.class);
-                            break;
-                        case "CAMERA":
-                            intentItem.setClass(ProductActivity.this, CameraActivity.class);
-                            break;
-                        case "BOOK":
-                            intentItem.setClass(ProductActivity.this, BookActivity.class);
-                            break;
-                        default:
-                            Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                            intentItem.setClass(ProductActivity.this, MainActivity.class);
-                    }
-                }
-                startActivity(intentItem);
-                ProductActivity.this.finish();
+                onBackPressed();
                 break;
 
             case R.id.buyBtn_id:
@@ -147,10 +216,27 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 bundle.putString("Price", product_price);
                 bundle.putString("Intro", product_intro);
                 intent.putExtras(bundle);
-
                 Toast.makeText(this, "已加入購物車!", Toast.LENGTH_SHORT).show();
+
                 intent.setClass(ProductActivity.this, OrderActivity.class);
-                startActivity(intent);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+                if (notification_list != null) {
+                    if (notification_list.equals("IN_APP")) {
+                        if (preTask != null) {
+                            preTask.startActivity(this, intent, bundle);
+                        }
+                        else {
+                            Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        startActivity(intent);
+                    }
+                }
+                else {
+                    startActivity(intent);
+                }
                 ProductActivity.this.finish();
                 break;
 
@@ -160,8 +246,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
+        Bundle bundle;
+
         if (order_list.equals("ORDER")) {
-            Bundle bundle = new Bundle();
+            bundle = new Bundle();
             bundle.putString("Menu", menu_item);
             if (!up_menu_item.equals("")) {
                 bundle.putString("upMenu", up_menu_item);
@@ -170,7 +258,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             intent.setClass(ProductActivity.this, OrderActivity.class);
         }
         else if (search_list.equals("SEARCH")) {
-            Bundle bundle = new Bundle();
+            bundle = new Bundle();
             bundle.putString("Menu", menu_item);
             if (!up_menu_item.equals("")) {
                 bundle.putString("upMenu", up_menu_item);
@@ -194,14 +282,40 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 case "BOOK":
                     intent.setClass(ProductActivity.this, BookActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT );
+                    break;
+                case "MEMO":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(ProductActivity.this, MemoActivity.class);
                     break;
                 default:
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     intent.setClass(ProductActivity.this, MainActivity.class);
             }
         }
-        startActivity(intent);
-        ProductActivity.this.finish();
+        if (notification_list != null) {
+            if (notification_list.equals("IN_APP")) {
+                if (preTask != null) {
+                    preTask.moveToFront();
+                    intent.replaceExtras(new Bundle());
+                }
+                else {
+                    Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                }
+                ProductActivity.this.finish();
+            }
+            else {
+                startActivity(intent);
+                ProductActivity.this.finish();
+            }
+        }
+        else {
+            startActivity(intent);
+            ProductActivity.this.finish();
+        }
 
     }
 

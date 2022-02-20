@@ -81,6 +81,7 @@ public class PageActivity extends AppCompatActivity {
             if (bundle != null) {
                 bookPosition = bundle.getInt("Position");
             }
+            System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
             RequestQueue queue = Volley.newRequestQueue(this);
             String url ="http://apptech.website/store3c/query.php";
 

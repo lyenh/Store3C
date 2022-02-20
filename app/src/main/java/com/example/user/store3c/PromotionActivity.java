@@ -201,6 +201,8 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onBackPressed() {
         Intent intentItem = new Intent();
+        intentItem.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        Bundle bundle;
         switch (menu_item) {
             case "DISH":
                 intentItem.setClass(PromotionActivity.this, MainActivity.class);
@@ -218,12 +220,68 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 intentItem.setClass(PromotionActivity.this, BookActivity.class);
                 break;
             case "MEMO":
-                Bundle bundle = new Bundle();
+                bundle = new Bundle();
                 if (!up_menu_item.equals("")) {
                     bundle.putString("Menu", up_menu_item);
                     intentItem.putExtras(bundle);
                 }
                 intentItem.setClass(PromotionActivity.this, MemoActivity.class);
+                break;
+            case "USER":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, UserActivity.class);
+                break;
+            case "POSITION":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, PositionActivity.class);
+                break;
+            case "PRODUCT":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, ProductActivity.class);
+                break;
+            case "MAP":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, MapsActivity.class);
+                break;
+            case "LOGIN":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, LoginActivity.class);
+                break;
+            case "PAGE":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, PageActivity.class);
+                break;
+            case "ORDER_FORM":
+                bundle = new Bundle();
+                if (!up_menu_item.equals("")) {
+                    bundle.putString("Menu", up_menu_item);
+                    intentItem.putExtras(bundle);
+                }
+                intentItem.setClass(PromotionActivity.this, com.example.user.store3c.OrderFormActivity.class);
                 break;
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();

@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -9,6 +10,8 @@ import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
@@ -27,6 +30,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -129,11 +133,15 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             }
             else if (bundle.getString("Menu") != null) {
                 menu_item = bundle.getString("Menu");
+                if (bundle.getString("Search") != null) {   // press notification button on search page
+                    search_list = bundle.getString("Search");
+                }
                 if (bundle.getString("upMenu") != null) {
                     up_menu_item = bundle.getString("upMenu");
                 }
             }
         }
+
         if(dbhelper.DbOrderAmount() > 0){
             try {
                 Cursor cursor = dbhelper.listAllOrder();
@@ -288,10 +296,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View view) {
-        Intent intentItem = new Intent();
-
         switch (view.getId()) {
             case R.id.promotionBtn_id:
+                Intent intentItem = new Intent();
                 if (InternetConnection.checkConnection(OrderActivity.this)) {
                     mAuth = FirebaseAuth.getInstance();
                     FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -323,47 +330,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 break;
 
             case R.id.orderReturnBtn_id:
-                if (search_list.equals("SEARCH")) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString("Menu", menu_item);
-                    if (!up_menu_item.equals("")) {
-                        bundle.putString("upMenu", up_menu_item);
-                    }
-                    intentItem.putExtras(bundle);
-                    intentItem.setClass(OrderActivity.this, SearchActivity.class);
-                }
-                else {
-                    switch (menu_item) {
-                        case "DISH":
-                            intentItem.setClass(OrderActivity.this, MainActivity.class);
-                            break;
-                        case "CAKE":
-                            intentItem.setClass(OrderActivity.this, CakeActivity.class);
-                            break;
-                        case "PHONE":
-                            intentItem.setClass(OrderActivity.this, PhoneActivity.class);
-                            break;
-                        case "CAMERA":
-                            intentItem.setClass(OrderActivity.this, CameraActivity.class);
-                            break;
-                        case "BOOK":
-                            intentItem.setClass(OrderActivity.this, BookActivity.class);
-                            break;
-                        case "MEMO":
-                            Bundle bundle;
-                            bundle = new Bundle();
-                            bundle.putString("Menu", up_menu_item);
-                            intentItem.putExtras(bundle);
-                            intentItem.setClass(OrderActivity.this, MemoActivity.class);
-                            break;
-                        default:
-                            Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                            intentItem.setClass(OrderActivity.this, MainActivity.class);
-                    }
-                }
-                dbhelper.close();
-                startActivity(intentItem);
-                OrderActivity.this.finish();
+                onBackPressed();
                 break;
 
         }
@@ -374,6 +341,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         Intent intent = new Intent();
         Bundle bundle;
 
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         if (search_list.equals("SEARCH")) {
             bundle = new Bundle();
             bundle.putString("Menu", menu_item);
@@ -383,33 +351,78 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             intent.putExtras(bundle);
             intent.setClass(OrderActivity.this, SearchActivity.class);
         }
-        switch (menu_item) {
-            case "DISH":
-                intent.setClass(OrderActivity.this, MainActivity.class);
-                break;
-            case "CAKE":
-                intent.setClass(OrderActivity.this, CakeActivity.class);
-                break;
-            case "PHONE":
-                intent.setClass(OrderActivity.this, PhoneActivity.class);
-                break;
-            case "CAMERA":
-                intent.setClass(OrderActivity.this, CameraActivity.class);
-                break;
-            case "BOOK":
-                intent.setClass(OrderActivity.this, BookActivity.class);
-                break;
-            case "MEMO":
-                bundle = new Bundle();
-                bundle.putString("Menu", up_menu_item);
-                intent.putExtras(bundle);
-                intent.setClass(OrderActivity.this, MemoActivity.class);
-                break;
-            default:
-                Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                intent.setClass(OrderActivity.this, MainActivity.class);
+        else {
+            switch (menu_item) {
+                case "DISH":
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
+                    intent.setClass(OrderActivity.this, MainActivity.class);
+                    break;
+                case "CAKE":
+                    intent.setClass(OrderActivity.this, CakeActivity.class);
+                    break;
+                case "PHONE":
+                    intent.setClass(OrderActivity.this, PhoneActivity.class);
+                    break;
+                case "CAMERA":
+                    intent.setClass(OrderActivity.this, CameraActivity.class);
+                    break;
+                case "BOOK":
+                   // intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.setClass(OrderActivity.this, BookActivity.class);
+                    break;
+                case "MEMO":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, MemoActivity.class);
+                    break;
+                case "USER":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, UserActivity.class);
+                    break;
+                case "POSITION":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, PositionActivity.class);
+                    break;
+                case "PRODUCT":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, ProductActivity.class);
+                    break;
+                case "MAP":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, MapsActivity.class);
+                    break;
+                case "LOGIN":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, LoginActivity.class);
+                    break;
+                case "PAGE":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, PageActivity.class);
+                    break;
+                case "ORDER_FORM":
+                    bundle = new Bundle();
+                    bundle.putString("Menu", up_menu_item);
+                    intent.putExtras(bundle);
+                    intent.setClass(OrderActivity.this, com.example.user.store3c.OrderFormActivity.class);
+                    break;
+                default:
+                    Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
+                    intent.setClass(OrderActivity.this, MainActivity.class);
+            }
         }
-
         dbhelper.close();
         startActivity(intent);
         OrderActivity.this.finish();
@@ -436,7 +449,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 bundle.putString("upMenu", up_menu_item);
             }
             intent.putExtras(bundle);
-            intent.setClass(OrderActivity.this, OrderFormActivity.class);
+            intent.setClass(OrderActivity.this, com.example.user.store3c.OrderFormActivity.class);
             startActivity(intent);
             OrderActivity.this.finish();
 
