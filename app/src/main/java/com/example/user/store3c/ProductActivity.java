@@ -69,6 +69,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     if (tasks.size() > 1) {
                         preTask = tasks.get(1); // Should be the main task
                     }
+                    else {
+                     //   Toast.makeText(this, "TopActivity:" + tasks.get(0).getTaskInfo().topActivity, Toast.LENGTH_SHORT).show();
+                     //   Toast.makeText(this, "BaseActivity:" + tasks.get(0).getTaskInfo().baseActivity, Toast.LENGTH_LONG).show();
+                    }
                     String appActivity;
                     int numActivity;
                     ActivityManager.AppTask eachTask;
@@ -86,10 +90,15 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
                         }
                     }
-                    if (notification_list.equals("IN_APP") && preTask != null && preTask.getTaskInfo().topActivity != null) {
-                        String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
-                        Activity = upActivity.substring(1);
-                        Log.i("Notification===> ", "currentActivity: " + Activity);
+                    if (notification_list.equals("IN_APP") && preTask != null) {
+                        if (preTask.getTaskInfo().topActivity != null) {
+                            String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
+                            Activity = upActivity.substring(1);
+                            Log.i("Notification===> ", "currentActivity: " + Activity);
+                        }
+                        else {
+                            Activity = "MainActivity";
+                        }
                     }
                     else {
                         Activity = "MainActivity";
@@ -224,11 +233,16 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (notification_list != null) {
                     if (notification_list.equals("IN_APP")) {
                         if (preTask != null) {
+                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
                             preTask.startActivity(this, intent, bundle);
                         }
                         else {
+                            startActivity(intent);
                             Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
                         }
+                        //Intent.FLAG_FROM_BACKGROUND
+                        //startActivity(intent);
+
                     }
                     else {
                         startActivity(intent);

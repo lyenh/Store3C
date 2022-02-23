@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
+import java.util.*
 
 class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
@@ -49,6 +50,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     if (tasks.size > 1) {
                         preTask = tasks[1] // Should be the main task
                     }
+
                     Log.i("=====> ", "task size: " + tasks.size)
                     var appActivity: String
                     var numActivity: Int
@@ -68,41 +70,23 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         }
                     }
 
-                    val upActivity = tasks[0].taskInfo.topActivity?.shortClassName
-                    if (upActivity != null) {
-                        upActivityName = upActivity.substring(1)
-                        Log.i("=====> ", "activity: $upActivityName")
-                       // Toast.makeText(
-                       //     this@OrderFormActivity,
-                       //     "TopActivity: " + upActivityName,
-                       //     Toast.LENGTH_SHORT
-                       // ).show()
+                    if (notification_list == "IN_APP" && preTask != null) {
+                        if (preTask!!.taskInfo.topActivity != null) {
+                            val upActivity = preTask!!.taskInfo.topActivity?.shortClassName
+                            upActivityName = upActivity!!.substring(1)
+                            Log.i("=====> ", "activity: $upActivityName")
+                            //Toast.makeText(this@OrderFormActivity,"TopActivity: " + upActivityName,Toast.LENGTH_SHORT).show()
+                        }
+                        else {
+                            upActivityName = "MainActivity"
+                        }
                     }
                     else {
                         upActivityName = "MainActivity"
                     }
                     when (upActivityName) {
                         "MainActivity" -> menuItem = "DISH"
-                        "CakeActivity" -> {
-                            menuItem = "CAKE"
-                            if (YouTubeFragment.YPlayer != null) {
-                                try {
-                                    if (YouTubeFragment.YPlayer.isPlaying) {
-                                        YouTubeFragment.YPlayer.pause()
-                                        Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
-                                    }
-                                } catch (e: Exception) {
-                                    Toast.makeText(
-                                        this@OrderFormActivity,
-                                        "YPayer have released: " + e.message,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-                        }
-                        "PhoneActivity" -> menuItem = "PHONE"
                         "CameraActivity" -> {
-                            menuItem = "CAMERA"
                             if (YouTubeFragment.YPlayer != null) {
                                 try {
                                     if (YouTubeFragment.YPlayer.isPlaying) {
@@ -117,23 +101,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                                     ).show()
                                 }
                             }
-                        }
-                        "BookActivity" -> menuItem = "BOOK"
-                        "MemoActivity" -> {
-                            menuItem = "MEMO"
-                            upMenuItem = "DISH"
-                        }
-                        "SearchActivity" -> {
-                            searchItem = "SEARCH"
-                            menuItem = "DISH"
-                        }
-                        "UserActivity" -> {
-                            menuItem = "USER"
-                            upMenuItem = "DISH"
                         }
                         "PositionActivity" -> {
-                            menuItem = "POSITION"
-                            upMenuItem = "DISH"
                             if (YouTubeFragment.YPlayer != null) {
                                 try {
                                     if (YouTubeFragment.YPlayer.isPlaying) {
@@ -148,22 +117,6 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                                     ).show()
                                 }
                             }
-                        }
-                        "ProductActivity" -> {
-                            menuItem = "PRODUCT"
-                            upMenuItem = "DISH"
-                        }
-                        "MapsActivity" -> {
-                            menuItem = "MAP"
-                            upMenuItem = "DISH"
-                        }
-                        "LoginActivity" -> {
-                            menuItem = "LOGIN"
-                            upMenuItem = "DISH"
-                        }
-                        "PageActivity" -> {
-                            menuItem = "PAGE"
-                            upMenuItem = "DISH"
                         }
                         else -> menuItem = "DISH"
                     }

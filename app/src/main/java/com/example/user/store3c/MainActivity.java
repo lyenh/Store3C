@@ -121,7 +121,8 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
 
     // TODO: shopping car check box, rotation on Tab (800*1280),
-    //  volley timeout, orderForm return before page, firebase notification message
+    // TODO: volley timeout, orderForm return before page, firebase notification message,
+    // TODO: glide Exception, youtube pause on press notification, on mainActivity page buy notification item
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
