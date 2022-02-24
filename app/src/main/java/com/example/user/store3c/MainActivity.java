@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -121,8 +122,8 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
 
     // TODO: shopping car check box, rotation on Tab (800*1280),
-    // TODO: volley timeout, orderForm return before page, firebase notification message,
-    // TODO: glide Exception, youtube pause on press notification, on mainActivity page buy notification item
+    // TODO: volley timeout, firebase notification message upApp no task; api<23 reload
+    // TODO: glide Exception, recent task not load the mainActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1246,7 +1247,15 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this.getBaseContext(), "再按一次, 可退出3C生活百貨! ", Toast.LENGTH_LONG).show();
             } else {
                 TimerThread = 0;
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                ActivityManager.AppTask eachTask;
+                for (int i = 1; i < tasks.size(); i++) {
+                    eachTask = tasks.get(i);
+                    eachTask.finishAndRemoveTask();
+                }
                 MainActivity.this.finish();
+
                 //super.onBackPressed();
             }
         }

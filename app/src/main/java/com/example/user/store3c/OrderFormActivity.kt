@@ -70,7 +70,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         }
                     }
 
-                    if (notification_list == "IN_APP" && preTask != null) {
+                    if (preTask != null) {
                         if (preTask!!.taskInfo.topActivity != null) {
                             val upActivity = preTask!!.taskInfo.topActivity?.shortClassName
                             upActivityName = upActivity!!.substring(1)
@@ -91,7 +91,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                                 try {
                                     if (YouTubeFragment.YPlayer.isPlaying) {
                                         YouTubeFragment.YPlayer.pause()
-                                        Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
+                                        //Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
                                     }
                                 } catch (e: Exception) {
                                     Toast.makeText(
@@ -107,7 +107,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                                 try {
                                     if (YouTubeFragment.YPlayer.isPlaying) {
                                         YouTubeFragment.YPlayer.pause()
-                                        Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
+                                        //Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
                                     }
                                 } catch (e: Exception) {
                                     Toast.makeText(
@@ -220,7 +220,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         if (notification_list != "") {
             if (notification_list == "IN_APP") {
                 if (preTask != null) {
-                    preTask?.moveToFront()
+                    preTask!!.moveToFront()
                     intent.replaceExtras(Bundle())
                     this@OrderFormActivity.finish()
                 }
@@ -228,7 +228,17 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     startActivity(intent)
                     this@OrderFormActivity.finish()
                 }
-            } else {
+            } else if (notification_list == "UPPER_APP") {
+                if (preTask != null) {
+                    preTask!!.moveToFront()
+                    intent.replaceExtras(Bundle())
+                    this@OrderFormActivity.finish()
+                } else {
+                    startActivity(intent)
+                    this@OrderFormActivity.finish()
+                }
+            }
+            else {
                 startActivity(intent)
                 this@OrderFormActivity.finish()
             }

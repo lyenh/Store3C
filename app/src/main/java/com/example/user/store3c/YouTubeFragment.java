@@ -54,7 +54,7 @@ public class YouTubeFragment extends Fragment {
         @Override
         public void onError(YouTubePlayer.ErrorReason errorReason) {
             String error = errorReason.toString();
-            Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
         }
 
         @Override

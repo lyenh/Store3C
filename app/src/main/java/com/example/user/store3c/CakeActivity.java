@@ -111,7 +111,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         @Override
         public void onError(YouTubePlayer.ErrorReason errorReason) {
             String error = errorReason.toString();
-            Toast.makeText(CakeActivity.this, error, Toast.LENGTH_LONG).show();
+            //Toast.makeText(CakeActivity.this, error, Toast.LENGTH_LONG).show();
         }
 
         @Override
