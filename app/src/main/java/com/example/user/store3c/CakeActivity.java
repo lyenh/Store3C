@@ -62,6 +62,8 @@ import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 import static com.example.user.store3c.DeveloperKey.YOUTUBE_API_KEY;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.mAuth;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.userImg;
 
 public class CakeActivity extends YouTubeFailureRecoveryActivity
@@ -366,21 +368,42 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
 
         if (!wasRestored) {
             YPlayer = player;
-            if (screenWidth > 800 && !isTab) {
-                if (YPlayer.isPlaying()) {
-                    YPlayer.setFullscreen(true);
-                    YPlayer.play();
+            if (isTab){
+                if (screenWidth > rotationTabScreenWidth) {
+                    if (YPlayer.isPlaying()) {
+                        YPlayer.setFullscreen(true);
+                        YPlayer.play();
+                    } else {
+                        YPlayer.setFullscreen(true);
+                        YPlayer.cueVideo(cakeVideoId);
+                    }
                 } else {
-                    YPlayer.setFullscreen(true);
-                    YPlayer.cueVideo(cakeVideoId);
+                    if (YPlayer.isPlaying()) {
+                        Toast.makeText(CakeActivity.this, "isPlaying", Toast.LENGTH_LONG).show();
+                        YPlayer.setFullscreen(false);
+                        YPlayer.play();
+                    } else {
+                        YPlayer.cueVideo(cakeVideoId);
+                    }
                 }
-            } else {
-                if (YPlayer.isPlaying()) {
-                    Toast.makeText(CakeActivity.this, "isPlaying", Toast.LENGTH_LONG).show();
-                    YPlayer.setFullscreen(false);
-                    YPlayer.play();
+            }
+            else {
+                if (screenWidth > rotationScreenWidth) {
+                    if (YPlayer.isPlaying()) {
+                        YPlayer.setFullscreen(true);
+                        YPlayer.play();
+                    } else {
+                        YPlayer.setFullscreen(true);
+                        YPlayer.cueVideo(cakeVideoId);
+                    }
                 } else {
-                    YPlayer.cueVideo(cakeVideoId);
+                    if (YPlayer.isPlaying()) {
+                        Toast.makeText(CakeActivity.this, "isPlaying", Toast.LENGTH_LONG).show();
+                        YPlayer.setFullscreen(false);
+                        YPlayer.play();
+                    } else {
+                        YPlayer.cueVideo(cakeVideoId);
+                    }
                 }
             }
         } else {
@@ -401,21 +424,42 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
 
         if (YPlayer != null) {
             try {
-                if (screenWidth > 800) {
-                    if (YPlayer.isPlaying()) {
-                        YPlayer.setFullscreen(true);
-                        YPlayer.play();
+                if (isTab) {
+                    if (screenWidth > rotationTabScreenWidth) {
+                        if (YPlayer.isPlaying()) {
+                            YPlayer.setFullscreen(true);
+                            YPlayer.play();
+                        } else {
+                            YPlayer.setFullscreen(true);
+                            YPlayer.cueVideo(cakeVideoId);
+                        }
                     } else {
-                        YPlayer.setFullscreen(true);
-                        YPlayer.cueVideo(cakeVideoId);
+                        if (YPlayer.isPlaying()) {
+                            YPlayer.setFullscreen(false);
+                            YPlayer.play();
+                        } else {
+                            YPlayer.setFullscreen(false);
+                            YPlayer.cueVideo(cakeVideoId);
+                        }
                     }
-                } else {
-                    if (YPlayer.isPlaying()) {
-                        YPlayer.setFullscreen(false);
-                        YPlayer.play();
+                }
+                else {
+                    if (screenWidth > rotationScreenWidth) {
+                        if (YPlayer.isPlaying()) {
+                            YPlayer.setFullscreen(true);
+                            YPlayer.play();
+                        } else {
+                            YPlayer.setFullscreen(true);
+                            YPlayer.cueVideo(cakeVideoId);
+                        }
                     } else {
-                        YPlayer.setFullscreen(false);
-                        YPlayer.cueVideo(cakeVideoId);
+                        if (YPlayer.isPlaying()) {
+                            YPlayer.setFullscreen(false);
+                            YPlayer.play();
+                        } else {
+                            YPlayer.setFullscreen(false);
+                            YPlayer.cueVideo(cakeVideoId);
+                        }
                     }
                 }
             }catch (Exception e) {

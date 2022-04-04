@@ -120,8 +120,10 @@ public class MainActivity extends AppCompatActivity
     public static UserHandler userAdHandler;
     public static Bitmap userImg = null;
     public static boolean isTab;
+    public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
+    public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
-    // TODO: shopping car check box, rotation on Tab (800*1280),
+    // TODO: shopping car check box
     // TODO: volley timeout, firebase notification message upApp no task; api<23 reload
     // TODO: glide Exception, recent task not load the mainActivity
 
@@ -138,9 +140,13 @@ public class MainActivity extends AppCompatActivity
             Toolbar toolbar = findViewById(R.id.toolbarMain);
             setSupportActionBar(toolbar);
             isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
-            //if (isTab) {
-            //     Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
-            //}
+            if (isTab) {
+                rotationTabScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+                //Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
+            }
+            else {
+                rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+            }
 
             DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(

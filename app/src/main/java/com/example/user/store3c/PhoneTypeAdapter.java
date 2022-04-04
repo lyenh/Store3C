@@ -12,6 +12,10 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
+
 public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.ViewHolder>{
     private String[][] PhoneType;
     private int typeNumber;
@@ -70,11 +74,19 @@ public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.View
     @Override
     public void onBindViewHolder(PhoneTypeAdapter.ViewHolder holder, int position) {
         holder.TypeName.setText(PhoneType[typeNumber][position]);
-        if (screenWidth > 800 && getItemCount() < 5) {
-            holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 80));
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth && getItemCount() < 5) {
+                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 130));
+            } else {
+                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 130));
+            }
         }
         else {
-            holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80));
+            if (screenWidth > rotationScreenWidth && getItemCount() < 5) {
+                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 80));
+            } else {
+                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80));
+            }
         }
     }
 

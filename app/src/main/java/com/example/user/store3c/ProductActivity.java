@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -186,12 +188,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
-        if (screenWidth > 800 && !isTab) {
-            imgHeight = (product_intro.length() / 27 + 1) * 60;
-            introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth) {
+                imgHeight = (product_intro.length() / 27 + 1) * 100;
+                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+            }
         }
-
+        else {
+            if (screenWidth > rotationScreenWidth) {
+                imgHeight = (product_intro.length() / 27 + 1) * 60;
+                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+            }
+        }
         intro.setText(product_intro);
         ret_b.setOnClickListener(this);
         buy_b.setOnClickListener(this);

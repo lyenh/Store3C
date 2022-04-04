@@ -59,6 +59,9 @@ import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.userImg;
 import static java.lang.Integer.parseInt;
 import static com.example.user.store3c.MainActivity.mAuth;
@@ -371,21 +374,42 @@ public class CameraActivity extends Activity
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         if (YouTubeFragment.YPlayer != null) {
             try {
-                if (screenWidth > 800) {
-                    if (YouTubeFragment.YPlayer.isPlaying()) {
-                        YouTubeFragment.YPlayer.setFullscreen(true);
-                        YouTubeFragment.YPlayer.play();
+                if (isTab) {
+                    if (screenWidth > rotationTabScreenWidth) {
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.setFullscreen(true);
+                            YouTubeFragment.YPlayer.play();
+                        } else {
+                            YouTubeFragment.YPlayer.setFullscreen(true);
+                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                        }
                     } else {
-                        YouTubeFragment.YPlayer.setFullscreen(true);
-                        YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.setFullscreen(false);
+                            YouTubeFragment.YPlayer.play();
+                        } else {
+                            YouTubeFragment.YPlayer.setFullscreen(false);
+                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                        }
                     }
-                } else {
-                    if (YouTubeFragment.YPlayer.isPlaying()) {
-                        YouTubeFragment.YPlayer.setFullscreen(false);
-                        YouTubeFragment.YPlayer.play();
+                }
+                else {
+                    if (screenWidth > rotationScreenWidth) {
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.setFullscreen(true);
+                            YouTubeFragment.YPlayer.play();
+                        } else {
+                            YouTubeFragment.YPlayer.setFullscreen(true);
+                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                        }
                     } else {
-                        YouTubeFragment.YPlayer.setFullscreen(false);
-                        YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                        if (YouTubeFragment.YPlayer.isPlaying()) {
+                            YouTubeFragment.YPlayer.setFullscreen(false);
+                            YouTubeFragment.YPlayer.play();
+                        } else {
+                            YouTubeFragment.YPlayer.setFullscreen(false);
+                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                        }
                     }
                 }
             }catch (Exception e) {
