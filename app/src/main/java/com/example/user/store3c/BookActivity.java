@@ -50,7 +50,10 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
+import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.mAuth;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.userImg;
 
 public class BookActivity extends AppCompatActivity
@@ -191,12 +194,19 @@ public class BookActivity extends AppCompatActivity
             bookRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         }
         imageTitle = findViewById(R.id.titleImageView_id);
-        if (screenWidth > 800) {
-            imgHeight = 300;
-            imageTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-            imageTitle.setImageResource(R.drawable.title);
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth) {
+                imgHeight = 300;
+                imageTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+            }
         }
-
+        else {
+            if (screenWidth > rotationScreenWidth) {
+                imgHeight = 250;
+                imageTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+            }
+        }
+        imageTitle.setImageResource(R.drawable.title);
         logoImage.setOnClickListener(this);
 
     }

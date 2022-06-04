@@ -80,6 +80,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     messageText = data.get("messageText");
                     subText = data.get("subText");
                     Bundle bundle = new Bundle();
+                    Intent resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
                         List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -90,14 +92,13 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         }
                         else {
                             bundle.putString("Notification", "IN_APP");
+                            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
                         }
                     }
                     else {
                         bundle.putString("Notification", "NOTIFICATION");
                     }
-
-                    Intent resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
                     resultIntent.putExtras(bundle);
 
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
@@ -105,13 +106,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     PendingIntent resultPendingIntent =
                             stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
-/*
-                    Intent resultIntent = new Intent(PromotionFirebaseMessagingService.this, com.example.user.store3c.OrderFormActivity.class);
-                    resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                    PendingIntent resultPendingIntent = PendingIntent.getActivity(PromotionFirebaseMessagingService.this, 0, resultIntent,
-                            PendingIntent.FLAG_UPDATE_CURRENT);
-*/
                     orderMessageText = "    " + messageText;
 
                     String channelId = getString(R.string.default_notification_channel_id);
@@ -178,6 +172,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     messageIntro = data.get("messageIntro");
                     PendingIntent pendingIntent;
                     Bundle bundle = new Bundle();
+                    Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
@@ -208,6 +203,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         }
                         else {
                             bundle.putString("Notification", "IN_APP");
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
                         }
                     }
@@ -220,37 +216,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     bundle.putString("Price", messagePrice);
                     bundle.putString("Intro", messageIntro);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-                       // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-                       // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
-                        intent.putExtras(bundle);
-
-                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                        stackBuilder.addNextIntent(intent);
-                        pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-                        //pendingIntent = PendingIntent.getActivity(PromotionFirebaseMessagingService.this, 0, intent,
-                                //PendingIntent.FLAG_UPDATE_CURRENT);
-                    }
-                    else {
-                        Intent resultIntent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-                        //resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                        resultIntent.putExtras(bundle);
-                        TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                        stackBuilder.addNextIntent(resultIntent);
-                        pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-                    }
-
-                    /*
-                    Intent resultIntent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-                    resultIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                    resultIntent.putExtras(bundle);
-                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-                    stackBuilder.addNextIntent(resultIntent);
+                    intent.putExtras(bundle);
+                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                    stackBuilder.addNextIntent(intent);
                     pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-*/
+
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
@@ -334,6 +304,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
             PendingIntent pendingIntent;
             Bundle bundle = new Bundle();
+            Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -354,25 +326,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             bundle.putString("Name", message);
             bundle.putString("Price", messagePrice);
             bundle.putString("Intro", messageIntro);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                intent.putExtras(bundle);
 
-                TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                stackBuilder.addNextIntent(intent);
-                pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                //pendingIntent = PendingIntent.getActivity(PromotionFirebaseMessagingService.this, 0, intent,
-                //         PendingIntent.FLAG_UPDATE_CURRENT);
-            }
-            else {
-                Intent resultIntent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-                resultIntent.putExtras(bundle);
-                TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                stackBuilder.addNextIntent(resultIntent);
-                pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-            }
+            intent.putExtras(bundle);
+            TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+            stackBuilder.addNextIntent(intent);
+            pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
             String channelId = getString(R.string.default_notification_channel_id);
             Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);

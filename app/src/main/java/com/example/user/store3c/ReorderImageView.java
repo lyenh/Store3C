@@ -7,12 +7,12 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.Toast;
 
-public class MemoReorderImageView extends AppCompatImageView {
-    public MemoReorderImageView(Context context) {
+public class ReorderImageView extends AppCompatImageView {
+    public ReorderImageView(Context context) {
         super(context);
     }
 
-    public MemoReorderImageView(Context context, AttributeSet attrs) {
+    public ReorderImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 

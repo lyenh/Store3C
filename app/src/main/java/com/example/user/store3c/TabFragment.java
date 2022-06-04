@@ -17,6 +17,10 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
+
 /**
  * Created by user on 2016/10/22.
  */
@@ -287,8 +291,15 @@ public class TabFragment extends Fragment {
         int typeCount = phoneTypeAdapter.getItemCount();
 
         phoneTypeAdapter.screenWidth = screenWidth;
-        if (screenWidth > 800 && typeCount < 5) {
-            phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth && typeCount < 5) {
+                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+            }
+        }
+        else {
+            if (screenWidth > rotationScreenWidth && typeCount < 5) {
+                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+            }
         }
         phoneTypeAdapter.notifyDataSetChanged();
         phoneAdapter.screenWidth = screenWidth;
@@ -300,8 +311,15 @@ public class TabFragment extends Fragment {
         int typeCount = phoneTypeAdapter.getItemCount();
 
         phoneTypeAdapter.screenWidth = screenWidth;
-        if (screenWidth > 800 && typeCount < 5) {
-            phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth && typeCount < 5) {
+                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+            }
+        }
+        else {
+            if (screenWidth > rotationScreenWidth && typeCount < 5) {
+                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+            }
         }
         phoneTypeAdapter.notifyDataSetChanged();
     }

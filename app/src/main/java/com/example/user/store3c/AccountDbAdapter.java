@@ -313,29 +313,97 @@ class AccountDbAdapter {
             Log.i("db", "Delete Order: " + e.getMessage());
         }
 
-        for (int i=0;index < orderSize-1;i++,index++) {
-            itemImg = getOrderImg(index+1);
-            itemProduct = getOrderProduct(index+1);
-            itemPrice = getOrderPrice(index+1);
-            itemIntro = getOrderIntro(index+1);
-            if (i == 0) {
-                shift = true;
-                if (createOrder(index, itemImg, itemProduct, itemPrice, itemIntro) == 0) {
-                    Log.i("create Order: ", "no data change!");
+        if (affectedNumber > 0) {
+            for (int i = 0; index < orderSize - 1; i++, index++) {
+                itemImg = getOrderImg(index + 1);
+                itemProduct = getOrderProduct(index + 1);
+                itemPrice = getOrderPrice(index + 1);
+                itemIntro = getOrderIntro(index + 1);
+                if (i == 0) {
+                    shift = true;
+                    if (createOrder(index, itemImg, itemProduct, itemPrice, itemIntro) == 0) {
+                        Log.i("create Order: ", "no data change!");
+                    }
+                } else {
+                    if (updateOrder(index, itemImg, itemProduct, itemPrice, itemIntro) == 0) {
+                        Log.i("update Order: ", "no data change!");
+                    }
                 }
             }
-            else {
-                if (updateOrder(index, itemImg, itemProduct, itemPrice, itemIntro) == 0) {
-                    Log.i("update Order: ", "no data change!");
+            if (shift && index == orderSize - 1) {
+                try {
+                    mDb.delete(TABLE_NAME_ORDER, " orderIndex=" + index, null);
+                    //Toast.makeText(mCtx, "訂購已取消!", Toast.LENGTH_SHORT).show();
+                } catch (SQLException e) {
+                    Log.i("db", "Delete Order: " + e.getMessage());
                 }
             }
         }
-        if (shift && index == orderSize-1) {
+
+        return affectedNumber;
+    }
+
+    int deletePartOrder(int orderTableSize, ArrayList<Integer> orderSet) {
+        int affectedNumber = 0;
+        byte[] itemImg;
+        String itemProduct, itemPrice, itemIntro;
+
+        for (int index = 0; index < orderSet.size(); index++) {
             try {
-                affectedNumber = mDb.delete(TABLE_NAME_ORDER, " orderIndex=" + index, null);
-                //Toast.makeText(mCtx, "訂購已取消!", Toast.LENGTH_SHORT).show();
+                affectedNumber = affectedNumber + mDb.delete(TABLE_NAME_ORDER, " orderIndex=" + orderSet.get(index), null);
             } catch (SQLException e) {
                 Log.i("db", "Delete Order: " + e.getMessage());
+            }
+        }
+        if (affectedNumber > 0) {
+            boolean haveData;
+            int indexKey = 0;
+            Cursor mCursor;
+
+            for (int i = 0; i < orderTableSize; i++) {
+                haveData = true;
+                for (int j = 0; j < orderSet.size(); j++) {
+                    if (i == orderSet.get(j)) {
+                        haveData = false;
+                    }
+                }
+                if (haveData) {
+                    if (i > indexKey) {
+                        itemImg = getOrderImg(i);
+                        itemProduct = getOrderProduct(i);
+                        itemPrice = getOrderPrice(i);
+                        itemIntro = getOrderIntro(i);
+                        try {
+                            mCursor = mDb.query(TABLE_NAME_ORDER, new String[]{KEY_ORDER_ID, KEY_ORDER_INDEX, KEY_ORDER_IMG, KEY_ORDER_PRODUCT, KEY_ORDER_PRICE, KEY_ORDER_INTRO},
+                                    " orderIndex=" + indexKey, null, null, null, null);
+                            if (mCursor.getCount() == 0) {
+                                if (createOrder(indexKey, itemImg, itemProduct, itemPrice, itemIntro) == 0) {
+                                    Log.i("create Order: ", "no data change!");
+                                }
+                            } else {
+                                if (updateOrder(indexKey, itemImg, itemProduct, itemPrice, itemIntro) == 0) {
+                                    Log.i("update Order: ", "no data change!");
+                                }
+                            }
+                            mCursor.close();
+                        } catch (SQLException e) {
+                            Log.i("db", "Get Order Item Img: " + e.getMessage());
+                        }
+                    }
+                    indexKey++;
+                }
+            }
+            for (int i = indexKey; i < orderTableSize; i++) {
+                try {
+                    mCursor = mDb.query(TABLE_NAME_ORDER, new String[]{KEY_ORDER_ID, KEY_ORDER_INDEX, KEY_ORDER_IMG, KEY_ORDER_PRODUCT, KEY_ORDER_PRICE, KEY_ORDER_INTRO},
+                            " orderIndex=" + i, null, null, null, null);
+                    if (mCursor.getCount() != 0) {
+                        mDb.delete(TABLE_NAME_ORDER, " orderIndex=" + i, null);
+                    }
+                    mCursor.close();
+                } catch (SQLException e) {
+                    Log.i("db", "Delete Order: " + e.getMessage());
+                }
             }
         }
 
@@ -417,19 +485,21 @@ class AccountDbAdapter {
 
     private byte[] getOrderImg(int index) {
         Cursor mCursor;
-        byte[] itemImg = null;
+        byte[] itemImg, orderImg = null;
         try {
             mCursor = mDb.query(TABLE_NAME_ORDER, new String[]{KEY_ORDER_ID, KEY_ORDER_INDEX, KEY_ORDER_IMG, KEY_ORDER_PRODUCT, KEY_ORDER_PRICE, KEY_ORDER_INTRO},
                     " orderIndex=" + index, null, null, null, null);
-            if (mCursor != null) {
+            if (mCursor != null && mCursor.getCount() > 0) {
                 mCursor.moveToFirst();
                 itemImg = mCursor.getBlob(2);
+                orderImg = new byte[itemImg.length];
+                System.arraycopy(itemImg, 0, orderImg, 0, itemImg.length);
                 mCursor.close();
             }
         }catch (SQLException e) {
             Log.i("db", "Get Order Item Img: " + e.getMessage());
         }
-        return itemImg;
+        return orderImg;
     }
 
     private String getOrderProduct(int index) {

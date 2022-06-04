@@ -16,6 +16,10 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
 
     private String menu_item, mall_name;
@@ -54,13 +58,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         mapRtn = findViewById(R.id.mapRtn_id);
 
-        if (screenWidth > 800) {
-            imgHeight = 500;
-            if (mapFragment != null && mapFragment.getView() != null) {
-                mapFragment.getView().setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth) {
+                imgHeight = 800;
+                if (mapFragment != null && mapFragment.getView() != null) {
+                    mapFragment.getView().setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+                }
             }
         }
-
+        else {
+            if (screenWidth > rotationScreenWidth) {
+                imgHeight = 500;
+                if (mapFragment != null && mapFragment.getView() != null) {
+                    mapFragment.getView().setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+                }
+            }
+        }
         mapRtn.setOnClickListener(this);
 
 

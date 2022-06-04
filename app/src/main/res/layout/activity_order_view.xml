@@ -14,6 +14,20 @@
         android:weightSum="1"
         tools:background="@color/colorPrimaryDark">
 
+        <LinearLayout
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="horizontal">
+
+            <com.example.user.store3c.ReorderImageView
+                android:id="@+id/reorderOrder_id"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:srcCompat="@drawable/reorder" />
+
+        </LinearLayout>
+
         <ImageView
             android:id="@+id/imgOrder_id"
             android:layout_width="263dp"
@@ -45,15 +59,25 @@
                 android:text="@string/price"
                 android:textSize="20sp" />
 
-            <com.example.user.store3c.MemoReorderImageView
-                android:id="@+id/reorderOrder_id"
+            <LinearLayout
                 android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
+                android:gravity="end|center_vertical"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginRight="10dp"
                 android:layout_marginBottom="30dp"
-                app:srcCompat="@drawable/reorder" />
+                android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/orderViewCheckBox_id"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:buttonTint="#7D1698"
+                android:checked="false"
+                android:gravity="center_horizontal|center_vertical" />
+
+            </LinearLayout>
 
         </RelativeLayout>
 

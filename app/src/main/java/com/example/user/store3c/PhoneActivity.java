@@ -59,7 +59,10 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
+import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.mAuth;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.userImg;
 
 public class PhoneActivity extends AppCompatActivity
@@ -208,20 +211,40 @@ public class PhoneActivity extends AppCompatActivity
             tabs = findViewById(R.id.phoneTabLayout_id);
             tabs.setupWithViewPager(pager);
             pager.setCurrentItem(PhonePosition);
-            if (Resources.getSystem().getDisplayMetrics().widthPixels > 800) {
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationPhoneTypeLayout();
-                        break;
-                    case 1:
-                        tabFragment2.notificationPhoneTypeLayout();
-                        break;
-                    case 2:
-                        tabFragment3.notificationPhoneTypeLayout();
-                        break;
-                    default:
-                        Toast.makeText(PhoneActivity.this, "Fragment error:  " + PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
+            if (isTab) {
+                if (Resources.getSystem().getDisplayMetrics().widthPixels > rotationTabScreenWidth) {
+                    switch (PhonePosition) {
+                        case 0:
+                            tabFragment1.notificationPhoneTypeLayout();
+                            break;
+                        case 1:
+                            tabFragment2.notificationPhoneTypeLayout();
+                            break;
+                        case 2:
+                            tabFragment3.notificationPhoneTypeLayout();
+                            break;
+                        default:
+                            Toast.makeText(PhoneActivity.this, "Fragment error:  " + PhonePosition, Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                }
+            }
+            else {
+                if (Resources.getSystem().getDisplayMetrics().widthPixels > rotationScreenWidth) {
+                    switch (PhonePosition) {
+                        case 0:
+                            tabFragment1.notificationPhoneTypeLayout();
+                            break;
+                        case 1:
+                            tabFragment2.notificationPhoneTypeLayout();
+                            break;
+                        case 2:
+                            tabFragment3.notificationPhoneTypeLayout();
+                            break;
+                        default:
+                            Toast.makeText(PhoneActivity.this, "Fragment error:  " + PhonePosition, Toast.LENGTH_SHORT).show();
+                            break;
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -119,9 +120,11 @@ public class MainActivity extends AppCompatActivity
     public static UserHandler userAdHandler;
     public static Bitmap userImg = null;
     public static boolean isTab;
+    public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
+    public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
-    // TODO: shopping car check box, rotation on Tab (800*1280),
-    //  volley timeout, orderForm return before page, firebase notification message
+    // TODO: firebase notification message upApp no task; api<23 reload
+    // TODO: recent task not load the mainActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,9 +139,13 @@ public class MainActivity extends AppCompatActivity
             Toolbar toolbar = findViewById(R.id.toolbarMain);
             setSupportActionBar(toolbar);
             isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
-            //if (isTab) {
-            //     Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
-            //}
+            if (isTab) {
+                rotationTabScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+                //Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
+            }
+            else {
+                rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+            }
 
             DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -1245,7 +1252,15 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this.getBaseContext(), "再按一次, 可退出3C生活百貨! ", Toast.LENGTH_LONG).show();
             } else {
                 TimerThread = 0;
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                ActivityManager.AppTask eachTask;
+                for (int i = 1; i < tasks.size(); i++) {
+                    eachTask = tasks.get(i);
+                    eachTask.finishAndRemoveTask();
+                }
                 MainActivity.this.finish();
+
                 //super.onBackPressed();
             }
         }

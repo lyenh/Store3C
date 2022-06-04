@@ -31,6 +31,8 @@ import java.util.Objects;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
 public class YouTubeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
@@ -54,7 +56,7 @@ public class YouTubeFragment extends Fragment {
         @Override
         public void onError(YouTubePlayer.ErrorReason errorReason) {
             String error = errorReason.toString();
-            Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -137,22 +139,44 @@ public class YouTubeFragment extends Fragment {
 
                             if (!b) {
                                 YPlayer = youTubePlayer;
-                                if (screenWidth > 800 && !isTab) {
-                                    if (YPlayer.isPlaying()) {
-                                        YPlayer.setFullscreen(true);
-                                        YPlayer.play();
+                                if (isTab) {
+                                    if (screenWidth > rotationTabScreenWidth) {
+                                        if (YPlayer.isPlaying()) {
+                                            YPlayer.setFullscreen(true);
+                                            YPlayer.play();
+                                        } else {
+                                            YPlayer.setFullscreen(true);
+                                            YPlayer.cueVideo(videoId);
+                                        }
                                     } else {
-                                        YPlayer.setFullscreen(true);
-                                        YPlayer.cueVideo(videoId);
+                                        if (YPlayer.isPlaying()) {
+                                            Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
+                                            YPlayer.setFullscreen(false);
+                                            YPlayer.play();
+                                        } else {
+                                            //Toast.makeText(getActivity(), "loadVideo", Toast.LENGTH_LONG).show();
+                                            YPlayer.cueVideo(videoId);
+                                        }
                                     }
-                                } else {
-                                    if (YPlayer.isPlaying()) {
-                                        Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
-                                        YPlayer.setFullscreen(false);
-                                        YPlayer.play();
+                                }
+                                else {
+                                    if (screenWidth > rotationScreenWidth) {
+                                        if (YPlayer.isPlaying()) {
+                                            YPlayer.setFullscreen(true);
+                                            YPlayer.play();
+                                        } else {
+                                            YPlayer.setFullscreen(true);
+                                            YPlayer.cueVideo(videoId);
+                                        }
                                     } else {
-                                        //Toast.makeText(getActivity(), "loadVideo", Toast.LENGTH_LONG).show();
-                                        YPlayer.cueVideo(videoId);
+                                        if (YPlayer.isPlaying()) {
+                                            Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
+                                            YPlayer.setFullscreen(false);
+                                            YPlayer.play();
+                                        } else {
+                                            //Toast.makeText(getActivity(), "loadVideo", Toast.LENGTH_LONG).show();
+                                            YPlayer.cueVideo(videoId);
+                                        }
                                     }
                                 }
                             } else {

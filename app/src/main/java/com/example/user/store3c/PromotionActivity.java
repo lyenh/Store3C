@@ -25,6 +25,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -41,6 +42,8 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
     private Map<String, Object> promotionValues;
     private FirebaseDatabase db = FirebaseDatabase.getInstance();
     private AccountDbAdapter dbhelper;
+    private int orderTableSize = 0;
+    private ArrayList<Integer> orderSet = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +56,8 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             totalPrice = bundle.getString("totalPrice");
+            orderTableSize = bundle.getInt("orderTableSize");
+            orderSet = bundle.getIntegerArrayList("orderSet");
             if (bundle.getString("Menu") != null) {
                 menu_item = bundle.getString("Menu");
             }
@@ -151,10 +156,15 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                                                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                                                             } else {
                                                                                 Log.i("updateChildren saved: ", "successfully !");
-                                                                                if (!dbhelper.deleteAllOrder()) {
-                                                                                    Log.i("deleteAllOrder===>", "fail !");
-                                                                                } else {
-                                                                                    Toast.makeText(PromotionActivity.this, "Server會發送推播簡訊和E-mail訂單通知 !", Toast.LENGTH_LONG).show();
+                                                                                if (orderSet.size() > 0) {
+                                                                                    if (dbhelper.deletePartOrder(orderTableSize, orderSet) == 0) {
+                                                                                        Log.i("delete Order: ", "no data change!");
+                                                                                    } else {
+                                                                                        Toast.makeText(PromotionActivity.this, "Server會發送推播簡訊和E-mail訂單通知 !", Toast.LENGTH_LONG).show();
+                                                                                    }
+                                                                                }
+                                                                                else {
+                                                                                    Log.i("Order selected set : ", "no selected error !");
                                                                                 }
                                                                                 dbhelper.close();
                                                                             }

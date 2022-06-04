@@ -26,13 +26,13 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
     private final MemoActivity memoActivity;
     public static SortedMap<Integer, CheckBox> checkBoxList = new TreeMap<>();
     private static int totalPrice = 0;
-    private final CheckBoxHandler cbHander;
+    private final CheckBoxHandler cbHandler;
 
     MemoRecyclerAdapter(MemoActivity a, ArrayList<String> memoData, ArrayList<String> memoPriceData) {
         this.memoTable = memoData;
         this.memoPriceTable = memoPriceData;
         this.memoActivity = a;
-        cbHander = new CheckBoxHandler();
+        cbHandler = new CheckBoxHandler();
     }
 
     static class CheckBoxHandler extends Handler {
@@ -59,7 +59,7 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
                 if (!new Handler().post(new Runnable() {
                     public void run () {
                         Objects.requireNonNull(checkBoxList.get(keyNum)).setChecked(false);
-                        cbHander.sendEmptyMessage(count);
+                        cbHandler.sendEmptyMessage(count);
                     }
                 })) {
                     Toast.makeText(memoActivity, "Runnable fail ! ", Toast.LENGTH_SHORT).show();
@@ -94,12 +94,18 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
                 checkBoxList.remove(i);
             }
         }
-
     }
 
     public void RemoveCheckBox(int index) {
         boolean shift = false;
         int memoTableCount = memoTable.size();
+
+        if (checkBoxList.containsKey(index)) {
+            String removeMemoPrice = memoPriceTable.get(index);
+            totalPrice = totalPrice - Integer.parseInt(removeMemoPrice);
+            memoActivity.updateMemoPrice = String.valueOf(totalPrice);
+            memoActivity.memoPrice.setText(memoActivity.updateMemoPrice);
+        }
 
         checkBoxList.remove(index);
         for (int i=0;index < memoTableCount-1;i++,index++) {
@@ -121,13 +127,12 @@ public class MemoRecyclerAdapter extends  RecyclerView.Adapter<MemoRecyclerAdapt
                 checkBoxList.remove(i);
             }
         }
-
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         private TextView memoListText, memoListPrice;
         private CheckBox memoCheckBox;
-        private MemoReorderImageView reorderBtn;
+        private ReorderImageView reorderBtn;
         public MyViewHolderClick mListener;
 
         ViewHolder(View itemView, MyViewHolderClick listener) {

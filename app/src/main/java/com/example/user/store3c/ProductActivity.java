@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static com.example.user.store3c.MainActivity.isTab;
+import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -86,10 +88,15 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
                         }
                     }
-                    if (notification_list.equals("IN_APP") && preTask != null && preTask.getTaskInfo().topActivity != null) {
-                        String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
-                        Activity = upActivity.substring(1);
-                        Log.i("Notification===> ", "currentActivity: " + Activity);
+                    if (preTask != null) {
+                        if (preTask.getTaskInfo().topActivity != null) {
+                            String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
+                            Activity = upActivity.substring(1);
+                            Log.i("Notification===> ", "currentActivity: " + Activity);
+                        }
+                        else {
+                            Activity = "MainActivity";
+                        }
                     }
                     else {
                         Activity = "MainActivity";
@@ -181,12 +188,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
-        if (screenWidth > 800 && !isTab) {
-            imgHeight = (product_intro.length() / 27 + 1) * 60;
-            introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-
+        if (isTab) {
+            if (screenWidth > rotationTabScreenWidth) {
+                imgHeight = (product_intro.length() / 27 + 1) * 100;
+                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+            }
         }
-
+        else {
+            if (screenWidth > rotationScreenWidth) {
+                imgHeight = (product_intro.length() / 27 + 1) * 60;
+                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+            }
+        }
         intro.setText(product_intro);
         ret_b.setOnClickListener(this);
         buy_b.setOnClickListener(this);
@@ -224,10 +237,21 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (notification_list != null) {
                     if (notification_list.equals("IN_APP")) {
                         if (preTask != null) {
+                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
                             preTask.startActivity(this, intent, bundle);
                         }
                         else {
+                            startActivity(intent);
                             Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else if (notification_list.equals("UPPER_APP")) {
+                        if (preTask != null) {
+                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
+                            preTask.startActivity(this, intent, bundle);
+                        }
+                        else {
+                            startActivity(intent);
                         }
                     }
                     else {
@@ -282,7 +306,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 case "BOOK":
                     intent.setClass(ProductActivity.this, BookActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT );
                     break;
                 case "MEMO":
                     bundle = new Bundle();
@@ -291,7 +314,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     intent.setClass(ProductActivity.this, MemoActivity.class);
                     break;
                 default:
-                    Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     intent.setClass(ProductActivity.this, MainActivity.class);
             }
         }
@@ -303,6 +325,16 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 else {
                     Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                }
+                ProductActivity.this.finish();
+            }
+            else if (notification_list.equals("UPPER_APP")) {
+                if (preTask != null) {
+                    preTask.moveToFront();
+                    intent.replaceExtras(new Bundle());
+                }
+                else {
                     startActivity(intent);
                 }
                 ProductActivity.this.finish();

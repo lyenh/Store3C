@@ -3,10 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order.xml" value="0.1" />
+        <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_memo.xml" value="0.165" />
+        <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order.xml" value="0.165" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order_form.xml" value="0.125" />
+        <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order_item.xml" value="0.165" />
+        <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order_view.xml" value="0.1" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_product.xml" value="0.1" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_user.xml" value="0.1" />
+        <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/memo_item_view.xml" value="0.165" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/menu/menu_order.xml" value="0.1" />
       </map>
     </option>
