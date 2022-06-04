@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -61,12 +62,14 @@ public class PageActivity extends AppCompatActivity {
      */
     private ViewPager2 mViewPager;
     private static int bookPosition;
+    private static final int MY_GLIDE_TIMEOUT_MS = 50000;
     private static final ArrayList<String> bookPageVolume = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page);
+        final int MY_SOCKET_TIMEOUT_MS = 20000;
 
         Toolbar toolbar = findViewById(R.id.toolbarPage);
         setSupportActionBar(toolbar);
@@ -133,6 +136,10 @@ public class PageActivity extends AppCompatActivity {
                         }
 
                     };
+            stringRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    MY_SOCKET_TIMEOUT_MS,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
             queue.getCache().clear();
             queue.add(stringRequest);
         } catch (Throwable e) {
@@ -243,6 +250,7 @@ public class PageActivity extends AppCompatActivity {
 
             Glide.with(this)
                     .load(bookPageVolume.get(fragmentPosition-1))
+                    .timeout(MY_GLIDE_TIMEOUT_MS)
                     .into(bookPage);
 
         }

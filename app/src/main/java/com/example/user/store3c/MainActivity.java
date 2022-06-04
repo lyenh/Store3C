@@ -123,9 +123,8 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
-    // TODO: shopping car check box
-    // TODO: volley timeout, firebase notification message upApp no task; api<23 reload
-    // TODO: glide Exception, recent task not load the mainActivity
+    // TODO: firebase notification message upApp no task; api<23 reload
+    // TODO: recent task not load the mainActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

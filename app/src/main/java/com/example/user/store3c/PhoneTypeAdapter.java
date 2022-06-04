@@ -76,7 +76,7 @@ public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.View
         holder.TypeName.setText(PhoneType[typeNumber][position]);
         if (isTab) {
             if (screenWidth > rotationTabScreenWidth && getItemCount() < 5) {
-                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 130));
+                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 100));
             } else {
                 holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 130));
             }

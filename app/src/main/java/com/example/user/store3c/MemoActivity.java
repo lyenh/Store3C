@@ -101,7 +101,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
 
         // Extend the Callback class
         ItemTouchHelper.Callback ithCallback = new ItemTouchHelper.Callback() {
-            //and in your imlpementaion of  get the viewHolder's and target's positions in your adapter data, swap them
+            //and in your implementation of  get the viewHolder's and target's positions in your adapter data, swap them
             public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 final int fromPosition = viewHolder.getAbsoluteAdapterPosition();
                 final int toPosition = target.getAbsoluteAdapterPosition();
@@ -116,7 +116,6 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
 
                 // and notify the adapter that its dataset has changed
                 memoAdapter.notifyItemMoved(fromPosition, toPosition);
-
                 return true;
             }
 
@@ -126,12 +125,12 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 if (dbhelper.deleteMemo(index, memoList.size()) == 0) {
                     Log.i("delete Memo: ", "no data change!");
                 }
+
+                memoText.setText("");
                 memoAdapter.RemoveCheckBox(index);
                 memoList.remove(index);
                 memoPriceList.remove(index);
                 update = false;
-                memoText.setText("");
-                memoPrice.setText("");
                 memoAdapter.notifyItemRemoved(index);
             }
 
@@ -272,12 +271,12 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         dbhelper.close();
         MemoRecyclerAdapter.checkBoxList.clear();
         memoAdapter.ResetCheckBox();
         memoCheckNameList.clear();
         memoCheckPriceList.clear();
+        super.onDestroy();
     }
 
     @Override
@@ -303,7 +302,6 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intent.setClass(MemoActivity.this, MainActivity.class);
         }
-
         startActivity(intent);
         MemoActivity.this.finish();
     }

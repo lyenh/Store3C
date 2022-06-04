@@ -53,6 +53,7 @@ import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.mAuth;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
+import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.userImg;
 
 public class BookActivity extends AppCompatActivity
@@ -194,14 +195,14 @@ public class BookActivity extends AppCompatActivity
         }
         imageTitle = findViewById(R.id.titleImageView_id);
         if (isTab) {
-            if (screenWidth > rotationScreenWidth) {
-                imgHeight = 500;
+            if (screenWidth > rotationTabScreenWidth) {
+                imgHeight = 300;
                 imageTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
             }
         }
         else {
             if (screenWidth > rotationScreenWidth) {
-                imgHeight = 300;
+                imgHeight = 250;
                 imageTitle.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
             }
         }

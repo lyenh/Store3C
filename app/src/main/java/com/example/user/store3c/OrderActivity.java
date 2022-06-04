@@ -39,11 +39,11 @@ import static com.example.user.store3c.MainActivity.mAuth;
 
 public class OrderActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
-    private TextView orderText;
+    TextView orderText;
     private String menu_item = "DISH", up_menu_item = "", search_list = "";
-    private String orderTextList = "";
+    String orderTextList = "";
     private OrderRecyclerAdapter adapter = null;
-    private float total_price = 0;
+    static float total_price = 0;
     private ArrayList<ProductItem> orderTable = new ArrayList<>();
     public static ArrayList<ListItem> promotionListItem = new ArrayList<>();
 
@@ -64,7 +64,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
         dbhelper = new AccountDbAdapter(this);
         RecyclerView OrderRecyclerView;
-        Button ret_b, promotion_b;
+        Button ret_b, promotion_b, resetCheckBox_b;
         String product_name, product_price, product_intro;
         String str_price;
         String[] tokens;
@@ -80,6 +80,8 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         orderText = findViewById(R.id.orderItem_id);
         ret_b = findViewById(R.id.orderReturnBtn_id);
         promotion_b = findViewById(R.id.promotionBtn_id);
+        resetCheckBox_b = findViewById(R.id.orderCheckBoxClearBtn_id);
+
         OrderRecyclerView = findViewById(R.id.orderRecyclerView_id);
 
         if (bundle != null) {
@@ -155,7 +157,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                         for (String token:tokens) {
                             price = Float.parseFloat(token);
                         }
-                        total_price = total_price + price;
+                        //total_price = total_price + price;
                     } while (cursor.moveToNext());
 
                 }
@@ -165,11 +167,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
             for (int i=0;i<itemText.size();i++) {
                 orderTable.add(i,itemText.get(i));
-            }
-            promotionListItem.clear();
-            for (int i=0; i < orderTable.size(); i++) {
-                ListItem item = new ListItem(orderTable.get(i).getName(), orderTable.get(i).getPrice());
-                promotionListItem.add(item);
             }
         }
 
@@ -185,7 +182,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
         // Extend the Callback class
         ItemTouchHelper.Callback ithCallback = new ItemTouchHelper.Callback() {
-            //and in your imlpementaion of  get the viewHolder's and target's positions in your adapter data, swap them
+            //and in your implementation of  get the viewHolder's and target's positions in your adapter data, swap them
             public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 final int fromPosition = viewHolder.getAbsoluteAdapterPosition();
                 final int toPosition = target.getAbsoluteAdapterPosition();
@@ -196,57 +193,28 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
                 ProductItem sourceItem = orderTable.remove(fromPosition);
                 orderTable.add(toPosition, sourceItem);
+                adapter.ReorderCheckBoxList(fromPosition, toPosition);
                 // and notify the adapter that its dataset has changed
                 adapter.notifyItemMoved(fromPosition, toPosition);
-
-                promotionListItem.clear();
-                for (int i=0; i < orderTable.size(); i++) {
-                    ListItem item = new ListItem(orderTable.get(i).getName(), orderTable.get(i).getPrice());
-                    promotionListItem.add(item);
-                }
-
                 return true;
             }
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int index = viewHolder.getAbsoluteAdapterPosition();
-                String str_price;
-                String[] tokens;
-                float price = 0;
-                total_price = 0;
 
                 if (dbhelper.deleteOrder(index, orderTable.size()) == 0) {
                     Log.i("delete Order: ", "no data change!");
                 }
+
+                if (OrderRecyclerAdapter.checkBoxList.containsKey(index)) {
+                    total_price = total_price - Integer.parseInt(orderTable.get(index).getPrice().split("元")[0]);
+                    orderTextList = "總共 " + ((int)total_price) + " 元 !";
+                    orderText.setText(orderTextList);
+                }
+                adapter.RemoveCheckBox(index);
                 orderTable.remove(index);
                 adapter.notifyItemRemoved(index);
-                promotionListItem.clear();
-                for (int i=0; i < orderTable.size(); i++) {
-                    ListItem item = new ListItem(orderTable.get(i).getName(), orderTable.get(i).getPrice());
-                    promotionListItem.add(item);
-                }
-
-                if(dbhelper.DbOrderAmount()>0){
-                    try {
-                        Cursor cursor = dbhelper.listAllOrder();
-                        if (cursor.getCount() > 0) {
-                            do {
-                                str_price = cursor.getString(4);
-                                tokens = str_price.split("元");
-                                for (String token:tokens) {
-                                    price = Float.parseFloat(token);
-                                }
-                                total_price = total_price + price;
-                            } while (cursor.moveToNext());
-                        }
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                orderTextList = "總共 " + ((int)total_price) + " 元 !";
-                orderText.setText(orderTextList);
                 //Toast.makeText(OrderActivity.this, "The delete number: " + favDeleteBtn, Toast.LENGTH_SHORT).show();
             }
 
@@ -262,7 +230,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
                 super.clearView(recyclerView, viewHolder);
 
-                //adapter.notifyItemRangeChanged(0,orderTable.size());
+                adapter.notifyItemRangeChanged(0,orderTable.size());
             }
 
             @Override
@@ -279,6 +247,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         orderText.setText(orderTextList);
         ret_b.setOnClickListener(this);
         promotion_b.setOnClickListener(this);
+        resetCheckBox_b.setOnClickListener(this);
     }
 
     @Override
@@ -291,6 +260,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     protected void onDestroy() {
+        dbhelper.close();
+        OrderRecyclerAdapter.checkBoxList.clear();
+        adapter.ResetCheckBox();
         super.onDestroy();
     }
 
@@ -305,16 +277,36 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     if (currentUser != null && !currentUser.isAnonymous()) {
                         if (total_price > 0) {
                             Bundle bundle = new Bundle();
-                            bundle.putString("totalPrice", String.valueOf(total_price));
-                            bundle.putString("Menu", menu_item);
-                            if (!up_menu_item.equals("")) {
-                                bundle.putString("upMenu", up_menu_item);
+                            promotionListItem.clear();
+                            for (int i=0; i < orderTable.size(); i++) {
+                                if (OrderRecyclerAdapter.checkBoxList.containsKey(i)) {
+                                    ListItem item = new ListItem(orderTable.get(i).getName(), orderTable.get(i).getPrice());
+                                    promotionListItem.add(item);
+                                }
                             }
-                            intentItem.putExtras(bundle);
-                            intentItem.setClass(OrderActivity.this, PromotionActivity.class);
-                            dbhelper.close();
-                            startActivity(intentItem);
-                            OrderActivity.this.finish();
+                            Log.i("Selected CheckBox => ", Integer.toString(promotionListItem.size()));
+                            if (promotionListItem.size() != 0 ) {
+                                bundle.putString("totalPrice", String.valueOf(total_price));
+                                bundle.putInt("orderTableSize", orderTable.size());
+                                ArrayList<Integer> orderSet = new ArrayList<>();
+                                for (int i=0; i < orderTable.size(); i++) {
+                                    if (OrderRecyclerAdapter.checkBoxList.containsKey(i)) {
+                                        orderSet.add(i);
+                                    }
+                                }
+                                bundle.putIntegerArrayList("orderSet", orderSet);
+                                bundle.putString("Menu", menu_item);
+                                if (!up_menu_item.equals("")) {
+                                    bundle.putString("upMenu", up_menu_item);
+                                }
+                                intentItem.putExtras(bundle);
+                                intentItem.setClass(OrderActivity.this, PromotionActivity.class);
+                                startActivity(intentItem);
+                                OrderActivity.this.finish();
+                            }
+                            else {
+                                Toast.makeText(OrderActivity.this, "Selected CheckBox error !", Toast.LENGTH_SHORT).show();
+                            }
                         }
                         else {
                             Toast.makeText(OrderActivity.this, "商品先加入購物車, 才可以寄送簡訊 !", Toast.LENGTH_SHORT).show();
@@ -328,7 +320,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(OrderActivity.this, "網路未連線 !", Toast.LENGTH_SHORT).show();
                 }
                 break;
-
+            case R.id.orderCheckBoxClearBtn_id:
+                total_price = 0;
+                orderTextList = "總共 " + ((int)total_price) + " 元 !";
+                orderText.setText(orderTextList);
+                adapter.ResetCheckBox();
+                break;
             case R.id.orderReturnBtn_id:
                 onBackPressed();
                 break;
@@ -423,7 +420,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     intent.setClass(OrderActivity.this, MainActivity.class);
             }
         }
-        dbhelper.close();
         startActivity(intent);
         OrderActivity.this.finish();
 
