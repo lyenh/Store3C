@@ -125,6 +125,8 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: firebase notification message upApp no task; api<23 reload
     // TODO: recent task not load the mainActivity
+    // TODO: YPlayer initialize, onConfigurationChanged
+    // TODO: install app
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
