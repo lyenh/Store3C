@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -421,10 +422,13 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         return (YouTubePlayerView) findViewById(R.id.youTubePlayerViewCake_id);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
 
+        ProductAdapter.screenWidth = screenWidth;
+        cakeAdapter.notifyDataSetChanged();
         if (YPlayer != null) {
             try {
                 if (isTab) {
@@ -434,7 +438,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(true);
-                            YPlayer.loadVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     } else {
                         if (YPlayer.isPlaying()) {
@@ -442,7 +446,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(false);
-                            YPlayer.loadVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     }
                 }
@@ -453,7 +457,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(true);
-                            YPlayer.loadVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     } else {
                         if (YPlayer.isPlaying()) {
@@ -461,7 +465,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(false);
-                            YPlayer.loadVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     }
                 }

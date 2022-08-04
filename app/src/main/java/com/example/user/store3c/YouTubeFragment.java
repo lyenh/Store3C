@@ -150,11 +150,12 @@ public class YouTubeFragment extends Fragment {
                                         }
                                     } else {
                                         if (YPlayer.isPlaying()) {
-                                            Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
+                                            //Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
                                             YPlayer.setFullscreen(false);
                                             YPlayer.play();
                                         } else {
                                             //Toast.makeText(getActivity(), "loadVideo", Toast.LENGTH_LONG).show();
+                                            YPlayer.setFullscreen(false);
                                             YPlayer.cueVideo(videoId);
                                         }
                                     }
@@ -170,11 +171,12 @@ public class YouTubeFragment extends Fragment {
                                         }
                                     } else {
                                         if (YPlayer.isPlaying()) {
-                                            Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
+                                            //Toast.makeText(getActivity(), "isPlaying", Toast.LENGTH_LONG).show();
                                             YPlayer.setFullscreen(false);
                                             YPlayer.play();
                                         } else {
                                             //Toast.makeText(getActivity(), "loadVideo", Toast.LENGTH_LONG).show();
+                                            YPlayer.setFullscreen(false);
                                             YPlayer.cueVideo(videoId);
                                         }
                                     }
