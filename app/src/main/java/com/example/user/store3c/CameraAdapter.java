@@ -24,13 +24,13 @@ import java.util.ArrayList;
 public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolder>{
     private ArrayList<ProductItem> ProductData;
     private Context mContext;
-    private int screenWidth;
+    public static int screenWidth;
     private String menuItem;
     private CameraActivity activity;
     private YouTubeFragment YouTubeF;
     private String[][] cameraVideoId = { {"jHzU8Ixa75w", "I2W0Opbtrpg", "zywGqoPIc0k"},
                                         {"Nd1wc8XMarg", "mzwPuyfQcrA", "ui525Iwe-cQ"},
-                                        {"dUbZBlbmNng", "P_noJ0Ati60", "D8AvEstX_3E"}};
+                                        {"dUbZBlbmNng", "5nUcO-FvFbM", "D8AvEstX_3E"}};
     private int videoPlayBtn;
 
     CameraAdapter(ArrayList<ProductItem> ProductData, Context c, String menuItem, YouTubeFragment YouTubeF) {

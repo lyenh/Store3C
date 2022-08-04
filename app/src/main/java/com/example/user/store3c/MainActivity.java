@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -125,6 +126,8 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: firebase notification message upApp no task; api<23 reload
     // TODO: recent task not load the mainActivity
+    // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
+    // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -397,6 +400,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig){
 

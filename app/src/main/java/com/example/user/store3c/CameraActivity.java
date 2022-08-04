@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -369,9 +370,16 @@ public class CameraActivity extends Activity
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
+
+        CameraAdapter.screenWidth = screenWidth;
+        camera1Adapter.notifyDataSetChanged();
+        camera2Adapter.notifyDataSetChanged();
+        camera3Adapter.notifyDataSetChanged();
+
         if (YouTubeFragment.YPlayer != null) {
             try {
                 if (isTab) {
@@ -381,7 +389,7 @@ public class CameraActivity extends Activity
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(true);
-                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     } else {
                         if (YouTubeFragment.YPlayer.isPlaying()) {
@@ -389,7 +397,7 @@ public class CameraActivity extends Activity
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(false);
-                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     }
                 }
@@ -400,7 +408,7 @@ public class CameraActivity extends Activity
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(true);
-                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     } else {
                         if (YouTubeFragment.YPlayer.isPlaying()) {
@@ -408,7 +416,7 @@ public class CameraActivity extends Activity
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(false);
-                            YouTubeFragment.YPlayer.cueVideo(cameraVideoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     }
                 }

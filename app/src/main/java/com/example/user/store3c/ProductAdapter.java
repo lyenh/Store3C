@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder>{
     private ArrayList<ProductItem> ProductData;
     private Context mContext;
-    private int screenWidth;
+    public static int screenWidth;
     private String menuItem;
     private MainActivity activity = null;
 

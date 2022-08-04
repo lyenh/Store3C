@@ -107,7 +107,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(true);
-                            YouTubeFragment.YPlayer.cueVideo(YouTubeF.videoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     } else {
                         if (YouTubeFragment.YPlayer.isPlaying()) {
@@ -115,7 +115,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(false);
-                            YouTubeFragment.YPlayer.cueVideo(YouTubeF.videoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     }
                 }
@@ -126,7 +126,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(true);
-                            YouTubeFragment.YPlayer.cueVideo(YouTubeF.videoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     } else {
                         if (YouTubeFragment.YPlayer.isPlaying()) {
@@ -134,7 +134,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                             YouTubeFragment.YPlayer.play();
                         } else {
                             YouTubeFragment.YPlayer.setFullscreen(false);
-                            YouTubeFragment.YPlayer.cueVideo(YouTubeF.videoId);
+                            YouTubeFragment.YPlayer.play();
                         }
                     }
                 }

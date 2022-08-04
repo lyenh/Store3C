@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -281,8 +282,9 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         YouTubePlayerView youTubePlayerView = (YouTubePlayerView) findViewById(R.id.youTubePlayerViewCake_id);
 
         if (InternetConnection.checkConnection(CakeActivity.this)) {
-            if (YouTubeIntents.isYouTubeInstalled(this) ||
-                    (YouTubeApiServiceUtil.isYouTubeApiServiceAvailable(this) == YouTubeInitializationResult.SUCCESS)) {
+
+            if (YouTubeIntents.isYouTubeInstalled(CakeActivity.this) ||
+                    (YouTubeApiServiceUtil.isYouTubeApiServiceAvailable(CakeActivity.this) == YouTubeInitializationResult.SUCCESS)) {
                 youTubePlayerView.initialize(YOUTUBE_API_KEY, this);
                 //Toast.makeText(CakeActivity.this, "YouTube ok ", Toast.LENGTH_SHORT).show();
             } else {
@@ -383,6 +385,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                         YPlayer.setFullscreen(false);
                         YPlayer.play();
                     } else {
+                        YPlayer.setFullscreen(false);
                         YPlayer.cueVideo(cakeVideoId);
                     }
                 }
@@ -402,6 +405,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                         YPlayer.setFullscreen(false);
                         YPlayer.play();
                     } else {
+                        YPlayer.setFullscreen(false);
                         YPlayer.cueVideo(cakeVideoId);
                     }
                 }
@@ -418,10 +422,13 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         return (YouTubePlayerView) findViewById(R.id.youTubePlayerViewCake_id);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
 
+        ProductAdapter.screenWidth = screenWidth;
+        cakeAdapter.notifyDataSetChanged();
         if (YPlayer != null) {
             try {
                 if (isTab) {
@@ -431,7 +438,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(true);
-                            YPlayer.cueVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     } else {
                         if (YPlayer.isPlaying()) {
@@ -439,7 +446,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(false);
-                            YPlayer.cueVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     }
                 }
@@ -450,7 +457,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(true);
-                            YPlayer.cueVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     } else {
                         if (YPlayer.isPlaying()) {
@@ -458,7 +465,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
                             YPlayer.play();
                         } else {
                             YPlayer.setFullscreen(false);
-                            YPlayer.cueVideo(cakeVideoId);
+                            YPlayer.play();
                         }
                     }
                 }

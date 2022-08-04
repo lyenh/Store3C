@@ -2,8 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Store3C.iml" filepath="$PROJECT_DIR$/Store3C.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Store3C.iml" filepath="$PROJECT_DIR$/.idea/modules/Store3C.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Store3C.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Store3C.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Store3C.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Store3C.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Store3C.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Store3C.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Store3C.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Store3C.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Store3C.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Store3C.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Store3C.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Store3C.test.iml" />
     </modules>
   </component>
 </project>
