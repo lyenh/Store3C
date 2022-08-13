@@ -54,12 +54,14 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     private static int totalUserAmount = 0;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
+    private static Integer pendingIntentIndex = 0;
     public String userId = "defaultId";
     public String refreshedToken;
     public static String orderMessageText = "";
 
     @Override
     public boolean onUnbind(Intent intent) {
+
         return super.onUnbind(intent);
     }
 
@@ -92,7 +94,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         }
                         else {
                             bundle.putString("Notification", "IN_APP");
-                            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
                         }
                     }
@@ -161,7 +163,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
 
-                } else {        //broadcast message  :  Talend API tester  ;  firebase cloud message with data defined by user
+                } else {        //broadcast message  :  Restlet talend API tester  ;  firebase cloud message with data defined by user
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
 
@@ -177,7 +179,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
                         List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                        //Log.i("Notification===> ", "size:  " +  tasks.size());
+                        Log.i("Notification===> ", "size:  " +  tasks.size());
 
                         String appActivity;
                         int numActivity;
@@ -203,7 +205,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         }
                         else {
                             bundle.putString("Notification", "IN_APP");
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
                         }
                     }
@@ -219,7 +221,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     intent.putExtras(bundle);
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
                     stackBuilder.addNextIntent(intent);
-                    pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                    pendingIntentIndex++;
+                    Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
+                    pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -305,7 +309,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             PendingIntent pendingIntent;
             Bundle bundle = new Bundle();
             Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -330,7 +334,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             intent.putExtras(bundle);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
             stackBuilder.addNextIntent(intent);
-            pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+            pendingIntentIndex++;
+            pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
             String channelId = getString(R.string.default_notification_channel_id);
             Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);

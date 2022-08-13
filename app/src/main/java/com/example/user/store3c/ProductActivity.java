@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -68,8 +69,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     String Activity;
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                     List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
                     if (tasks.size() > 1) {
-                        preTask = tasks.get(1); // Should be the main task
+                        preTask = tasks.get(tasks.size()-1); // Should be the main task
                     }
                     String appActivity;
                     int numActivity;
@@ -319,6 +321,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         }
         if (notification_list != null) {
             if (notification_list.equals("IN_APP")) {
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+
                 if (preTask != null) {
                     preTask.moveToFront();
                     intent.replaceExtras(new Bundle());
