@@ -125,10 +125,6 @@ public class MainActivity extends AppCompatActivity
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
     // TODO: firebase notification message upApp no task; api<23 reload
-    // TODO: recent task not load the mainActivity
-    // TODO: remove preTask from recent screen, can't load preTask
-    // TODO: upper_app need multicast intent ?
-    // TODO: clear all app, can't accept notification
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 

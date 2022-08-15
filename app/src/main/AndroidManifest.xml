@@ -42,7 +42,6 @@
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -52,9 +51,7 @@
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.PICK" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <data android:mimeType="vnd.android.cursor.dir/vnd.google.note" />
             </intent-filter>
         </activity>

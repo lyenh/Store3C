@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +23,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.tasks.Task;
 
 import java.util.List;
 import java.util.Objects;
@@ -320,33 +323,29 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             }
         }
         if (notification_list != null) {
-            if (notification_list.equals("IN_APP")) {
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-
-                if (preTask != null) {
+            if (preTask != null) {
+                try {
                     preTask.moveToFront();
                     intent.replaceExtras(new Bundle());
+                }catch (Exception e) {      // user has removed the task from the recent screen (task)
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    if (tasks.size() > 1) {
+                        preTask = tasks.get(tasks.size()-1);
+                        preTask.moveToFront();
+                        intent.replaceExtras(new Bundle());
+                    }
+                    else {
+                        startActivity(intent);
+                        ProductActivity.this.finish();
+                    }
                 }
-                else {
-                    Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
-                    startActivity(intent);
-                }
-                ProductActivity.this.finish();
-            }
-            else if (notification_list.equals("UPPER_APP")) {
-                if (preTask != null) {
-                    preTask.moveToFront();
-                    intent.replaceExtras(new Bundle());
-                }
-                else {
-                    startActivity(intent);
-                }
-                ProductActivity.this.finish();
             }
             else {
+                Log.i("PreTask===> ", "null !");        //default value, have only one task
                 startActivity(intent);
-                ProductActivity.this.finish();
             }
+            ProductActivity.this.finish();
         }
         else {
             startActivity(intent);

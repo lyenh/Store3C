@@ -199,14 +199,18 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             }
                         }
 
-                        if (tasks.get(0).getTaskInfo().baseActivity == null) {
-                            bundle.putString("Notification", "UPPER_APP");
-                            //Log.i("Notification===> ", "upActivity");
+                        if (tasks.size() != 0) {
+                            if (tasks.get(0).getTaskInfo().baseActivity == null) {
+                                bundle.putString("Notification", "UPPER_APP");
+                                //Log.i("Notification===> ", "upActivity");
+                            } else {
+                                bundle.putString("Notification", "IN_APP");
+                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                            }
                         }
-                        else {
-                            bundle.putString("Notification", "IN_APP");
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                        else {          // user clear all app in recent screen
+                            bundle.putString("Notification", "UPPER_APP");
                         }
                     }
                     else {
