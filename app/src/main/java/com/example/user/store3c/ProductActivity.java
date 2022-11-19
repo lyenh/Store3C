@@ -68,6 +68,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
             if (notification_list != null) {   // notification promotion product
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     String Activity;
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -163,8 +164,15 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             break;
                     }
                 }
+
                 else {
                     menu_item = "DISH";
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
+                    if (tasks.size() > 1) {
+                        preTask = tasks.get(tasks.size()-1); // Should be the main task
+                    }
                 }
             }
             else {

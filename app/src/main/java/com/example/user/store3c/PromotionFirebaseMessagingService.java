@@ -84,25 +84,34 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     Bundle bundle = new Bundle();
                     Intent resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                        //Log.i("Notification===> ", "size:  " +  tasks.size());
-                        if (tasks.get(0).getTaskInfo().baseActivity == null) {
-                            bundle.putString("Notification", "UPPER_APP");
-                            //Log.i("Notification===> ", "upActivity");
-                        }
-                        else {
-                            bundle.putString("Notification", "IN_APP");
-                            resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                    ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    //Log.i("Notification===> ", "size:  " +  tasks.size());
+                    if (tasks.size() != 0) {
+                        boolean appRunningForeground = false;
+                        final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                        if (procInfos != null) {
+                            String packageName = getApplicationContext().getPackageName();
+                            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                if (processInfo.processName.equals(packageName)) {
+                                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                        appRunningForeground =  true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (appRunningForeground) {
+                                bundle.putString("Notification", "IN_APP");
+                                resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            } else {
+                                bundle.putString("Notification", "UPPER_APP");
+                            }
                         }
                     }
-                    else {
-                        bundle.putString("Notification", "NOTIFICATION");
+                    else {          // user clear all app in recent screen
+                        bundle.putString("Notification", "UPPER_APP");
                     }
                     resultIntent.putExtras(bundle);
-
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
                     stackBuilder.addNextIntent(resultIntent);
                     PendingIntent resultPendingIntent =
@@ -176,45 +185,33 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     Bundle bundle = new Bundle();
                     Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                        Log.i("Notification===> ", "size:  " +  tasks.size());
+                    final ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    Log.i("Notification===> ", "size:  " +  tasks.size());
 
-                        String appActivity;
-                        int numActivity;
-                        ActivityManager.AppTask eachTask;
-                        for (int i=0; i<tasks.size();i++) {
-                            eachTask = tasks.get(i);
-                            Log.i("Message Task Num ===> ", "num: " + i);
-                            numActivity = eachTask.getTaskInfo().numActivities;
-                            Log.i("NumActivity ===> ", "NumActivity: " + numActivity);
-                            if (eachTask.getTaskInfo().baseActivity != null) {
-                                appActivity = Objects.requireNonNull(eachTask.getTaskInfo().baseActivity).getShortClassName().substring(1);
-                                Log.i("BaseActivity ===> ", "BaseActivity: " + appActivity);
+                    if (tasks.size() != 0) {
+                        boolean appRunningForeground = false;
+                        final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                        if (procInfos != null) {
+                            String packageName = getApplicationContext().getPackageName();
+                            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                if (processInfo.processName.equals(packageName)) {
+                                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                        appRunningForeground =  true;
+                                        break;
+                                    }
+                                }
                             }
-                            if (eachTask.getTaskInfo().topActivity != null) {
-                                appActivity = Objects.requireNonNull(eachTask.getTaskInfo().topActivity).getShortClassName().substring(1);
-                                Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
-                            }
-                        }
-
-                        if (tasks.size() != 0) {
-                            if (tasks.get(0).getTaskInfo().baseActivity == null) {
-                                bundle.putString("Notification", "UPPER_APP");
-                                //Log.i("Notification===> ", "upActivity");
-                            } else {
+                            if (appRunningForeground) {
                                 bundle.putString("Notification", "IN_APP");
                                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                                //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                            } else {
+                                bundle.putString("Notification", "UPPER_APP");
                             }
                         }
-                        else {          // user clear all app in recent screen
-                            bundle.putString("Notification", "UPPER_APP");
-                        }
                     }
-                    else {
-                        bundle.putString("Notification", "NOTIFICATION");
+                    else {          // user clear all app in recent screen
+                        bundle.putString("Notification", "UPPER_APP");
                     }
 
                     bundle.putByteArray("Pic", Bitmap2Bytes(picture));
