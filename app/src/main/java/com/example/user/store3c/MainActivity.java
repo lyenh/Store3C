@@ -127,6 +127,8 @@ public class MainActivity extends AppCompatActivity
     // TODO: firebase notification message upApp no task; api<23 reload
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
+    // TODO: messageService OnNewtToken use toast is right
+    // TODO: the preTask not finish
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

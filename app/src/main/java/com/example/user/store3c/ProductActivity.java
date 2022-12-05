@@ -68,112 +68,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
             if (notification_list != null) {   // notification promotion product
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    String Activity;
-                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                    Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
-                    if (tasks.size() > 1) {
-                        preTask = tasks.get(tasks.size()-1); // Should be the main task
-                    }
-                    String appActivity;
-                    int numActivity;
-                    ActivityManager.AppTask eachTask;
-                    for (int i = 0; i < tasks.size(); i++) {
-                        eachTask = tasks.get(i);
-                        Log.i("Product Task Num ===> ", "num: " + i);
-                        numActivity = eachTask.getTaskInfo().numActivities;
-                        Log.i("NumActivity ===> ", "NumActivity: " + numActivity);
-                        if (eachTask.getTaskInfo().baseActivity != null) {
-                            appActivity = Objects.requireNonNull(eachTask.getTaskInfo().baseActivity).getShortClassName().substring(1);
-                            Log.i("BaseActivity ===> ", "BaseActivity: " + appActivity);
-                        }
-                        if (eachTask.getTaskInfo().topActivity != null) {
-                            appActivity = Objects.requireNonNull(eachTask.getTaskInfo().topActivity).getShortClassName().substring(1);
-                            Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
-                        }
-                    }
-                    if (preTask != null) {
-                        if (preTask.getTaskInfo().topActivity != null) {
-                            String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
-                            Activity = upActivity.substring(1);
-                            Log.i("Notification===> ", "currentActivity: " + Activity);
-                        }
-                        else {
-                            Activity = "MainActivity";
-                        }
-                    }
-                    else {
-                        Activity = "MainActivity";
-                    }
-                    switch(Activity) {
-                        case "MainActivity":
-                            menu_item = "DISH";
-                            break;
-                        case "CakeActivity":
-                            menu_item = "CAKE";
-                            break;
-                        case "PhoneActivity":
-                            menu_item = "PHONE";
-                            break;
-                        case "CameraActivity":
-                            menu_item = "CAMERA";
-                            break;
-                        case "BookActivity":
-                            menu_item = "BOOK";
-                            break;
-                        case "MemoActivity":
-                            menu_item = "MEMO";
-                            up_menu_item = "MEMO";
-                            break;
-                        case "SearchActivity":
-                            search_list = "SEARCH";
-                            menu_item = "DISH";
-                            break;
-                        case "UserActivity":
-                            menu_item = "USER";
-                            up_menu_item = "USER";
-                            break;
-                        case "PositionActivity":
-                            menu_item = "POSITION";
-                            up_menu_item = "POSITION";
-                            break;
-                        case "ProductActivity":
-                            menu_item = "PRODUCT";
-                            up_menu_item = "PRODUCT";
-                            break;
-                        case "MapsActivity":
-                            menu_item = "MAP";
-                            up_menu_item = "MAP";
-                            break;
-                        case "LoginActivity":
-                            menu_item = "LOGIN";
-                            up_menu_item = "LOGIN";
-                            break;
-                        case "PageActivity":
-                            menu_item = "PAGE";
-                            up_menu_item = "PAGE";
-                            break;
-                        case "OrderFormActivity":
-                            menu_item = "ORDER_FORM";
-                            up_menu_item = "ORDER_FORM";
-                            break;
-                        default:
-                            menu_item = "DISH";
-                            break;
-                    }
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
+                if (tasks.size() > 1) {
+                    preTask = tasks.get(tasks.size()-1); // Should be the main task
                 }
-
-                else {
-                    menu_item = "DISH";
-                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                    Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
-                    if (tasks.size() > 1) {
-                        preTask = tasks.get(tasks.size()-1); // Should be the main task
-                    }
-                }
+                menu_item = "DISH";
             }
             else {
                 if (bundle.getString("Order") != null) {
@@ -342,6 +243,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         preTask = tasks.get(tasks.size()-1);
                         preTask.moveToFront();
                         intent.replaceExtras(new Bundle());
+                        ProductActivity.this.finish();
                     }
                     else {
                         startActivity(intent);
