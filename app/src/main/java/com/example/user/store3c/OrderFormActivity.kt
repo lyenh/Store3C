@@ -163,6 +163,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
             } else {
                 Log.i("PreTask===> ", "null !") //default value, have only one task
                 startActivity(intent)
+                this@OrderFormActivity.finish()
             }
         } else {
             startActivity(intent)
