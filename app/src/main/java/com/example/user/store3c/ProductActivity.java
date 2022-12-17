@@ -236,6 +236,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 try {
                     preTask.moveToFront();
                     intent.replaceExtras(new Bundle());
+                    finishAndRemoveTask();
                 }catch (Exception e) {      // user has removed the task from the recent screen (task)
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                     List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -243,7 +244,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         preTask = tasks.get(tasks.size()-1);
                         preTask.moveToFront();
                         intent.replaceExtras(new Bundle());
-                        ProductActivity.this.finish();
+                        finishAndRemoveTask();
                     }
                     else {
                         startActivity(intent);
@@ -254,8 +255,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 startActivity(intent);
+                ProductActivity.this.finish();
             }
-            ProductActivity.this.finish();
         }
         else {
             startActivity(intent);

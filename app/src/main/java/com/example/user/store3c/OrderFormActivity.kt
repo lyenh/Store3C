@@ -146,6 +146,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 try {
                     preTask!!.moveToFront()
                     intent.replaceExtras(Bundle())
+                    finishAndRemoveTask()
                 } catch (e: Exception) {      // user has removed the task from the recent screen (task)
                     val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
                     val tasks = am.appTasks
@@ -153,7 +154,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         preTask = tasks[tasks.size - 1]
                         preTask!!.moveToFront()
                         intent.replaceExtras(Bundle())
-                        this@OrderFormActivity.finish()
+                        finishAndRemoveTask()
                     } else {
                         startActivity(intent)
                         this@OrderFormActivity.finish()
@@ -163,7 +164,6 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 Log.i("PreTask===> ", "null !") //default value, have only one task
                 startActivity(intent)
             }
-            this@OrderFormActivity.finish()
         } else {
             startActivity(intent)
             this@OrderFormActivity.finish()

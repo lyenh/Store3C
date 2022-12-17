@@ -1258,15 +1258,9 @@ public class MainActivity extends AppCompatActivity
             } else {
                 TimerThread = 0;
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                ActivityManager.AppTask eachTask;
-                for (int i = 1; i < tasks.size(); i++) {
-                    eachTask = tasks.get(i);
-                    eachTask.finishAndRemoveTask();
-                }
+                am.killBackgroundProcesses(getApplicationContext().getPackageName());
                 MainActivity.this.finish();
 
-                //super.onBackPressed();
             }
         }
     }

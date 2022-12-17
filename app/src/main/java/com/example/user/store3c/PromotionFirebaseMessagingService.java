@@ -21,6 +21,8 @@ import android.os.PowerManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.IntentCompat;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
