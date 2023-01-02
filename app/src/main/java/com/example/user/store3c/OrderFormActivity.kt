@@ -146,6 +146,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 try {
                     preTask!!.moveToFront()
                     intent.replaceExtras(Bundle())
+                    intent.setAction("")
+                    intent.setData(null)
+                    intent.setFlags(0)
                     finishAndRemoveTask()
                 } catch (e: Exception) {      // user has removed the task from the recent screen (task)
                     val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
@@ -154,6 +157,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         preTask = tasks[tasks.size - 1]
                         preTask!!.moveToFront()
                         intent.replaceExtras(Bundle())
+                        intent.setAction("")
+                        intent.setData(null)
+                        intent.setFlags(0)
                         finishAndRemoveTask()
                     } else {
                         startActivity(intent)

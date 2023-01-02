@@ -208,6 +208,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
+                    intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -229,6 +230,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
+                    intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             }
         }
         if (notification_list != null) {
@@ -236,6 +238,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 try {
                     preTask.moveToFront();
                     intent.replaceExtras(new Bundle());
+                    intent.setAction("");
+                    intent.setData(null);
+                    intent.setFlags(0);
                     finishAndRemoveTask();
                 }catch (Exception e) {      // user has removed the task from the recent screen (task)
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -244,6 +249,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         preTask = tasks.get(tasks.size()-1);
                         preTask.moveToFront();
                         intent.replaceExtras(new Bundle());
+                        intent.setAction("");
+                        intent.setData(null);
+                        intent.setFlags(0);
                         finishAndRemoveTask();
                     }
                     else {

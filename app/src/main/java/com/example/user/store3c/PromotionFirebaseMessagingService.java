@@ -25,7 +25,6 @@ import androidx.core.content.IntentCompat;
 
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -317,6 +316,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             PendingIntent pendingIntent;
             Bundle bundle = new Bundle();
             Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+            intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
 
             ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -337,7 +337,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
                     if (appRunningForeground) {
                         bundle.putString("Notification", "IN_APP");
-                        intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                         Log.i("Notification===> ", "fork new task.  ");
 
                     } else {
@@ -451,7 +450,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             }
         }
         catch (Exception e) {
-            Toast.makeText(PromotionFirebaseMessagingService.this, "Pick image timeout, reload data.", Toast.LENGTH_SHORT).show();
             Log.i("Pick image timeout: " , "reload data.");
         }
         userTokenRef = db.getReference("userToken");
@@ -490,7 +488,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         @Override
                                         public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             if (databaseError != null) {
-                                                Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                             } else {
                                                 Log.i("updateChildren saved: ", "successfully !");
@@ -516,7 +513,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         @Override
                                         public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             if (databaseError != null) {
-                                                Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                             } else {
                                                 Log.i("updateChildren saved: ", "successfully !");
@@ -552,7 +548,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                             @Override
                                             public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                                 if (databaseError != null) {
-                                                    Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                     Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                                 } else {
                                                     Log.i("updateChildren saved: ", "successfully !");
@@ -578,7 +573,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                             @Override
                                             public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                                 if (databaseError != null) {
-                                                    Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                     Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                                 } else {
                                                     Log.i("updateChildren saved: ", "successfully !");
@@ -602,11 +596,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("runTransaction===>", "postTransaction:onComplete: " + databaseError);
                         if (databaseError != null) {
                             Log.i("runTransaction saved: ", "fail !" + databaseError.getMessage());
-                            Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                        } else {
+                           } else {
                             Log.i("runTransaction saved: ", "successfully !");
-                            //Toast.makeText(PromotionActivity.this, "Version: " + Build.VERSION.SDK_INT, Toast.LENGTH_SHORT).show();
-
                         }
                     }
                 });

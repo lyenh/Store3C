@@ -124,11 +124,9 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
-    // TODO: firebase notification message upApp no task; api<23 reload
+    // TODO: firebase notification message upApp no task
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
-    // TODO: messageService OnNewtToken use toast is right
-    // TODO: the preTask not finish
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
