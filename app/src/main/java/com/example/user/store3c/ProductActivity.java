@@ -255,6 +255,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         finishAndRemoveTask();
                     }
                     else {
+                        intent.setFlags(0);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         ProductActivity.this.finish();
                     }
@@ -262,6 +264,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
+                intent.setFlags(0);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 ProductActivity.this.finish();
             }

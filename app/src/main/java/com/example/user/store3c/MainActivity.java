@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity
     // TODO: firebase notification message upApp no task
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
+    // TODO: onBackpree to mainActivity need to add clear top flag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
