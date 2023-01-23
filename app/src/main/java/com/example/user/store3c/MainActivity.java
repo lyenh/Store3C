@@ -16,10 +16,12 @@ import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -65,6 +67,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
@@ -124,7 +127,7 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
-    // TODO: firebase notification message upApp no task
+    // TODO: firebase notification message upApp no task, receive message 6 state
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
     // TODO: onBackpree to mainActivity need to add clear top flag
@@ -137,6 +140,19 @@ public class MainActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent Intent = getIntent();
+        Bundle bundle = Intent.getExtras();
+        if (bundle != null) {           // firebase notification reload Ap from system tray
+            if (bundle.getString("titleText") != null) {
+                Log.i("Notification page ===> ", Objects.requireNonNull(bundle.getString("messageIntro")));
+            }
+            else {      // firebase notification no data payload, reentery the app
+                if (((ActivityManager) getSystemService(Context.ACTIVITY_SERVICE)).getAppTasks().size() > 1) {
+                    MainActivity.this.finish();
+                }
+            }
+        }
 
         try {
             Toolbar toolbar = findViewById(R.id.toolbarMain);
@@ -1256,10 +1272,17 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this.getBaseContext(), "再按一次, 可退出3C生活百貨! ", Toast.LENGTH_LONG).show();
             } else {
                 TimerThread = 0;
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                am.killBackgroundProcesses(getApplicationContext().getPackageName());
-                MainActivity.this.finish();
 
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                ActivityManager.AppTask eachTask;
+                am.killBackgroundProcesses(getApplicationContext().getPackageName());
+                for (int i = 1; i < tasks.size(); i++) {
+                    eachTask = tasks.get(i);
+                    eachTask.finishAndRemoveTask();
+                }
+
+                MainActivity.this.finish();
             }
         }
     }

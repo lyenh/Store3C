@@ -70,7 +70,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.i("Messaging===> ", "from: "+remoteMessage.getFrom());
         String title, messageType, messageText, subText, message, imageUrl; // "http://appserver.000webhostapp.com/store3c/image/dish/d16.jpg"
-        String messagePrice, messageIntro = "";
+        String messagePrice = "", messageIntro = "";
         Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
@@ -172,7 +172,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
 
-                } else {        //broadcast message  :  Restlet talend API tester  ;  firebase cloud message with data defined by user
+                } else  if (messageType.equals("Talend-promotion")) {        //broadcast message  :  Restlet talend API tester  ;  firebase cloud message with data defined by user
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
 
@@ -296,6 +296,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     if (notificationManager != null) {
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
+                }
+                else if (messageType.equals("FCM-console")) {
+                    messagePrice = data.get("messagePrice");
+                    messageIntro = data.get("messageIntro");
+                    Log.i("Messaging===> ", title + messagePrice + messageIntro );
                 }
             }
         }
