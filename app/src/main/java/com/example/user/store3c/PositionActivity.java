@@ -239,6 +239,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                     switch (menu_item) {
                         case "DISH":
                             intentItem.setClass(PositionActivity.this, MainActivity.class);
+                            intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                             break;
                         case "CAKE":
                             intentItem.setClass(PositionActivity.this, CakeActivity.class);
@@ -277,6 +278,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                         default:
                             Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                             intentItem.setClass(PositionActivity.this, MainActivity.class);
+                            intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     }
                     startActivity(intentItem);
                     PositionActivity.this.finish();
@@ -288,6 +290,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                 switch (menu_item) {
                     case "DISH":
                         intentItem.setClass(PositionActivity.this, MainActivity.class);
+                        intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         break;
                     case "CAKE":
                         intentItem.setClass(PositionActivity.this, CakeActivity.class);
@@ -304,6 +307,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                     default:
                         Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                         intentItem.setClass(PositionActivity.this, MainActivity.class);
+                        intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 }
                 startActivity(intentItem);
                 PositionActivity.this.finish();
@@ -329,6 +333,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
         switch (menu_item) {
             case "DISH":
                 intent.setClass(PositionActivity.this, MainActivity.class);
+                intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 break;
             case "CAKE":
                 intent.setClass(PositionActivity.this, CakeActivity.class);
@@ -367,6 +372,7 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intent.setClass(PositionActivity.this, MainActivity.class);
+                intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         }
 
         startActivity(intent);

@@ -353,6 +353,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 case "DISH":
                     //intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
                     intent.setClass(OrderActivity.this, MainActivity.class);
+                    intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     break;
                 case "CAKE":
                     intent.setClass(OrderActivity.this, CakeActivity.class);
@@ -418,6 +419,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 default:
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     intent.setClass(OrderActivity.this, MainActivity.class);
+                    intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             }
         }
         startActivity(intent);

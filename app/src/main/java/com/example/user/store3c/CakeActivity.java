@@ -963,6 +963,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         } else {
             intent = new Intent();
             intent.setClass(CakeActivity.this, MainActivity.class);
+            intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             CakeActivity.this.finish();
         }
@@ -1132,6 +1133,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(CakeActivity.this, MainActivity.class);
+            intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intentItem);
             CakeActivity.this.finish();
         } else if (id == R.id.nav_cake) {

@@ -1072,6 +1072,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
         switch (menu_item) {
             case "DISH":
                 intent.setClass(SearchActivity.this, MainActivity.class);
+                intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 break;
             case "CAKE":
                 intent.setClass(SearchActivity.this, CakeActivity.class);
@@ -1097,6 +1098,7 @@ public class SearchActivity extends AppCompatActivity implements View.OnClickLis
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intent.setClass(SearchActivity.this, MainActivity.class);
+                intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         }
 
         startActivity(intent);

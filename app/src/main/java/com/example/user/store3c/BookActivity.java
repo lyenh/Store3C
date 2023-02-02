@@ -691,6 +691,7 @@ public class BookActivity extends AppCompatActivity
         } else {
             intent = new Intent();
             intent.setClass(BookActivity.this, MainActivity.class);
+            intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
             BookActivity.this.finish();
         }
@@ -833,6 +834,7 @@ public class BookActivity extends AppCompatActivity
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(BookActivity.this, MainActivity.class);
+            intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intentItem);
             BookActivity.this.finish();
         } else if (id == R.id.nav_cake) {

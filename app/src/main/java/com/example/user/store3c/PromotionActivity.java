@@ -216,6 +216,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         switch (menu_item) {
             case "DISH":
                 intentItem.setClass(PromotionActivity.this, MainActivity.class);
+                intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 break;
             case "CAKE":
                 intentItem.setClass(PromotionActivity.this, CakeActivity.class);
@@ -296,6 +297,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intentItem.setClass(PromotionActivity.this, MainActivity.class);
+                intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         }
         startActivity(intentItem);
         PromotionActivity.this.finish();

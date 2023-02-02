@@ -103,6 +103,8 @@ public class MainActivity extends AppCompatActivity
     private static final Handler5 handlerDownload5 = new Handler5();
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
+    private static PageAdapter mPagerAdapter;
+    private static ViewPager2 pager;
 
     private DishAdapter dishAdapter = null;
     private ImageView logoImage;
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
     public static volatile int adapterLayout = 0;
     public static volatile int returnApp = 0, appRntTimer = 0;
-    public static volatile int TimerThread = 1;
+    public static volatile int TimerThread = 0;
     public static List<Fragment> fragments;
     public static boolean setFirebaseDbPersistence;
     public static UserHandler userAdHandler;
@@ -127,10 +129,9 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
 
-    // TODO: firebase notification message upApp no task, receive message 6 state
+    // TODO: firebase notification message upApp no task, receive message 6 state, reload recentTask not MainActivity
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
-    // TODO: onBackpree to mainActivity need to add clear top flag
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,16 +142,11 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Intent Intent = getIntent();
-        Bundle bundle = Intent.getExtras();
-        if (bundle != null) {           // firebase notification reload Ap from system tray
-            if (bundle.getString("titleText") != null) {
+        Intent intent = getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {           // firebase notification reload App from system tray
+            if (bundle.getString("titleText") != null) {        // have data payload else no data payload which will reentry the app (set singleTop on AndroidManifest)
                 Log.i("Notification page ===> ", Objects.requireNonNull(bundle.getString("messageIntro")));
-            }
-            else {      // firebase notification no data payload, reentery the app
-                if (((ActivityManager) getSystemService(Context.ACTIVITY_SERVICE)).getAppTasks().size() > 1) {
-                    MainActivity.this.finish();
-                }
             }
         }
 
@@ -238,6 +234,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             if (ProductData.size() == 0) {
+                adapterLayout = 0;
                 setFirebaseDbPersistence = false;
                 dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
                 dishAdapter = new DishAdapter(ProductData, this, "DISH");
@@ -620,6 +617,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         TimerThread = 0;
+        returnApp = 0;
+        appRntTimer = 0;
         if (userAdHandler != null) {
             userAdHandler.removeCallbacksAndMessages(null);
         }
@@ -1109,8 +1108,6 @@ public class MainActivity extends AppCompatActivity
     };
 
     public static void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
-        PageAdapter mPagerAdapter;
-        ViewPager2 pager;
         final ImageView dot1, dot2, dot3, dot4, dot5;
 
         if (adapterLayout == 0) {
@@ -1272,16 +1269,25 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(this.getBaseContext(), "再按一次, 可退出3C生活百貨! ", Toast.LENGTH_LONG).show();
             } else {
                 TimerThread = 0;
-
+                returnApp = 0;
+                appRntTimer = 0;
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 ActivityManager.AppTask eachTask;
                 am.killBackgroundProcesses(getApplicationContext().getPackageName());
-                for (int i = 1; i < tasks.size(); i++) {
-                    eachTask = tasks.get(i);
-                    eachTask.finishAndRemoveTask();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        if (eachTask.getTaskInfo().taskId != getTaskId()) {
+                            eachTask.finishAndRemoveTask();
+                        }
+                    }
+                } else {
+                    for (int i = 1; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        eachTask.finishAndRemoveTask();
+                    }
                 }
-
                 MainActivity.this.finish();
             }
         }
