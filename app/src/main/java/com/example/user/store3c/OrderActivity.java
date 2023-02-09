@@ -365,7 +365,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     intent.setClass(OrderActivity.this, CameraActivity.class);
                     break;
                 case "BOOK":
-                   // intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     intent.setClass(OrderActivity.this, BookActivity.class);
                     break;
                 case "MEMO":

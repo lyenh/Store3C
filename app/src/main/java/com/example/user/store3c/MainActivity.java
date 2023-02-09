@@ -128,8 +128,9 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
+    public static int taskIdMainActivity ;
 
-    // TODO: firebase notification message upApp no task, receive message 6 state, reload recentTask not MainActivity
+    // TODO: firebase notification message upApp no task, receive message 6 state
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -144,10 +145,12 @@ public class MainActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+        taskIdMainActivity = getTaskId();
         if (bundle != null) {           // firebase notification reload App from system tray
             if (bundle.getString("titleText") != null) {        // have data payload else no data payload which will reentry the app (set singleTop on AndroidManifest)
                 Log.i("Notification page ===> ", Objects.requireNonNull(bundle.getString("messageIntro")));
             }
+
         }
 
         try {

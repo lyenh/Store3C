@@ -32,6 +32,7 @@ import java.util.Objects;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
+import static com.example.user.store3c.MainActivity.taskIdMainActivity;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -72,7 +73,16 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
                 if (tasks.size() > 1) {
-                    preTask = tasks.get(tasks.size()-1); // Should be the main task
+                    preTask = null;
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                            preTask = tasks.get(i);     // Should be the main task
+                        }
+                    }
+                    if (preTask == null) {
+                        preTask = tasks.get(tasks.size()-1);
+                        Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 menu_item = "DISH";
             }
@@ -149,24 +159,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                 if (notification_list != null) {
-                    if (notification_list.equals("IN_APP")) {
-                        if (preTask != null) {
-                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
-                            preTask.startActivity(this, intent, bundle);
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    if (tasks.size() > 1) {
+                        preTask = null;
+                        for (int i = 0; i < tasks.size(); i++) {
+                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                    preTask = tasks.get(i);     // Should be the main task
+                            }
                         }
-                        else {
-                            startActivity(intent);
-                            Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
+                        if (preTask == null) {
+                            preTask = tasks.get(tasks.size()-1);
+                            Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
                         }
                     }
-                    else if (notification_list.equals("UPPER_APP")) {
-                        if (preTask != null) {
-                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
-                            preTask.startActivity(this, intent, bundle);
-                        }
-                        else {
-                            startActivity(intent);
-                        }
+                    if (preTask != null) {
+                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        preTask.startActivity(this, intent, bundle);
+                        finishAndRemoveTask();
                     }
                     else {
                         startActivity(intent);
@@ -234,6 +244,20 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             }
         }
         if (notification_list != null) {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            if (tasks.size() > 1) {
+                preTask = null;
+                for (int i = 0; i < tasks.size(); i++) {
+                    if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                        preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                    }
+                }
+                if (preTask == null) {
+                    preTask = tasks.get(tasks.size()-1);
+                    Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                }
+            }
             if (preTask != null) {
                 try {
                     preTask.moveToFront();
@@ -243,10 +267,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     intent.setFlags(0);
                     finishAndRemoveTask();
                 }catch (Exception e) {      // user has removed the task from the recent screen (task)
-                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    tasks = am.getAppTasks();
                     if (tasks.size() > 1) {
-                        preTask = tasks.get(tasks.size()-1);
+                        preTask = null;
+                        for (int i = 0; i < tasks.size(); i++) {
+                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                preTask = tasks.get(i);     // Should be the main task
+                            }
+                        }
+                        if (preTask == null) {
+                            preTask = tasks.get(tasks.size()-1);
+                            Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                        }
                         preTask.moveToFront();
                         intent.replaceExtras(new Bundle());
                         intent.setAction("");

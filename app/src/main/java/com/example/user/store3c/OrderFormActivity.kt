@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.ActivityManager.AppTask
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -46,6 +47,29 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 val tasks = am.appTasks
                 if (tasks.size > 1) {
                     preTask = tasks[tasks.size - 1]// Should be the main task
+                    preTask = null
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                                preTask = tasks[i]      // Should be the main task
+                            }
+                        }
+                    } else {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
+                                preTask = tasks[i]      // Should be the main task
+                            }
+                        }
+                    }
+                    if (preTask == null) {
+                        preTask = tasks[tasks.size - 1]
+                        Toast.makeText(
+                            this@OrderFormActivity,
+                            "MainActivity taskId is not found !",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
                 }
                 menuItem = "DISH"
             }
@@ -142,6 +166,32 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         intent.setClass(this@OrderFormActivity, OrderActivity::class.java)
 
         if (notification_list != "") {
+            val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            val tasks = am.appTasks
+            if (tasks.size > 1) {
+                preTask = null
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    for (i in tasks.indices) {
+                        if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                            preTask = tasks[i]      // Should be the main task
+                        }
+                    }
+                } else {
+                    for (i in tasks.indices) {
+                        if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
+                            preTask = tasks[i]      // Should be the main task
+                        }
+                    }
+                }
+                if (preTask == null) {
+                    preTask = tasks[tasks.size - 1]
+                    Toast.makeText(
+                        this@OrderFormActivity,
+                        "MainActivity taskId is not found !",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
             if (preTask != null) {
                 try {
                     preTask!!.moveToFront()
@@ -151,10 +201,26 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     intent.setFlags(0)
                     finishAndRemoveTask()
                 } catch (e: Exception) {      // user has removed the task from the recent screen (task)
-                    val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-                    val tasks = am.appTasks
-                    if (tasks.size > 1) {
-                        preTask = tasks[tasks.size - 1]
+                    val tasksRemain = am.appTasks
+                    if (tasksRemain.size > 1) {
+                        preTask = null
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            for (i in tasksRemain.indices) {
+                                if (tasksRemain[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                                    preTask = tasksRemain[i]      // Should be the main task
+                                }
+                            }
+                        } else {
+                            for (i in tasksRemain.indices) {
+                                if (tasksRemain[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
+                                    preTask = tasksRemain[i]      // Should be the main task
+                                }
+                            }
+                        }
+                        if (preTask == null) {
+                            preTask = tasksRemain[tasksRemain.size - 1]
+                            Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
+                        }
                         preTask!!.moveToFront()
                         intent.replaceExtras(Bundle())
                         intent.setAction("")
@@ -162,12 +228,16 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         intent.setFlags(0)
                         finishAndRemoveTask()
                     } else {
+                        intent.flags = 0
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
                         this@OrderFormActivity.finish()
                     }
                 }
             } else {
                 Log.i("PreTask===> ", "null !") //default value, have only one task
+                intent.flags = 0
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 this@OrderFormActivity.finish()
             }
