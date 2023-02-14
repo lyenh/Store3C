@@ -218,7 +218,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.setFlags(0);
+                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                   // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -240,7 +243,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.setFlags(0);
+                 //   intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             }
         }
         if (notification_list != null) {

@@ -16,6 +16,7 @@ import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -64,7 +65,10 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -139,281 +143,300 @@ public class MainActivity extends AppCompatActivity
         RecyclerView dishRecyclerView;
         GridLayoutManager layoutManager;
         byte[] dbUserPicture;
-
+        String messageType = "", messageName = "",  messagePrice = "", messageIntro = "", imageUrl = "";
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         taskIdMainActivity = getTaskId();
-        if (bundle != null) {           // firebase notification reload App from system tray
-            if (bundle.getString("titleText") != null) {        // have data payload else no data payload which will reentry the app (set singleTop on AndroidManifest)
-                Log.i("Notification page ===> ", Objects.requireNonNull(bundle.getString("messageIntro")));
-            }
 
+        if (bundle != null) {       // firebase notification load App from system tray. If reentry the app which needs to set singleTop on AndroidManifest.
+            messageType = bundle.getString("messageType");
+            if (messageType == null) {      //No data payload.
+                messageType = "No-data-payload";
+            }
+        }
+        else {      //regular load MainActivity
+            messageType = "NotFirebaseMessage";
         }
 
-        try {
-            Toolbar toolbar = findViewById(R.id.toolbarMain);
-            setSupportActionBar(toolbar);
-            isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
-            if (isTab) {
-                rotationTabScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
-                //Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
-            }
-            else {
-                rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
-            }
+        switch (messageType) {
+            case "FCM-console":
+                messageName = bundle.getString("titleText");
+                messagePrice = bundle.getString("messagePrice");
+                messageIntro = bundle.getString("messageIntro");
+                imageUrl = bundle.getString("imagePath");
+                new ImageDownloadTask(messageName, messagePrice, messageIntro, MainActivity.this).execute(imageUrl);
+                break;
 
-            DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
-            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                    this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-            drawer.addDrawerListener(toggle);
-            toggle.syncState();
-
-            returnApp = 0;
-            appRntTimer = 0;
-            navigationView = findViewById(R.id.nav_view_main);
-            navigationView.setNavigationItemSelectedListener(this);
-            navigationView.setItemIconTintList(null);
-            //navigationView.setItemBackgroundResource(R.drawable.menu_icon_img);
-
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setLogo(R.drawable.store_logo);
-                //getSupportActionBar().setDisplayShowTitleEnabled(false);
-            }
-
-            //label.font = [UIFont fontWithName:@"Arial" size:50];
-            if (navigationView.getHeaderCount() > 0) {
-                View header = navigationView.getHeaderView(0);
-                logoImage = header.findViewById(R.id.logoImage_id);
-                dbHelper = new AccountDbAdapter(this);
+            case "No-data-payload":
+            case "NotFirebaseMessage":
                 try {
-                    if (!dbHelper.IsDbUserEmpty()) {
+                    Toolbar toolbar = findViewById(R.id.toolbarMain);
+                    setSupportActionBar(toolbar);
+                    isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+                    if (isTab) {
+                        rotationTabScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+                        //Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                        rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+                    }
+
+                    DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
+                    ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                            this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                    drawer.addDrawerListener(toggle);
+                    toggle.syncState();
+
+                    returnApp = 0;
+                    appRntTimer = 0;
+                    navigationView = findViewById(R.id.nav_view_main);
+                    navigationView.setNavigationItemSelectedListener(this);
+                    navigationView.setItemIconTintList(null);
+                    //navigationView.setItemBackgroundResource(R.drawable.menu_icon_img);
+
+                    if (getSupportActionBar() != null) {
+                        getSupportActionBar().setLogo(R.drawable.store_logo);
+                        //getSupportActionBar().setDisplayShowTitleEnabled(false);
+                    }
+
+                    //label.font = [UIFont fontWithName:@"Arial" size:50];
+                    if (navigationView.getHeaderCount() > 0) {
+                        View header = navigationView.getHeaderView(0);
+                        logoImage = header.findViewById(R.id.logoImage_id);
+                        dbHelper = new AccountDbAdapter(this);
                         try {
-                            if (userImg == null) {
-                                ArrayList<Cursor> cursor = dbHelper.getFullUserData();
-                                if (cursor.size() == 1) {
-                                    dbUserPicture = cursor.get(0).getBlob(4);
+                            if (!dbHelper.IsDbUserEmpty()) {
+                                try {
+                                    if (userImg == null) {
+                                        ArrayList<Cursor> cursor = dbHelper.getFullUserData();
+                                        if (cursor.size() == 1) {
+                                            dbUserPicture = cursor.get(0).getBlob(4);
+                                        }
+                                        else {
+                                            int cursorSize = cursor.size(), num, length = 0, totalLength = 0;
+                                            int remainLength = cursor.get(cursorSize - 2).getBlob(0).length;
+                                            byte[] picture = new byte[1000000 * (cursorSize - 2) + remainLength];
+                                            for (num = 0; num < cursorSize - 2; num++) {
+                                                totalLength = totalLength + cursor.get(num).getBlob(0).length;
+                                                System.arraycopy(cursor.get(num).getBlob(0), 0, picture, length, cursor.get(num).getBlob(0).length);
+                                                length = length + cursor.get(num).getBlob(0).length;
+                                            }
+                                            totalLength = totalLength + cursor.get(num).getBlob(0).length;
+                                            System.arraycopy(cursor.get(num).getBlob(0), 0, picture, length, cursor.get(num).getBlob(0).length);
+                                            //picture[picture.length - 1] = '\0';
+                                            if (totalLength == picture.length) {
+                                                Toast.makeText(MainActivity.this, "picture size: " + totalLength, Toast.LENGTH_LONG).show();
+                                            }
+                                            dbUserPicture = picture;
+                                            //Toast.makeText(MainActivity.this, "picture size: " + dbUserPicture.length, Toast.LENGTH_LONG).show();
+                                        }
+                                        userImg = BitmapFactory.decodeByteArray(dbUserPicture, 0, dbUserPicture.length);
+                                    }
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                    Toast.makeText(MainActivity.this, "db get error", Toast.LENGTH_SHORT).show();
+                                }
+                                if (userImg != null) {
+                                    try {
+                                        //logoImage.setLayoutParams(new LinearLayout.LayoutParams(80, 80));
+                                        //userImg = BitmapFactory.decodeByteArray(dbUserPicture, 0, dbUserPicture.length);
+                                        logoImage.setImageBitmap(userImg);
+                                    } catch (Exception e) {
+                                        Toast.makeText(MainActivity.this, "decodeByteArray error", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "image get error", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    if (ProductData.size() == 0) {
+                        adapterLayout = 0;
+                        setFirebaseDbPersistence = false;
+                        dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
+                        dishAdapter = new DishAdapter(ProductData, this, "DISH");
+                        layoutManager = new GridLayoutManager(this, 2);
+                        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                            @Override
+                            public int getSpanSize(int position) {
+                                return position == 0 ? 2 : 1;
+                            }
+                        });
+                        dishRecyclerView.setLayoutManager(layoutManager);
+                        dishRecyclerView.setAdapter(dishAdapter);
+                        if (InternetConnection.checkConnection(MainActivity.this)) {
+                            mAuth = FirebaseAuth.getInstance();
+                            final FirebaseUser currentUser = mAuth.getCurrentUser();
+                            if (currentUser == null) {
+                                mAuth.signInAnonymously()
+                                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                                if (task.isSuccessful()) {
+                                                    // Sign in success, update UI with the signed-in user's information
+                                                    Log.i("Anonymously===>", "signInAnonymously:success");
+                                                    Log.i("UserId===> ", "current User Id: "+mAuth.getCurrentUser().getUid());
+                                                    setUserAccountText();
+                                                    checkVersion();
+                                                    startDownload();
+                                                } else {
+                                                    // If sign in fails, display a message to the user.
+                                                    Log.i("Anonymously===>", "signInAnonymously:failure", task.getException());
+                                                    Toast.makeText(MainActivity.this, "Authentication failed.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                        });
+                            } else {
+                                if (dbHelper == null) {
+                                    dbHelper = new AccountDbAdapter(this);
+                                }
+                                if (!dbHelper.IsDbUserEmpty()) {
+                                    try {
+                                        Cursor cursor = dbHelper.getSimpleUserData();
+                                        //index = cursor.getInt(0));
+                                        //dbUserName = cursor.getString(1);
+                                        dbUserEmail = cursor.getString(2);
+                                        dbUserPassword = cursor.getString(3);
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    }
+                                    mAuth.createUserWithEmailAndPassword(dbUserEmail, dbUserPassword)
+                                            .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Log.i("CreateUserAccount===>", "Create User Account: success");
+                                                        final FirebaseUser currentUser = mAuth.getCurrentUser();
+                                                        currentUser.delete()
+                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                    @Override
+                                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                                        if (task.isSuccessful()) {
+                                                                            Log.i("User Account===>", "User account: delete");
+                                                                            //Toast.makeText(UserActivity.this, "資料已刪除 !", Toast.LENGTH_LONG).show();
+                                                                            mAuth.signInAnonymously()
+                                                                                    .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                                                                                        @Override
+                                                                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                                                                            if (task.isSuccessful()) {
+                                                                                                // Sign in success, update UI with the signed-in user's information
+                                                                                                Log.i("Anonymously===>", "signInAnonymously:success");
+                                                                                                setUserAccountText();
+                                                                                                checkVersion();
+                                                                                                startDownload();
+                                                                                            } else {
+                                                                                                // If sign in fails, display a message to the user.
+                                                                                                Log.i("Anonymously===>", "signInAnonymously:failure", task.getException());
+                                                                                                Toast.makeText(MainActivity.this, "Authentication failed.",
+                                                                                                        Toast.LENGTH_SHORT).show();
+                                                                                            }
+                                                                                        }
+                                                                                    });
+
+                                                                        } else {
+                                                                            //Toast.makeText(UserActivity.this, "登入已久, 需重新登入, 再執行刪除.", Toast.LENGTH_LONG).show();
+                                                                            AuthCredential credential = EmailAuthProvider.getCredential(dbUserEmail, dbUserPassword);
+
+                                                                            // Prompt the user to re-provide their sign-in credentials
+                                                                            currentUser.reauthenticate(credential)
+                                                                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                        @Override
+                                                                                        public void onComplete(@NonNull Task<Void> task) {
+                                                                                            if (task.isSuccessful()) {
+                                                                                                Log.i("Re-authenticated===>", "User re-authenticated: Success");
+                                                                                                //Toast.makeText(UserActivity.this, "已自動重新登入成功, 可再執行刪除 !", Toast.LENGTH_LONG).show();
+                                                                                                currentUser.delete()
+                                                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                                                            @Override
+                                                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                                                if (task.isSuccessful()) {
+                                                                                                                    Log.i("User Account===>", "User account: delete");
+                                                                                                                    //Toast.makeText(UserActivity.this, "資料已刪除 !", Toast.LENGTH_LONG).show();
+                                                                                                                    mAuth.signInAnonymously()
+                                                                                                                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
+                                                                                                                                @Override
+                                                                                                                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                                                                                                                    if (task.isSuccessful()) {
+                                                                                                                                        // Sign in success, update UI with the signed-in user's information
+                                                                                                                                        Log.i("Anonymously===>", "signInAnonymously:success");
+                                                                                                                                        setUserAccountText();
+                                                                                                                                        checkVersion();
+                                                                                                                                        startDownload();
+                                                                                                                                    } else {
+                                                                                                                                        // If sign in fails, display a message to the user.
+                                                                                                                                        Log.i("Anonymously===>", "signInAnonymously:failure", task.getException());
+                                                                                                                                        Toast.makeText(MainActivity.this, "Authentication failed.",
+                                                                                                                                                Toast.LENGTH_SHORT).show();
+                                                                                                                                    }
+                                                                                                                                }
+                                                                                                                            });
+                                                                                                                } else {
+                                                                                                                    Log.i("check User Account===>", "User account: delete fail");
+                                                                                                                    Toast.makeText(MainActivity.this, "測試資料未刪除 !", Toast.LENGTH_SHORT).show();
+                                                                                                                }
+                                                                                                            }
+                                                                                                        });
+                                                                                            }
+                                                                                            else {
+                                                                                                Toast.makeText(MainActivity.this, "User re-authenticated fail.", Toast.LENGTH_SHORT).show();
+                                                                                            }
+                                                                                        }
+                                                                                    });
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                    } else {
+                                                        Log.i("CreateUserAccount===>", "Create User Account: failure", task.getException());
+                                                        //Toast.makeText(UserActivity.this, "Create User Account: failure !", Toast.LENGTH_SHORT).show();
+                                                        setUserAccountText();
+                                                        checkVersion();
+                                                        startDownload();
+                                                    }
+                                                }
+                                            });
                                 }
                                 else {
-                                    int cursorSize = cursor.size(), num, length = 0, totalLength = 0;
-                                    int remainLength = cursor.get(cursorSize - 2).getBlob(0).length;
-                                    byte[] picture = new byte[1000000 * (cursorSize - 2) + remainLength];
-                                    for (num = 0; num < cursorSize - 2; num++) {
-                                        totalLength = totalLength + cursor.get(num).getBlob(0).length;
-                                        System.arraycopy(cursor.get(num).getBlob(0), 0, picture, length, cursor.get(num).getBlob(0).length);
-                                        length = length + cursor.get(num).getBlob(0).length;
-                                    }
-                                    totalLength = totalLength + cursor.get(num).getBlob(0).length;
-                                    System.arraycopy(cursor.get(num).getBlob(0), 0, picture, length, cursor.get(num).getBlob(0).length);
-                                    //picture[picture.length - 1] = '\0';
-                                    if (totalLength == picture.length) {
-                                        Toast.makeText(MainActivity.this, "picture size: " + totalLength, Toast.LENGTH_LONG).show();
-                                    }
-                                    dbUserPicture = picture;
-                                    //Toast.makeText(MainActivity.this, "picture size: " + dbUserPicture.length, Toast.LENGTH_LONG).show();
+                                    setUserAccountText();
+                                    checkVersion();
+                                    startDownload();
                                 }
-                                userImg = BitmapFactory.decodeByteArray(dbUserPicture, 0, dbUserPicture.length);
                             }
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "db get error", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(MainActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
                         }
-                        if (userImg != null) {
-                            try {
-                                //logoImage.setLayoutParams(new LinearLayout.LayoutParams(80, 80));
-                                //userImg = BitmapFactory.decodeByteArray(dbUserPicture, 0, dbUserPicture.length);
-                                logoImage.setImageBitmap(userImg);
-                            } catch (Exception e) {
-                                Toast.makeText(MainActivity.this, "decodeByteArray error", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "image get error", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            if (ProductData.size() == 0) {
-                adapterLayout = 0;
-                setFirebaseDbPersistence = false;
-                dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
-                dishAdapter = new DishAdapter(ProductData, this, "DISH");
-                layoutManager = new GridLayoutManager(this, 2);
-                layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                    @Override
-                    public int getSpanSize(int position) {
-                        return position == 0 ? 2 : 1;
-                    }
-                });
-                dishRecyclerView.setLayoutManager(layoutManager);
-                dishRecyclerView.setAdapter(dishAdapter);
-                if (InternetConnection.checkConnection(MainActivity.this)) {
-                    mAuth = FirebaseAuth.getInstance();
-                    final FirebaseUser currentUser = mAuth.getCurrentUser();
-                    if (currentUser == null) {
-                        mAuth.signInAnonymously()
-                                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if (task.isSuccessful()) {
-                                            // Sign in success, update UI with the signed-in user's information
-                                            Log.i("Anonymously===>", "signInAnonymously:success");
-                                            Log.i("UserId===> ", "current User Id: "+mAuth.getCurrentUser().getUid());
-                                            setUserAccountText();
-                                            checkVersion();
-                                            startDownload();
-                                        } else {
-                                            // If sign in fails, display a message to the user.
-                                            Log.i("Anonymously===>", "signInAnonymously:failure", task.getException());
-                                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                });
                     } else {
-                        if (dbHelper == null) {
-                            dbHelper = new AccountDbAdapter(this);
-                        }
-                        if (!dbHelper.IsDbUserEmpty()) {
-                            try {
-                                Cursor cursor = dbHelper.getSimpleUserData();
-                                //index = cursor.getInt(0));
-                                //dbUserName = cursor.getString(1);
-                                dbUserEmail = cursor.getString(2);
-                                dbUserPassword = cursor.getString(3);
-                            } catch (SQLException e) {
-                                e.printStackTrace();
+                        adapterLayout = 1;
+                        dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
+                        dishAdapter = new DishAdapter(ProductData, this, "DISH");
+                        layoutManager = new GridLayoutManager(this, 2);
+                        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                            @Override
+                            public int getSpanSize(int position) {
+                                return position == 0 ? 2 : 1;
                             }
-                            mAuth.createUserWithEmailAndPassword(dbUserEmail, dbUserPassword)
-                                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                                        @Override
-                                        public void onComplete(@NonNull Task<AuthResult> task) {
-                                            if (task.isSuccessful()) {
-                                                Log.i("CreateUserAccount===>", "Create User Account: success");
-                                                final FirebaseUser currentUser = mAuth.getCurrentUser();
-                                                currentUser.delete()
-                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                            @Override
-                                                            public void onComplete(@NonNull Task<Void> task) {
-                                                                if (task.isSuccessful()) {
-                                                                    Log.i("User Account===>", "User account: delete");
-                                                                    //Toast.makeText(UserActivity.this, "資料已刪除 !", Toast.LENGTH_LONG).show();
-                                                                    mAuth.signInAnonymously()
-                                                                            .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                                                                                @Override
-                                                                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                                                                    if (task.isSuccessful()) {
-                                                                                        // Sign in success, update UI with the signed-in user's information
-                                                                                        Log.i("Anonymously===>", "signInAnonymously:success");
-                                                                                        setUserAccountText();
-                                                                                        checkVersion();
-                                                                                        startDownload();
-                                                                                    } else {
-                                                                                        // If sign in fails, display a message to the user.
-                                                                                        Log.i("Anonymously===>", "signInAnonymously:failure", task.getException());
-                                                                                        Toast.makeText(MainActivity.this, "Authentication failed.",
-                                                                                                Toast.LENGTH_SHORT).show();
-                                                                                    }
-                                                                                }
-                                                                            });
-
-                                                                } else {
-                                                                    //Toast.makeText(UserActivity.this, "登入已久, 需重新登入, 再執行刪除.", Toast.LENGTH_LONG).show();
-                                                                    AuthCredential credential = EmailAuthProvider.getCredential(dbUserEmail, dbUserPassword);
-
-                                                                    // Prompt the user to re-provide their sign-in credentials
-                                                                    currentUser.reauthenticate(credential)
-                                                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                @Override
-                                                                                public void onComplete(@NonNull Task<Void> task) {
-                                                                                    if (task.isSuccessful()) {
-                                                                                        Log.i("Re-authenticated===>", "User re-authenticated: Success");
-                                                                                        //Toast.makeText(UserActivity.this, "已自動重新登入成功, 可再執行刪除 !", Toast.LENGTH_LONG).show();
-                                                                                        currentUser.delete()
-                                                                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                                                    @Override
-                                                                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                                                                        if (task.isSuccessful()) {
-                                                                                                            Log.i("User Account===>", "User account: delete");
-                                                                                                            //Toast.makeText(UserActivity.this, "資料已刪除 !", Toast.LENGTH_LONG).show();
-                                                                                                            mAuth.signInAnonymously()
-                                                                                                                    .addOnCompleteListener(MainActivity.this, new OnCompleteListener<AuthResult>() {
-                                                                                                                        @Override
-                                                                                                                        public void onComplete(@NonNull Task<AuthResult> task) {
-                                                                                                                            if (task.isSuccessful()) {
-                                                                                                                                // Sign in success, update UI with the signed-in user's information
-                                                                                                                                Log.i("Anonymously===>", "signInAnonymously:success");
-                                                                                                                                setUserAccountText();
-                                                                                                                                checkVersion();
-                                                                                                                                startDownload();
-                                                                                                                            } else {
-                                                                                                                                // If sign in fails, display a message to the user.
-                                                                                                                                Log.i("Anonymously===>", "signInAnonymously:failure", task.getException());
-                                                                                                                                Toast.makeText(MainActivity.this, "Authentication failed.",
-                                                                                                                                        Toast.LENGTH_SHORT).show();
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    });
-                                                                                                        } else {
-                                                                                                            Log.i("check User Account===>", "User account: delete fail");
-                                                                                                            Toast.makeText(MainActivity.this, "測試資料未刪除 !", Toast.LENGTH_SHORT).show();
-                                                                                                        }
-                                                                                                    }
-                                                                                                });
-                                                                                    }
-                                                                                    else {
-                                                                                        Toast.makeText(MainActivity.this, "User re-authenticated fail.", Toast.LENGTH_SHORT).show();
-                                                                                    }
-                                                                                }
-                                                                            });
-                                                                }
-                                                            }
-                                                        });
-
-                                            } else {
-                                                Log.i("CreateUserAccount===>", "Create User Account: failure", task.getException());
-                                                //Toast.makeText(UserActivity.this, "Create User Account: failure !", Toast.LENGTH_SHORT).show();
-                                                setUserAccountText();
-                                                checkVersion();
-                                                startDownload();
-                                            }
-                                        }
-                                    });
-                        }
-                        else {
-                            setUserAccountText();
-                            checkVersion();
-                            startDownload();
-                        }
+                        });
+                        dishRecyclerView.setLayoutManager(layoutManager);
+                        dishRecyclerView.setAdapter(dishAdapter);
+                        setUserAccountText();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
+                    //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
+                    //dishRecyclerView.addItemDecoration(itemDecoration);
+
+                    logoImage.setOnClickListener(this);
+                } catch (Throwable e) {
+                    Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
                 }
-            } else {
-                adapterLayout = 1;
-                dishRecyclerView = findViewById(R.id.dishRecyclerView_id);
-                dishAdapter = new DishAdapter(ProductData, this, "DISH");
-                layoutManager = new GridLayoutManager(this, 2);
-                layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                    @Override
-                    public int getSpanSize(int position) {
-                        return position == 0 ? 2 : 1;
-                    }
-                });
-                dishRecyclerView.setLayoutManager(layoutManager);
-                dishRecyclerView.setAdapter(dishAdapter);
-                setUserAccountText();
-            }
-            //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
-            //dishRecyclerView.addItemDecoration(itemDecoration);
-
-            logoImage.setOnClickListener(this);
-        } catch (Throwable e) {
-            Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
+                break;
         }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -1254,7 +1277,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private static byte [] Bitmap2Bytes(Bitmap bm){
+    public static byte [] Bitmap2Bytes(Bitmap bm){
         ByteArrayOutputStream baos =  new  ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.PNG,  100 , baos);
         return  baos.toByteArray();
@@ -1467,6 +1490,60 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+}
+
+class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
+    private final WeakReference<String> WRmessageName, WRmessagePrice, WRmessageIntro;
+    private final WeakReference<MainActivity> WRmainActivity;
+
+    ImageDownloadTask(String name, String price, String intro, MainActivity activity) {
+        WRmessageName = new WeakReference<>(name);
+        WRmessagePrice = new WeakReference<>(price);
+        WRmessageIntro = new WeakReference<>(intro);
+        WRmainActivity = new WeakReference<>(activity);
+    }
+
+    protected Bitmap doInBackground(String... params) {
+        try {
+            String imageUrl = params[0];
+            URL url = new URL(imageUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            return BitmapFactory.decodeStream(input);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    @Override
+    protected void onPostExecute(Bitmap result) {
+        Bitmap picture = result;
+        MainActivity activity = WRmainActivity.get();
+        String Name = WRmessageName.get();
+        String Price = WRmessagePrice.get();
+        String Intro = WRmessageIntro.get();
+        if (picture == null) {
+            picture = BitmapFactory.decodeResource(activity.getResources(), R.drawable.store_icon);
+        }
+        Bundle bundleProduct = new Bundle();
+        Intent intentProduct = new Intent(activity, ProductActivity.class);
+        if (picture != null) {
+            bundleProduct.putByteArray("Pic", MainActivity.Bitmap2Bytes(picture));
+        }
+        bundleProduct.putString("Name", Name);
+        bundleProduct.putString("Price", Price);
+        bundleProduct.putString("Intro", Intro);
+        bundleProduct.putString("Menu", "DISH");
+        intentProduct.putExtras(bundleProduct);
+        intentProduct.setClass(activity, ProductActivity.class);
+        activity.startActivity(intentProduct);
+        activity.finish();
     }
 
 }
