@@ -37,7 +37,7 @@ import static com.example.user.store3c.MainActivity.taskIdMainActivity;
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
     private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
-    private String notification_list = "";
+    private String notification_list = "", firebase_message = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
 
@@ -68,6 +68,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         Bundle bundle = Intent.getExtras();
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
+            firebase_message = bundle.getString("Firebase");
             if (notification_list != null) {   // notification promotion product
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -218,10 +219,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(0);
-                    //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                   // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -243,9 +241,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(0);
-                 //   intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             }
         }
         if (notification_list != null) {
@@ -293,7 +289,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     else {
                         intent.setFlags(0);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         startActivity(intent);
                         ProductActivity.this.finish();
                     }
@@ -302,10 +298,21 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent.setFlags(0);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 startActivity(intent);
                 ProductActivity.this.finish();
             }
+        }
+        else if (firebase_message.equals("MESSAGE")) {     //      from firebase notification message
+            intent.setClass(ProductActivity.this, MainActivity.class);
+            bundle = intent.getExtras();
+            if (bundle != null) {
+                bundle.clear();
+            }
+            intent.setFlags(0);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            startActivity(intent);
+            ProductActivity.this.finish();
         }
         else {
             startActivity(intent);

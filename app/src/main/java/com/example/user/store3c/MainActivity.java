@@ -134,6 +134,7 @@ public class MainActivity extends AppCompatActivity
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdMainActivity ;
 
+    // TODO: recent task reload productActivity, recent task reload mainActivity again (first load firebase notification activity, then load icon app activity)
     // TODO: firebase notification message upApp no task, receive message 6 state
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
@@ -168,6 +169,8 @@ public class MainActivity extends AppCompatActivity
                 messagePrice = bundle.getString("messagePrice");
                 messageIntro = bundle.getString("messageIntro");
                 imageUrl = bundle.getString("imagePath");
+                bundle.clear();
+                intent.putExtras(bundle);
                 new ImageDownloadTask(messageName, messagePrice, messageIntro, MainActivity.this).execute(imageUrl);
                 break;
 
@@ -1300,7 +1303,11 @@ public class MainActivity extends AppCompatActivity
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 ActivityManager.AppTask eachTask;
-                am.killBackgroundProcesses(getApplicationContext().getPackageName());
+                //am.killBackgroundProcesses(getApplicationContext().getPackageName());
+                Bundle bundleB = getIntent().getExtras();
+                if (bundleB != null) {
+                    bundleB.clear();
+                }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (int i = 0; i < tasks.size(); i++) {
                         eachTask = tasks.get(i);
@@ -1540,10 +1547,13 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Price", Price);
         bundleProduct.putString("Intro", Intro);
         bundleProduct.putString("Menu", "DISH");
+        bundleProduct.putString("Firebase", "MESSAGE");
         intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
+        intentProduct.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         activity.startActivity(intentProduct);
         activity.finish();
+        this.cancel(true);
     }
 
 }
