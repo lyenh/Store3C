@@ -943,7 +943,7 @@ public class CameraActivity extends Activity
         } else {
             intent = new Intent();
             intent.setClass(CameraActivity.this, MainActivity.class);
-            intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intent);
             CameraActivity.this.finish();
         }
@@ -1112,7 +1112,7 @@ public class CameraActivity extends Activity
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(CameraActivity.this, MainActivity.class);
-            intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intentItem);
             CameraActivity.this.finish();
         } else if (id == R.id.nav_cake) {

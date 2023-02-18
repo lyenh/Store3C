@@ -22,7 +22,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -71,7 +70,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
@@ -107,10 +105,9 @@ public class MainActivity extends AppCompatActivity
     private static final Handler5 handlerDownload5 = new Handler5();
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
-    private static PageAdapter mPagerAdapter;
-    private static ViewPager2 pager;
+    private static boolean firebaseNotificationReentry = false;
 
-    private DishAdapter dishAdapter = null;
+    private DishAdapter dishAdapter;
     private ImageView logoImage;
     private NavigationView navigationView;
     private String dbUserEmail, dbUserPassword;
@@ -134,27 +131,30 @@ public class MainActivity extends AppCompatActivity
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdMainActivity ;
 
-    // TODO: recent task reload productActivity, recent task reload mainActivity again (first load firebase notification activity, then load icon app activity)
-    // TODO: firebase notification message upApp no task, receive message 6 state
+    // TODO: reentry the mainActivity, adHandler not send message
+    // TODO: firebase notification message receive message 6 state
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        RecyclerView dishRecyclerView;
-        GridLayoutManager layoutManager;
         byte[] dbUserPicture;
-        String messageType = "", messageName = "",  messagePrice = "", messageIntro = "", imageUrl = "";
+        String messageType, messageName,  messagePrice, messageIntro, imageUrl;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        RecyclerView dishRecyclerView;
+        GridLayoutManager layoutManager;
+        Toolbar toolbar;
+        DrawerLayout drawer;
+        ActionBarDrawerToggle toggle;
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         taskIdMainActivity = getTaskId();
 
-        if (bundle != null) {       // firebase notification load App from system tray. If reentry the app which needs to set singleTop on AndroidManifest.
-            messageType = bundle.getString("messageType");
+        if (bundle != null) {       // firebase notification load App from system tray.
+            messageType = bundle.getString("messageType");      //have data payload
             if (messageType == null) {      //No data payload.
                 messageType = "No-data-payload";
             }
@@ -175,9 +175,29 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "No-data-payload":
+                bundle.clear();
+                intent.putExtras(bundle);
+                if (firebaseNotificationReentry) {
+                    fragments.clear();
+                    fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+                    fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+                    fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+                    fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+                    fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+                    TimerThread = 0;
+                    returnApp = 0;
+                    appRntTimer = 0;
+                    //if (userAdHandler != null) {
+                       // userAdHandler.removeCallbacksAndMessages(null);
+                    //}
+                    if (dbHelper != null) {
+                        dbHelper.close();
+                    }
+                }
+
             case "NotFirebaseMessage":
                 try {
-                    Toolbar toolbar = findViewById(R.id.toolbarMain);
+                    toolbar = findViewById(R.id.toolbarMain);
                     setSupportActionBar(toolbar);
                     isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
                     if (isTab) {
@@ -188,8 +208,8 @@ public class MainActivity extends AppCompatActivity
                         rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
                     }
 
-                    DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
-                    ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                    drawer = findViewById(R.id.drawer_layout_main);
+                    toggle = new ActionBarDrawerToggle(
                             this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
                     drawer.addDrawerListener(toggle);
                     toggle.syncState();
@@ -429,6 +449,7 @@ public class MainActivity extends AppCompatActivity
                         dishRecyclerView.setLayoutManager(layoutManager);
                         dishRecyclerView.setAdapter(dishAdapter);
                         setUserAccountText();
+                        firebaseNotificationReentry = true;
                     }
                     //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
                     //dishRecyclerView.addItemDecoration(itemDecoration);
@@ -644,10 +665,18 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onStop() {
+       // dishAdapter.onDetachedFromRecyclerView(dishRecyclerView);
+
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
         TimerThread = 0;
         returnApp = 0;
         appRntTimer = 0;
+        firebaseNotificationReentry = false;
         if (userAdHandler != null) {
             userAdHandler.removeCallbacksAndMessages(null);
         }
@@ -876,12 +905,13 @@ public class MainActivity extends AppCompatActivity
                 MainActivity hmActivity = weakRefActivity.get();
                 Lifecycle hmLifecycle = weakRefLifecycle.get();
                 if (hmActivity != null) {
-                    iniUpperPage(hmActivity, hmLifecycle, null);
+                    hmActivity.iniUpperPage(hmActivity, hmLifecycle, null);
                 }
                 DishAdapter hmDishAdapter = weakRefDishAdapter.get();
                 if (hmDishAdapter != null) {
                     hmDishAdapter.notifyDataSetChanged();
                 }
+                firebaseNotificationReentry = true;
                 dialog.dismiss();
             }
         }
@@ -1136,8 +1166,10 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    public static void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
+    public void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
         final ImageView dot1, dot2, dot3, dot4, dot5;
+        PageAdapter mPagerAdapter;
+        ViewPager2 pager;
 
         if (adapterLayout == 0) {
             fragments = new Vector<>();
@@ -1303,10 +1335,11 @@ public class MainActivity extends AppCompatActivity
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 ActivityManager.AppTask eachTask;
-                //am.killBackgroundProcesses(getApplicationContext().getPackageName());
-                Bundle bundleB = getIntent().getExtras();
+                Intent intentM = getIntent();
+                Bundle bundleB = intentM.getExtras();
                 if (bundleB != null) {
                     bundleB.clear();
+                    intentM.putExtras(bundleB);
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (int i = 0; i < tasks.size(); i++) {
@@ -1550,7 +1583,6 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Firebase", "MESSAGE");
         intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
-        intentProduct.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         activity.startActivity(intentProduct);
         activity.finish();
         this.cancel(true);

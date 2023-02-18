@@ -219,7 +219,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -241,7 +241,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             }
         }
         if (notification_list != null) {
@@ -303,16 +303,19 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 ProductActivity.this.finish();
             }
         }
-        else if (firebase_message.equals("MESSAGE")) {     //      from firebase notification message
-            intent.setClass(ProductActivity.this, MainActivity.class);
-            bundle = intent.getExtras();
-            if (bundle != null) {
-                bundle.clear();
+        else if (firebase_message != null) {
+            if (firebase_message.equals("MESSAGE")) {     //      from firebase notification message
+                intent.setClass(ProductActivity.this, MainActivity.class);
+                bundle = intent.getExtras();
+                if (bundle != null) {
+                    bundle.clear();
+                    intent.putExtras(bundle);
+                }
+                intent.setFlags(0);
+                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                startActivity(intent);
+                ProductActivity.this.finish();
             }
-            intent.setFlags(0);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-            startActivity(intent);
-            ProductActivity.this.finish();
         }
         else {
             startActivity(intent);

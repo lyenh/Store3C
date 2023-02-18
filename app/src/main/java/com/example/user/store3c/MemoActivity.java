@@ -244,7 +244,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 switch(menu_item) {
                     case "DISH":
                         intentItem.setClass(MemoActivity.this, MainActivity.class);
-                        intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         break;
                     case "CAKE":
                         intentItem.setClass(MemoActivity.this, CakeActivity.class);
@@ -261,7 +261,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                     default:
                         Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                         intentItem.setClass(MemoActivity.this, MainActivity.class);
-                        intentItem.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 }
 
                 startActivity(intentItem);
@@ -287,7 +287,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
         switch (menu_item) {
             case "DISH":
                 intent.setClass(MemoActivity.this, MainActivity.class);
-                intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 break;
             case "CAKE":
                 intent.setClass(MemoActivity.this, CakeActivity.class);
@@ -304,7 +304,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intent.setClass(MemoActivity.this, MainActivity.class);
-                intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         }
         startActivity(intent);
         MemoActivity.this.finish();

@@ -83,7 +83,7 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
         if (viewType == 1) {
             view = LayoutInflater.from(context).inflate(R.layout.content_ad_view, parent, false);
             if (MainActivity.adapterLayout == 1) {
-                MainActivity.iniUpperPage(activity, activity.getLifecycle(), view);
+                activity.iniUpperPage(activity, activity.getLifecycle(), view);
             }
             viewHolder = new ViewHolder(view, new ViewHolder.MyViewHolderClick() {
                 @Override
