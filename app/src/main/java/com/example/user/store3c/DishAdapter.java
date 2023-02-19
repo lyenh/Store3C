@@ -109,7 +109,7 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
                     intentItem.putExtras(bundle);
                     intentItem.setClass(activity, ProductActivity.class);
                     if (menuItem.equals("DISH")) {
-                        MainActivity.TimerThread = 0;
+                        activity.TimerThread = 0;
                     }
                     mContext.startActivity(intentItem);
                     activity.finish();

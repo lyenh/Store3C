@@ -73,8 +73,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
+                preTask = null;
                 if (tasks.size() > 1) {
-                    preTask = null;
                     for (int i = 0; i < tasks.size(); i++) {
                         if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
                             preTask = tasks.get(i);     // Should be the main task
@@ -82,7 +82,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     if (preTask == null) {
                         preTask = tasks.get(tasks.size()-1);
-                        Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                        Log.i("Task Id ===>", "MainActivity taskId is not set. ");
                     }
                 }
                 menu_item = "DISH";
@@ -162,8 +162,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (notification_list != null) {
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                     List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    preTask = null;
                     if (tasks.size() > 1) {
-                        preTask = null;
                         for (int i = 0; i < tasks.size(); i++) {
                             if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
                                     preTask = tasks.get(i);     // Should be the main task
@@ -171,7 +171,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                         if (preTask == null) {
                             preTask = tasks.get(tasks.size()-1);
-                            Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                            Log.i("Task Id ===>", "MainActivity taskId is not set. ");
                         }
                     }
                     if (preTask != null) {
@@ -247,8 +247,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (notification_list != null) {
             ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            preTask = null;
             if (tasks.size() > 1) {
-                preTask = null;
                 for (int i = 0; i < tasks.size(); i++) {
                     if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
                         preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
@@ -256,7 +256,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 if (preTask == null) {
                     preTask = tasks.get(tasks.size()-1);
-                    Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                    Log.i("Task Id ===>", "MainActivity taskId is not set. ");
                 }
             }
             if (preTask != null) {
@@ -269,8 +269,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     finishAndRemoveTask();
                 }catch (Exception e) {      // user has removed the task from the recent screen (task)
                     tasks = am.getAppTasks();
+                    preTask = null;
                     if (tasks.size() > 1) {
-                        preTask = null;
                         for (int i = 0; i < tasks.size(); i++) {
                             if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
                                 preTask = tasks.get(i);     // Should be the main task
@@ -278,7 +278,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                         if (preTask == null) {
                             preTask = tasks.get(tasks.size()-1);
-                            Toast.makeText(ProductActivity.this, "MainActivity taskId is not found !", Toast.LENGTH_SHORT).show();
+                            Log.i("Task Id ===>", "MainActivity taskId is not set. ");
                         }
                         preTask.moveToFront();
                         intent.replaceExtras(new Bundle());
@@ -311,10 +311,63 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     bundle.clear();
                     intent.putExtras(bundle);
                 }
-                intent.setFlags(0);
-                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                startActivity(intent);
-                ProductActivity.this.finish();
+
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                preTask = null;
+                if (tasks.size() > 1) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                            preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                        }
+                    }
+                    if (preTask == null) {
+                        preTask = tasks.get(tasks.size()-1);
+                        Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                    }
+                }
+                if (preTask != null) {
+                    try {
+                        preTask.moveToFront();
+                        intent.replaceExtras(new Bundle());
+                        intent.setAction("");
+                        intent.setData(null);
+                        intent.setFlags(0);
+                        finishAndRemoveTask();
+                    }catch (Exception e) {      // user has removed the task from the recent screen (task)
+                        tasks = am.getAppTasks();
+                        if (tasks.size() > 1) {
+                            preTask = null;
+                            for (int i = 0; i < tasks.size(); i++) {
+                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                    preTask = tasks.get(i);     // Should be the main task
+                                }
+                            }
+                            if (preTask == null) {
+                                preTask = tasks.get(tasks.size()-1);
+                                Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                            }
+                            preTask.moveToFront();
+                            intent.replaceExtras(new Bundle());
+                            intent.setAction("");
+                            intent.setData(null);
+                            intent.setFlags(0);
+                            finishAndRemoveTask();
+                        }
+                        else {
+                            intent.setFlags(0);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                            startActivity(intent);
+                            ProductActivity.this.finish();
+                        }
+                    }
+                }
+                else {
+                    intent.setFlags(0);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    startActivity(intent);
+                    ProductActivity.this.finish();
+                }
             }
         }
         else {

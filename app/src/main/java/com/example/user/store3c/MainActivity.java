@@ -105,33 +105,35 @@ public class MainActivity extends AppCompatActivity
     private static final Handler5 handlerDownload5 = new Handler5();
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
-    private static boolean firebaseNotificationReentry = false;
+
+    public static FirebaseAuth mAuth = null;
+    public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
+    public static volatile int adapterLayout = 0;
+    public static boolean setFirebaseDbPersistence;
+    public static Bitmap userImg = null;
+    public static boolean isTab;
+    public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
+    public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
+    public static int taskIdMainActivity;
 
     private DishAdapter dishAdapter;
     private ImageView logoImage;
     private NavigationView navigationView;
     private String dbUserEmail, dbUserPassword;
     private Context mContext;
-    //private String versionName;
     private int versionCode = 0;
     private final Handler1 handlerDownload1 = new Handler1();
     private AccountDbAdapter dbHelper = null;
+    private PageAdapter mPagerAdapter;
+    private ViewPager2 pager;
+    private ImageView dot1, dot2, dot3, dot4, dot5;
+    private List<Fragment> fragments;
 
-    public static FirebaseAuth mAuth = null;
-    public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
-    public static volatile int adapterLayout = 0;
-    public static volatile int returnApp = 0, appRntTimer = 0;
-    public static volatile int TimerThread = 0;
-    public static List<Fragment> fragments;
-    public static boolean setFirebaseDbPersistence;
-    public static UserHandler userAdHandler;
-    public static Bitmap userImg = null;
-    public static boolean isTab;
-    public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
-    public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
-    public static int taskIdMainActivity ;
+    public volatile int returnApp = 0, appRntTimer = 0;
+    public volatile int TimerThread = 0;
+    public UserHandler userAdHandler;
 
-    // TODO: reentry the mainActivity, adHandler not send message
+    // TODO: productActivity return from firebase task with buy function
     // TODO: firebase notification message receive message 6 state
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
@@ -151,7 +153,7 @@ public class MainActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        taskIdMainActivity = getTaskId();
+
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
@@ -175,28 +177,12 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "No-data-payload":
-                bundle.clear();
+                bundle.clear();     // can't really clear System tray activity with bundle value
                 intent.putExtras(bundle);
-                if (firebaseNotificationReentry) {
-                    fragments.clear();
-                    fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-                    fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-                    fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-                    fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-                    fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
-                    TimerThread = 0;
-                    returnApp = 0;
-                    appRntTimer = 0;
-                    //if (userAdHandler != null) {
-                       // userAdHandler.removeCallbacksAndMessages(null);
-                    //}
-                    if (dbHelper != null) {
-                        dbHelper.close();
-                    }
-                }
 
             case "NotFirebaseMessage":
                 try {
+                    taskIdMainActivity = getTaskId();
                     toolbar = findViewById(R.id.toolbarMain);
                     setSupportActionBar(toolbar);
                     isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
@@ -449,7 +435,6 @@ public class MainActivity extends AppCompatActivity
                         dishRecyclerView.setLayoutManager(layoutManager);
                         dishRecyclerView.setAdapter(dishAdapter);
                         setUserAccountText();
-                        firebaseNotificationReentry = true;
                     }
                     //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
                     //dishRecyclerView.addItemDecoration(itemDecoration);
@@ -666,7 +651,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
-       // dishAdapter.onDetachedFromRecyclerView(dishRecyclerView);
 
         super.onStop();
     }
@@ -676,9 +660,12 @@ public class MainActivity extends AppCompatActivity
         TimerThread = 0;
         returnApp = 0;
         appRntTimer = 0;
-        firebaseNotificationReentry = false;
+
         if (userAdHandler != null) {
             userAdHandler.removeCallbacksAndMessages(null);
+        }
+        if (fragments != null) {
+            fragments.clear();
         }
         if (dbHelper != null) {
             dbHelper.close();
@@ -911,7 +898,6 @@ public class MainActivity extends AppCompatActivity
                 if (hmDishAdapter != null) {
                     hmDishAdapter.notifyDataSetChanged();
                 }
-                firebaseNotificationReentry = true;
                 dialog.dismiss();
             }
         }
@@ -1167,25 +1153,21 @@ public class MainActivity extends AppCompatActivity
     };
 
     public void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
-        final ImageView dot1, dot2, dot3, dot4, dot5;
-        PageAdapter mPagerAdapter;
-        ViewPager2 pager;
+        fragments = new Vector<>();
+        fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+        fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+        fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+        fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+        fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
 
         if (adapterLayout == 0) {
-            fragments = new Vector<>();
-            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
-            pager = activity.findViewById(R.id.viewPager_id);
-            dot1 = activity.findViewById(R.id.imgIcon1_id);
-            dot2 = activity.findViewById(R.id.imgIcon2_id);
-            dot3 = activity.findViewById(R.id.imgIcon3_id);
-            dot4 = activity.findViewById(R.id.imgIcon4_id);
-            dot5 = activity.findViewById(R.id.imgIcon5_id);
-        }
-        else {
+            pager = findViewById(R.id.viewPager_id);
+            dot1 = findViewById(R.id.imgIcon1_id);
+            dot2 = findViewById(R.id.imgIcon2_id);
+            dot3 = findViewById(R.id.imgIcon3_id);
+            dot4 = findViewById(R.id.imgIcon4_id);
+            dot5 = findViewById(R.id.imgIcon5_id);
+        } else {
             pager = view.findViewById(R.id.viewPager_id);
             dot1 = view.findViewById(R.id.imgIcon1_id);
             dot2 = view.findViewById(R.id.imgIcon2_id);
@@ -1193,9 +1175,10 @@ public class MainActivity extends AppCompatActivity
             dot4 = view.findViewById(R.id.imgIcon4_id);
             dot5 = view.findViewById(R.id.imgIcon5_id);
         }
+
         mPagerAdapter = new PageAdapter(activity.getSupportFragmentManager(), fragments, lifecycle);
         pager.setAdapter(mPagerAdapter);
-        userAdHandler = new UserHandler(pager);
+        userAdHandler = new UserHandler(pager, activity);
         UserTimerThread adTimerThread = new UserTimerThread(activity);
         TimerThread = 1;
         adTimerThread.start();
@@ -1248,15 +1231,19 @@ public class MainActivity extends AppCompatActivity
 
     public static class UserHandler extends Handler {
         private final WeakReference<ViewPager2> weakRefPager;
+        private final WeakReference<MainActivity> weakRefActivity;
 
-        UserHandler (ViewPager2 hPager) {
+        UserHandler (ViewPager2 hPager, MainActivity activity) {
             weakRefPager = new WeakReference<>(hPager);
+            weakRefActivity = new WeakReference<>(activity);
         }
 
         @Override
         public void handleMessage(Message msg) {
-            appRntTimer = msg.what;
+            MainActivity hActivity = weakRefActivity.get();
             ViewPager2 hmPager = weakRefPager.get();
+
+            hActivity.appRntTimer = msg.what;
             if (hmPager != null) {
                 switch (msg.what) {
                     case 0:
@@ -1280,8 +1267,8 @@ public class MainActivity extends AppCompatActivity
                         hmPager.setCurrentItem(4);
                         break;
                 }
-                if (appRntTimer == (returnApp % 5)) {
-                    returnApp = 0;
+                if (hActivity.appRntTimer == (hActivity.returnApp % 5)) {
+                    hActivity.returnApp = 0;
                 }
             }
 
@@ -1364,6 +1351,7 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         if (InternetConnection.checkConnection(MainActivity.this)) {
+            mAuth = FirebaseAuth.getInstance();
             FirebaseUser currentUser = mAuth.getCurrentUser();
             menu.add(0, R.id.action_login_status,100, "使用者");
             if (currentUser == null || currentUser.isAnonymous()) {
