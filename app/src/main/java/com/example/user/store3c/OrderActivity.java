@@ -351,7 +351,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         else {
             switch (menu_item) {
                 case "DISH":
-                    //intent.setFlags(Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP);
                     intent.setClass(OrderActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     break;

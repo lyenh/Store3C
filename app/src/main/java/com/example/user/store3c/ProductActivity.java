@@ -82,7 +82,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     if (preTask == null) {
                         preTask = tasks.get(tasks.size()-1);
-                        Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                     }
                 }
                 menu_item = "DISH";
@@ -171,7 +171,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                         if (preTask == null) {
                             preTask = tasks.get(tasks.size()-1);
-                            Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                            Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                         }
                     }
                     if (preTask != null) {
@@ -181,6 +181,35 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     else {
                         startActivity(intent);
+                    }
+                }
+                else if (firebase_message != null) {
+                    if (firebase_message.equals("MESSAGE")) {
+                        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                        preTask = null;
+                        if (tasks.size() > 1) {
+                            for (int i = 0; i < tasks.size(); i++) {
+                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                    preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                                }
+                            }
+                            if (preTask == null) {
+                                preTask = tasks.get(tasks.size()-1);
+                                Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
+                            }
+                        }
+                        if (preTask != null) {
+                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            preTask.startActivity(this, intent, bundle);
+                            finishAndRemoveTask();
+                        }
+                        else {
+                            intent.setFlags(0);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                            startActivity(intent);
+                            finishAndRemoveTask();
+                        }
                     }
                 }
                 else {
@@ -256,7 +285,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 if (preTask == null) {
                     preTask = tasks.get(tasks.size()-1);
-                    Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                    Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                 }
             }
             if (preTask != null) {
@@ -278,7 +307,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                         if (preTask == null) {
                             preTask = tasks.get(tasks.size()-1);
-                            Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                            Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                         }
                         preTask.moveToFront();
                         intent.replaceExtras(new Bundle());
@@ -323,7 +352,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     if (preTask == null) {
                         preTask = tasks.get(tasks.size()-1);
-                        Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                     }
                 }
                 if (preTask != null) {
@@ -345,7 +374,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
                             if (preTask == null) {
                                 preTask = tasks.get(tasks.size()-1);
-                                Log.i("Task Id ===>", "MainActivity taskId is not set. ");
+                                Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                             }
                             preTask.moveToFront();
                             intent.replaceExtras(new Bundle());
@@ -358,7 +387,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intent.setFlags(0);
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                             startActivity(intent);
-                            ProductActivity.this.finish();
+                            finishAndRemoveTask();
                         }
                     }
                 }
@@ -366,7 +395,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     intent.setFlags(0);
                     intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     startActivity(intent);
-                    ProductActivity.this.finish();
+                    finishAndRemoveTask();
                 }
             }
         }

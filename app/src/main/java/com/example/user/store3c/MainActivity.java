@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: productActivity return from firebase task with buy function
     // TODO: firebase notification message receive message 6 state
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
@@ -647,12 +646,6 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
         }*/
         FirebaseMessaging.getInstance().subscribeToTopic("store3c");
-    }
-
-    @Override
-    protected void onStop() {
-
-        super.onStop();
     }
 
     @Override
