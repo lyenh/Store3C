@@ -897,6 +897,7 @@ public class PhoneActivity extends AppCompatActivity
         } else {
             intent = new Intent();
             intent.setClass(PhoneActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intent);
             PhoneActivity.this.finish();
         }
@@ -1038,6 +1039,7 @@ public class PhoneActivity extends AppCompatActivity
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(PhoneActivity.this, MainActivity.class);
+            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intentItem);
             PhoneActivity.this.finish();
         } else if (id == R.id.nav_cake) {

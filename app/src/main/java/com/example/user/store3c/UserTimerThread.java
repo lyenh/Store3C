@@ -15,8 +15,8 @@ public class UserTimerThread extends Thread{
     @Override
     public void run() {
         //super.run();
-        while(MainActivity.TimerThread == 1) {
-            MainActivity.userAdHandler.sendEmptyMessage((what++) % 5);
+        while(activity.TimerThread == 1) {
+            activity.userAdHandler.sendEmptyMessage((what++) % 5);
             try{
                 Thread.sleep(4000);
             }catch (Exception e) {

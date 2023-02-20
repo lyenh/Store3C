@@ -21,9 +21,10 @@ import android.os.PowerManager;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.IntentCompat;
+
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -54,12 +55,14 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     private static int totalUserAmount = 0;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
+    private static Integer pendingIntentIndex = 0;
     public String userId = "defaultId";
     public String refreshedToken;
     public static String orderMessageText = "";
 
     @Override
     public boolean onUnbind(Intent intent) {
+
         return super.onUnbind(intent);
     }
 
@@ -67,7 +70,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.i("Messaging===> ", "from: "+remoteMessage.getFrom());
         String title, messageType, messageText, subText, message, imageUrl; // "http://appserver.000webhostapp.com/store3c/image/dish/d16.jpg"
-        String messagePrice, messageIntro = "";
+        String messagePrice = "", messageIntro = "";
         Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
@@ -82,32 +85,40 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     Bundle bundle = new Bundle();
                     Intent resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                        //Log.i("Notification===> ", "size:  " +  tasks.size());
-                        if (tasks.get(0).getTaskInfo().baseActivity == null) {
-                            bundle.putString("Notification", "UPPER_APP");
-                            //Log.i("Notification===> ", "upActivity");
-                        }
-                        else {
-                            bundle.putString("Notification", "IN_APP");
-                            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                    ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    //Log.i("Notification===> ", "size:  " +  tasks.size());
+                    if (tasks.size() != 0) {
+                        boolean appRunningForeground = false;
+                        final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                        if (procInfos != null) {
+                            String packageName = getApplicationContext().getPackageName();
+                            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                if (processInfo.processName.equals(packageName)) {
+                                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                        appRunningForeground =  true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (appRunningForeground) {
+                                bundle.putString("Notification", "IN_APP");
+                                resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            } else {
+                                bundle.putString("Notification", "UPPER_APP");
+                            }
                         }
                     }
-                    else {
-                        bundle.putString("Notification", "NOTIFICATION");
+                    else {          // user clear all app in recent screen
+                        bundle.putString("Notification", "UPPER_APP");
                     }
                     resultIntent.putExtras(bundle);
-
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
                     stackBuilder.addNextIntent(resultIntent);
                     PendingIntent resultPendingIntent =
                             stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     orderMessageText = "    " + messageText;
-
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
@@ -161,7 +172,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
 
-                } else {        //broadcast message  :  Talend API tester  ;  firebase cloud message with data defined by user
+                } else  if (messageType.equals("Talend-promotion")) {        //broadcast message  :  Restlet talend API tester  ;  firebase cloud message with data defined by user
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
 
@@ -174,41 +185,39 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     Bundle bundle = new Bundle();
                     Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                        //Log.i("Notification===> ", "size:  " +  tasks.size());
+                    final ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    Log.i("Notification===> ", "size:  " +  tasks.size());
 
-                        String appActivity;
-                        int numActivity;
-                        ActivityManager.AppTask eachTask;
-                        for (int i=0; i<tasks.size();i++) {
-                            eachTask = tasks.get(i);
-                            Log.i("Message Task Num ===> ", "num: " + i);
-                            numActivity = eachTask.getTaskInfo().numActivities;
-                            Log.i("NumActivity ===> ", "NumActivity: " + numActivity);
-                            if (eachTask.getTaskInfo().baseActivity != null) {
-                                appActivity = Objects.requireNonNull(eachTask.getTaskInfo().baseActivity).getShortClassName().substring(1);
-                                Log.i("BaseActivity ===> ", "BaseActivity: " + appActivity);
+                    if (tasks.size() != 0) {
+                        boolean appRunningForeground = false;
+                        final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                        if (procInfos != null) {
+                            String packageName = getApplicationContext().getPackageName();
+                            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                if (processInfo.processName.equals(packageName)) {
+                                    Log.i("Notification===> ", "find app package.  ");
+                                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                        appRunningForeground =  true;
+                                        break;
+                                    }
+                                }
                             }
-                            if (eachTask.getTaskInfo().topActivity != null) {
-                                appActivity = Objects.requireNonNull(eachTask.getTaskInfo().topActivity).getShortClassName().substring(1);
-                                Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
-                            }
-                        }
+                            if (appRunningForeground) {
+                                bundle.putString("Notification", "IN_APP");
+                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                Log.i("Notification===> ", "fork new task.  ");
 
-                        if (tasks.get(0).getTaskInfo().baseActivity == null) {
-                            bundle.putString("Notification", "UPPER_APP");
-                            //Log.i("Notification===> ", "upActivity");
+                            } else {
+                                bundle.putString("Notification", "UPPER_APP");
+                            }
                         }
                         else {
-                            bundle.putString("Notification", "IN_APP");
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                            Log.i("Notification===> ", "Non running app.  ");
                         }
                     }
-                    else {
-                        bundle.putString("Notification", "NOTIFICATION");
+                    else {          // user clear all app in recent screen
+                        bundle.putString("Notification", "UPPER_APP");
                     }
 
                     bundle.putByteArray("Pic", Bitmap2Bytes(picture));
@@ -219,7 +228,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     intent.putExtras(bundle);
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
                     stackBuilder.addNextIntent(intent);
-                    pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+                    pendingIntentIndex++;
+                    Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
+                    pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -286,6 +297,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
                 }
+                else if (messageType.equals("FCM-console")) {
+                    messagePrice = data.get("messagePrice");
+                    messageIntro = data.get("messageIntro");
+                    Log.i("Messaging===> ", title + messagePrice + messageIntro );
+                }
             }
         }
 
@@ -305,23 +321,41 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             PendingIntent pendingIntent;
             Bundle bundle = new Bundle();
             Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                //Log.i("Notification===> ", "size:  " +  tasks.size());
-                if (tasks.get(0).getTaskInfo().baseActivity == null) {
-                    bundle.putString("Notification", "UPPER_APP");
-                    //Log.i("Notification===> ", "upActivity");
+            intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+            ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+
+            if (tasks.size() != 0) {
+                boolean appRunningForeground = false;
+                final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                if (procInfos != null) {
+                    String packageName = getApplicationContext().getPackageName();
+                    for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                        if (processInfo.processName.equals(packageName)) {
+                            Log.i("Notification===> ", "find app package.  ");
+                            if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                appRunningForeground =  true;
+                                break;
+                            }
+                        }
+                    }
+                    if (appRunningForeground) {
+                        bundle.putString("Notification", "IN_APP");
+                        Log.i("Notification===> ", "fork new task.  ");
+
+                    } else {
+                        bundle.putString("Notification", "UPPER_APP");
+                    }
                 }
                 else {
-                    bundle.putString("Notification", "IN_APP");
-                    //Log.i("Notification===> ", "Activity:  " + tasks.get(0).getTaskInfo().baseActivity);
+                    Log.i("Notification===> ", "Non running app.  ");
                 }
             }
-            else {
-                bundle.putString("Notification", "NOTIFICATION");
+            else {          // user clear all app in recent screen
+                bundle.putString("Notification", "UPPER_APP");
             }
+
             bundle.putByteArray("Pic", Bitmap2Bytes(picture));
             bundle.putString("Name", message);
             bundle.putString("Price", messagePrice);
@@ -330,7 +364,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             intent.putExtras(bundle);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
             stackBuilder.addNextIntent(intent);
-            pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+            pendingIntentIndex++;
+            pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
             String channelId = getString(R.string.default_notification_channel_id);
             Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -420,7 +455,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             }
         }
         catch (Exception e) {
-            Toast.makeText(PromotionFirebaseMessagingService.this, "Pick image timeout, reload data.", Toast.LENGTH_SHORT).show();
             Log.i("Pick image timeout: " , "reload data.");
         }
         userTokenRef = db.getReference("userToken");
@@ -459,7 +493,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         @Override
                                         public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             if (databaseError != null) {
-                                                Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                             } else {
                                                 Log.i("updateChildren saved: ", "successfully !");
@@ -485,7 +518,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         @Override
                                         public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             if (databaseError != null) {
-                                                Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                             } else {
                                                 Log.i("updateChildren saved: ", "successfully !");
@@ -521,7 +553,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                             @Override
                                             public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                                 if (databaseError != null) {
-                                                    Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                     Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                                 } else {
                                                     Log.i("updateChildren saved: ", "successfully !");
@@ -547,7 +578,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                             @Override
                                             public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                                 if (databaseError != null) {
-                                                    Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                     Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                                 } else {
                                                     Log.i("updateChildren saved: ", "successfully !");
@@ -571,11 +601,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("runTransaction===>", "postTransaction:onComplete: " + databaseError);
                         if (databaseError != null) {
                             Log.i("runTransaction saved: ", "fail !" + databaseError.getMessage());
-                            Toast.makeText(PromotionFirebaseMessagingService.this, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                        } else {
+                           } else {
                             Log.i("runTransaction saved: ", "successfully !");
-                            //Toast.makeText(PromotionActivity.this, "Version: " + Build.VERSION.SDK_INT, Toast.LENGTH_SHORT).show();
-
                         }
                     }
                 });

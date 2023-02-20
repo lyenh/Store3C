@@ -83,7 +83,7 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
         if (viewType == 1) {
             view = LayoutInflater.from(context).inflate(R.layout.content_ad_view, parent, false);
             if (MainActivity.adapterLayout == 1) {
-                MainActivity.iniUpperPage(activity, activity.getLifecycle(), view);
+                activity.iniUpperPage(activity, activity.getLifecycle(), view);
             }
             viewHolder = new ViewHolder(view, new ViewHolder.MyViewHolderClick() {
                 @Override
@@ -109,7 +109,7 @@ public class DishAdapter extends  RecyclerView.Adapter<DishAdapter.ViewHolder>{
                     intentItem.putExtras(bundle);
                     intentItem.setClass(activity, ProductActivity.class);
                     if (menuItem.equals("DISH")) {
-                        MainActivity.TimerThread = 0;
+                        activity.TimerThread = 0;
                     }
                     mContext.startActivity(intentItem);
                     activity.finish();

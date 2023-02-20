@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -11,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,17 +24,20 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
+
 import java.util.List;
 import java.util.Objects;
 
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
+import static com.example.user.store3c.MainActivity.taskIdMainActivity;
 
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
     private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
-    private String notification_list = "";
+    private String notification_list = "", firebase_message = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
 
@@ -63,104 +68,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         Bundle bundle = Intent.getExtras();
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
+            firebase_message = bundle.getString("Firebase");
             if (notification_list != null) {   // notification promotion product
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    String Activity;
-                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                    if (tasks.size() > 1) {
-                        preTask = tasks.get(1); // Should be the main task
-                    }
-                    String appActivity;
-                    int numActivity;
-                    ActivityManager.AppTask eachTask;
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
+                preTask = null;
+                if (tasks.size() > 1) {
                     for (int i = 0; i < tasks.size(); i++) {
-                        eachTask = tasks.get(i);
-                        Log.i("Product Task Num ===> ", "num: " + i);
-                        numActivity = eachTask.getTaskInfo().numActivities;
-                        Log.i("NumActivity ===> ", "NumActivity: " + numActivity);
-                        if (eachTask.getTaskInfo().baseActivity != null) {
-                            appActivity = Objects.requireNonNull(eachTask.getTaskInfo().baseActivity).getShortClassName().substring(1);
-                            Log.i("BaseActivity ===> ", "BaseActivity: " + appActivity);
-                        }
-                        if (eachTask.getTaskInfo().topActivity != null) {
-                            appActivity = Objects.requireNonNull(eachTask.getTaskInfo().topActivity).getShortClassName().substring(1);
-                            Log.i("TopActivity ===> ", "TopActivity: " + appActivity);
+                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                            preTask = tasks.get(i);     // Should be the main task
                         }
                     }
-                    if (preTask != null) {
-                        if (preTask.getTaskInfo().topActivity != null) {
-                            String upActivity = Objects.requireNonNull(preTask.getTaskInfo().topActivity).getShortClassName();
-                            Activity = upActivity.substring(1);
-                            Log.i("Notification===> ", "currentActivity: " + Activity);
-                        }
-                        else {
-                            Activity = "MainActivity";
-                        }
-                    }
-                    else {
-                        Activity = "MainActivity";
-                    }
-                    switch(Activity) {
-                        case "MainActivity":
-                            menu_item = "DISH";
-                            break;
-                        case "CakeActivity":
-                            menu_item = "CAKE";
-                            break;
-                        case "PhoneActivity":
-                            menu_item = "PHONE";
-                            break;
-                        case "CameraActivity":
-                            menu_item = "CAMERA";
-                            break;
-                        case "BookActivity":
-                            menu_item = "BOOK";
-                            break;
-                        case "MemoActivity":
-                            menu_item = "MEMO";
-                            up_menu_item = "MEMO";
-                            break;
-                        case "SearchActivity":
-                            search_list = "SEARCH";
-                            menu_item = "DISH";
-                            break;
-                        case "UserActivity":
-                            menu_item = "USER";
-                            up_menu_item = "USER";
-                            break;
-                        case "PositionActivity":
-                            menu_item = "POSITION";
-                            up_menu_item = "POSITION";
-                            break;
-                        case "ProductActivity":
-                            menu_item = "PRODUCT";
-                            up_menu_item = "PRODUCT";
-                            break;
-                        case "MapsActivity":
-                            menu_item = "MAP";
-                            up_menu_item = "MAP";
-                            break;
-                        case "LoginActivity":
-                            menu_item = "LOGIN";
-                            up_menu_item = "LOGIN";
-                            break;
-                        case "PageActivity":
-                            menu_item = "PAGE";
-                            up_menu_item = "PAGE";
-                            break;
-                        case "OrderFormActivity":
-                            menu_item = "ORDER_FORM";
-                            up_menu_item = "ORDER_FORM";
-                            break;
-                        default:
-                            menu_item = "DISH";
-                            break;
+                    if (preTask == null) {
+                        preTask = tasks.get(tasks.size()-1);
+                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                     }
                 }
-                else {
-                    menu_item = "DISH";
-                }
+                menu_item = "DISH";
             }
             else {
                 if (bundle.getString("Order") != null) {
@@ -235,27 +160,56 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                 if (notification_list != null) {
-                    if (notification_list.equals("IN_APP")) {
-                        if (preTask != null) {
-                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
-                            preTask.startActivity(this, intent, bundle);
+                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    preTask = null;
+                    if (tasks.size() > 1) {
+                        for (int i = 0; i < tasks.size(); i++) {
+                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                    preTask = tasks.get(i);     // Should be the main task
+                            }
                         }
-                        else {
-                            startActivity(intent);
-                            Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
+                        if (preTask == null) {
+                            preTask = tasks.get(tasks.size()-1);
+                            Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                         }
                     }
-                    else if (notification_list.equals("UPPER_APP")) {
-                        if (preTask != null) {
-                            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_FROM_BACKGROUND);
-                            preTask.startActivity(this, intent, bundle);
-                        }
-                        else {
-                            startActivity(intent);
-                        }
+                    if (preTask != null) {
+                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        preTask.startActivity(this, intent, bundle);
+                        finishAndRemoveTask();
                     }
                     else {
                         startActivity(intent);
+                    }
+                }
+                else if (firebase_message != null) {
+                    if (firebase_message.equals("MESSAGE")) {
+                        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                        preTask = null;
+                        if (tasks.size() > 1) {
+                            for (int i = 0; i < tasks.size(); i++) {
+                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                    preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                                }
+                            }
+                            if (preTask == null) {
+                                preTask = tasks.get(tasks.size()-1);
+                                Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
+                            }
+                        }
+                        if (preTask != null) {
+                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            preTask.startActivity(this, intent, bundle);
+                            finishAndRemoveTask();
+                        }
+                        else {
+                            intent.setFlags(0);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                            startActivity(intent);
+                            finishAndRemoveTask();
+                        }
                     }
                 }
                 else {
@@ -294,6 +248,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -315,33 +270,133 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             }
         }
         if (notification_list != null) {
-            if (notification_list.equals("IN_APP")) {
-                if (preTask != null) {
-                    preTask.moveToFront();
-                    intent.replaceExtras(new Bundle());
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            preTask = null;
+            if (tasks.size() > 1) {
+                for (int i = 0; i < tasks.size(); i++) {
+                    if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                        preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                    }
                 }
-                else {
-                    Toast.makeText(this, "preTask null!", Toast.LENGTH_SHORT).show();
-                    startActivity(intent);
+                if (preTask == null) {
+                    preTask = tasks.get(tasks.size()-1);
+                    Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                 }
-                ProductActivity.this.finish();
             }
-            else if (notification_list.equals("UPPER_APP")) {
-                if (preTask != null) {
+            if (preTask != null) {
+                try {
                     preTask.moveToFront();
                     intent.replaceExtras(new Bundle());
+                    intent.setAction("");
+                    intent.setData(null);
+                    intent.setFlags(0);
+                    finishAndRemoveTask();
+                }catch (Exception e) {      // user has removed the task from the recent screen (task)
+                    tasks = am.getAppTasks();
+                    preTask = null;
+                    if (tasks.size() > 1) {
+                        for (int i = 0; i < tasks.size(); i++) {
+                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                preTask = tasks.get(i);     // Should be the main task
+                            }
+                        }
+                        if (preTask == null) {
+                            preTask = tasks.get(tasks.size()-1);
+                            Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
+                        }
+                        preTask.moveToFront();
+                        intent.replaceExtras(new Bundle());
+                        intent.setAction("");
+                        intent.setData(null);
+                        intent.setFlags(0);
+                        finishAndRemoveTask();
+                    }
+                    else {
+                        intent.setFlags(0);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        startActivity(intent);
+                        ProductActivity.this.finish();
+                    }
                 }
-                else {
-                    startActivity(intent);
-                }
-                ProductActivity.this.finish();
             }
             else {
+                Log.i("PreTask===> ", "null !");        //default value, have only one task
+                intent.setFlags(0);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 startActivity(intent);
                 ProductActivity.this.finish();
+            }
+        }
+        else if (firebase_message != null) {
+            if (firebase_message.equals("MESSAGE")) {     //      from firebase notification message
+                intent.setClass(ProductActivity.this, MainActivity.class);
+                bundle = intent.getExtras();
+                if (bundle != null) {
+                    bundle.clear();
+                    intent.putExtras(bundle);
+                }
+
+                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                preTask = null;
+                if (tasks.size() > 1) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                            preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                        }
+                    }
+                    if (preTask == null) {
+                        preTask = tasks.get(tasks.size()-1);
+                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
+                    }
+                }
+                if (preTask != null) {
+                    try {
+                        preTask.moveToFront();
+                        intent.replaceExtras(new Bundle());
+                        intent.setAction("");
+                        intent.setData(null);
+                        intent.setFlags(0);
+                        finishAndRemoveTask();
+                    }catch (Exception e) {      // user has removed the task from the recent screen (task)
+                        tasks = am.getAppTasks();
+                        if (tasks.size() > 1) {
+                            preTask = null;
+                            for (int i = 0; i < tasks.size(); i++) {
+                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                    preTask = tasks.get(i);     // Should be the main task
+                                }
+                            }
+                            if (preTask == null) {
+                                preTask = tasks.get(tasks.size()-1);
+                                Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
+                            }
+                            preTask.moveToFront();
+                            intent.replaceExtras(new Bundle());
+                            intent.setAction("");
+                            intent.setData(null);
+                            intent.setFlags(0);
+                            finishAndRemoveTask();
+                        }
+                        else {
+                            intent.setFlags(0);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                            startActivity(intent);
+                            finishAndRemoveTask();
+                        }
+                    }
+                }
+                else {
+                    intent.setFlags(0);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    startActivity(intent);
+                    finishAndRemoveTask();
+                }
             }
         }
         else {

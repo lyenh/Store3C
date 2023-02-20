@@ -18,7 +18,6 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
-import java.util.*
 
 class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
@@ -44,86 +43,35 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
             notification_list = bundle.getString("Notification").toString()
             if (notification_list != "") {   // notification promotion product
                 orderFormList = orderFormList + "\n\n" + PromotionFirebaseMessagingService.orderMessageText
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                    val tasks = am.appTasks
-                    if (tasks.size > 1) {
-                        preTask = tasks[1] // Should be the main task
-                    }
-
-                    Log.i("=====> ", "task size: " + tasks.size)
-                    var appActivity: String
-                    var numActivity: Int
-                    var eachTask: AppTask
-                    for (i in tasks.indices) {
-                        eachTask = tasks[i]
-                        Log.i("Message Task Num ===> ", "num: $i")
-                        numActivity = eachTask.taskInfo.numActivities
-                        Log.i("NumActivity ===> ", "NumActivity: $numActivity")
-                        if (eachTask.taskInfo.baseActivity != null) {
-                            appActivity = (eachTask.taskInfo.baseActivity)!!.shortClassName.substring(1)
-                            Log.i("BaseActivity ===> ", "BaseActivity: $appActivity")
-                        }
-                        if (eachTask.taskInfo.topActivity != null) {
-                            appActivity = (eachTask.taskInfo.topActivity)!!.shortClassName.substring(1)
-                            Log.i("TopActivity ===> ", "TopActivity: $appActivity")
-                        }
-                    }
-
-                    if (preTask != null) {
-                        if (preTask!!.taskInfo.topActivity != null) {
-                            val upActivity = preTask!!.taskInfo.topActivity?.shortClassName
-                            upActivityName = upActivity!!.substring(1)
-                            Log.i("=====> ", "activity: $upActivityName")
-                            //Toast.makeText(this@OrderFormActivity,"TopActivity: " + upActivityName,Toast.LENGTH_SHORT).show()
-                        }
-                        else {
-                            upActivityName = "MainActivity"
-                        }
-                    }
-                    else {
-                        upActivityName = "MainActivity"
-                    }
-                    when (upActivityName) {
-                        "MainActivity" -> menuItem = "DISH"
-                        "CameraActivity" -> {
-                            if (YouTubeFragment.YPlayer != null) {
-                                try {
-                                    if (YouTubeFragment.YPlayer.isPlaying) {
-                                        YouTubeFragment.YPlayer.pause()
-                                        //Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
-                                    }
-                                } catch (e: Exception) {
-                                    Toast.makeText(
-                                        this@OrderFormActivity,
-                                        "YPayer have released: " + e.message,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val tasks = am.appTasks
+                if (tasks.size > 1) {
+                    preTask = tasks[tasks.size - 1]// Should be the main task
+                    preTask = null
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                                preTask = tasks[i]      // Should be the main task
                             }
                         }
-                        "PositionActivity" -> {
-                            if (YouTubeFragment.YPlayer != null) {
-                                try {
-                                    if (YouTubeFragment.YPlayer.isPlaying) {
-                                        YouTubeFragment.YPlayer.pause()
-                                        //Toast.makeText(this@OrderFormActivity, "play pause", Toast.LENGTH_SHORT).show();
-                                    }
-                                } catch (e: Exception) {
-                                    Toast.makeText(
-                                        this@OrderFormActivity,
-                                        "YPayer have released: " + e.message,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                    } else {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
+                                preTask = tasks[i]      // Should be the main task
                             }
                         }
-                        else -> menuItem = "DISH"
                     }
+                    if (preTask == null) {
+                        preTask = tasks[tasks.size - 1]
+                        Toast.makeText(
+                            this@OrderFormActivity,
+                            "MainActivity taskId is not found !",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
                 }
-                else {
-                    menuItem = "DISH"
-                }
+                menuItem = "DISH"
             }
             else {
                 if (bundle.getString("Menu") != null)
@@ -218,27 +166,78 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         intent.setClass(this@OrderFormActivity, OrderActivity::class.java)
 
         if (notification_list != "") {
-            if (notification_list == "IN_APP") {
-                if (preTask != null) {
-                    preTask!!.moveToFront()
-                    intent.replaceExtras(Bundle())
-                    this@OrderFormActivity.finish()
-                }
-                else {
-                    startActivity(intent)
-                    this@OrderFormActivity.finish()
-                }
-            } else if (notification_list == "UPPER_APP") {
-                if (preTask != null) {
-                    preTask!!.moveToFront()
-                    intent.replaceExtras(Bundle())
-                    this@OrderFormActivity.finish()
+            val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            val tasks = am.appTasks
+            if (tasks.size > 1) {
+                preTask = null
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    for (i in tasks.indices) {
+                        if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                            preTask = tasks[i]      // Should be the main task
+                        }
+                    }
                 } else {
-                    startActivity(intent)
-                    this@OrderFormActivity.finish()
+                    for (i in tasks.indices) {
+                        if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
+                            preTask = tasks[i]      // Should be the main task
+                        }
+                    }
+                }
+                if (preTask == null) {
+                    preTask = tasks[tasks.size - 1]
+                    Toast.makeText(
+                        this@OrderFormActivity,
+                        "MainActivity taskId is not found !",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
-            else {
+            if (preTask != null) {
+                try {
+                    preTask!!.moveToFront()
+                    intent.replaceExtras(Bundle())
+                    intent.setAction("")
+                    intent.setData(null)
+                    intent.setFlags(0)
+                    finishAndRemoveTask()
+                } catch (e: Exception) {      // user has removed the task from the recent screen (task)
+                    val tasksRemain = am.appTasks
+                    if (tasksRemain.size > 1) {
+                        preTask = null
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            for (i in tasksRemain.indices) {
+                                if (tasksRemain[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                                    preTask = tasksRemain[i]      // Should be the main task
+                                }
+                            }
+                        } else {
+                            for (i in tasksRemain.indices) {
+                                if (tasksRemain[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
+                                    preTask = tasksRemain[i]      // Should be the main task
+                                }
+                            }
+                        }
+                        if (preTask == null) {
+                            preTask = tasksRemain[tasksRemain.size - 1]
+                            Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
+                        }
+                        preTask!!.moveToFront()
+                        intent.replaceExtras(Bundle())
+                        intent.setAction("")
+                        intent.setData(null)
+                        intent.setFlags(0)
+                        finishAndRemoveTask()
+                    } else {
+                        intent.flags = 0
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        this@OrderFormActivity.finish()
+                    }
+                }
+            } else {
+                Log.i("PreTask===> ", "null !") //default value, have only one task
+                intent.flags = 0
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
                 this@OrderFormActivity.finish()
             }
