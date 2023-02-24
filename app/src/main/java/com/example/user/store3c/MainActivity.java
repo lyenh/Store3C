@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity
     private static final ArrayList<ProductItem> ProductData = new ArrayList<>();
     private static FirebaseDatabase db = null;
     private static final ArrayList<Integer> picShowIndex = new ArrayList<> ();
-    private static ProgressDialog dialog;
     private static int dishProductAmount = 0;
     private static int Reload = 0;
     private static DatabaseReference dishRef;
@@ -106,6 +105,7 @@ public class MainActivity extends AppCompatActivity
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
 
+    public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
     public static volatile int adapterLayout = 0;
@@ -133,7 +133,8 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: firebase notification message receive message 6 state
+    // TODO: MainActivity have multi activity in the same task(open multi firebase notification)
+    // TODO: have two tasks show the MainActivity in the recent tasks(firebase productActivity task, app icon task)
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -166,7 +167,19 @@ public class MainActivity extends AppCompatActivity
 
         switch (messageType) {
             case "FCM-console":
-                messageName = bundle.getString("titleText");
+                toolbar = findViewById(R.id.toolbarMain);
+                setSupportActionBar(toolbar);
+                dialog = new ProgressDialog(MainActivity.this);
+                dialog.setMessage("正在載入...");
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        // DO SOME STUFF HERE
+                    }
+                });
+                dialog.show();
+                messageName = bundle.getString("messageText");
                 messagePrice = bundle.getString("messagePrice");
                 messageIntro = bundle.getString("messageIntro");
                 imageUrl = bundle.getString("imagePath");
@@ -1564,6 +1577,7 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Firebase", "MESSAGE");
         intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
+        MainActivity.dialog.dismiss();
         activity.startActivity(intentProduct);
         activity.finish();
         this.cancel(true);
