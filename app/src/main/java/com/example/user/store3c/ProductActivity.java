@@ -2,8 +2,10 @@ package com.example.user.store3c;
 
 import android.app.ActivityManager;
 import android.app.TaskStackBuilder;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +17,7 @@ import androidx.core.app.NavUtils;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -69,22 +72,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
             firebase_message = bundle.getString("Firebase");
-            if (notification_list != null) {   // notification promotion product
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
-                preTask = null;
-                if (tasks.size() > 1) {
-                    for (int i = 0; i < tasks.size(); i++) {
-                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
-                            preTask = tasks.get(i);     // Should be the main task
-                        }
-                    }
-                    if (preTask == null) {
-                        preTask = tasks.get(tasks.size()-1);
-                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                    }
-                }
+            if (notification_list != null || firebase_message != null) {   // notification promotion product
                 menu_item = "DISH";
             }
             else {
@@ -206,6 +194,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                         else {
                             intent.setFlags(0);
+
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                             startActivity(intent);
                             finishAndRemoveTask();
@@ -385,15 +374,25 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                         else {
                             intent.setFlags(0);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                             startActivity(intent);
                             finishAndRemoveTask();
                         }
                     }
                 }
                 else {
-                    intent.setFlags(0);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    intent = Intent.makeMainActivity(new ComponentName(this, MainActivity.class));
+                   // intent.setFlags(0);
+                  //  intent.setAction("ACTION_MAIN");
+                  //  intent.addCategory("CATEGORY_LAUNCHER");
+                  //  intent.addCategory("CATEGORY_DEFAULT");
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    }
+                    else {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
+                    }
                     startActivity(intent);
                     finishAndRemoveTask();
                 }

@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: MainActivity have multi activity in the same task(open multi firebase notification)
     // TODO: have two tasks show the MainActivity in the recent tasks(firebase productActivity task, app icon task)
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
@@ -153,7 +152,6 @@ public class MainActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
@@ -1340,6 +1338,10 @@ public class MainActivity extends AppCompatActivity
                         if (eachTask.getTaskInfo().taskId != getTaskId()) {
                             eachTask.finishAndRemoveTask();
                         }
+                        else {
+                            Log.i("Activity number", ": "+ eachTask.getTaskInfo().numActivities );
+                            Log.i("BaseActivity", "===>"+ eachTask.getTaskInfo().baseActivity );
+                        }
                     }
                 } else {
                     for (int i = 1; i < tasks.size(); i++) {
@@ -1529,14 +1531,12 @@ public class MainActivity extends AppCompatActivity
 }
 
 class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
-    private final WeakReference<String> WRmessageName, WRmessagePrice, WRmessageIntro;
-    private final WeakReference<MainActivity> WRmainActivity;
+    private final String MessageName, MessagePrice, MessageIntro;
+    private final WeakReference<MainActivity> weakRefMainActivity;
 
     ImageDownloadTask(String name, String price, String intro, MainActivity activity) {
-        WRmessageName = new WeakReference<>(name);
-        WRmessagePrice = new WeakReference<>(price);
-        WRmessageIntro = new WeakReference<>(intro);
-        WRmainActivity = new WeakReference<>(activity);
+        MessageName = name; MessagePrice = price; MessageIntro = intro;
+        weakRefMainActivity = new WeakReference<>(activity);
     }
 
     protected Bitmap doInBackground(String... params) {
@@ -1558,10 +1558,7 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap result) {
         Bitmap picture = result;
-        MainActivity activity = WRmainActivity.get();
-        String Name = WRmessageName.get();
-        String Price = WRmessagePrice.get();
-        String Intro = WRmessageIntro.get();
+        MainActivity activity = weakRefMainActivity.get();
         if (picture == null) {
             picture = BitmapFactory.decodeResource(activity.getResources(), R.drawable.store_icon);
         }
@@ -1570,9 +1567,9 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         if (picture != null) {
             bundleProduct.putByteArray("Pic", MainActivity.Bitmap2Bytes(picture));
         }
-        bundleProduct.putString("Name", Name);
-        bundleProduct.putString("Price", Price);
-        bundleProduct.putString("Intro", Intro);
+        bundleProduct.putString("Name", MessageName);
+        bundleProduct.putString("Price", MessagePrice);
+        bundleProduct.putString("Intro", MessageIntro);
         bundleProduct.putString("Menu", "DISH");
         bundleProduct.putString("Firebase", "MESSAGE");
         intentProduct.putExtras(bundleProduct);
