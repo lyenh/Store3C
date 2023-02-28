@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity
     private static final Handler5 handlerDownload5 = new Handler5();
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
+    private static int retainRecentTaskId = -1;
 
     public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: have two tasks show the MainActivity in the recent tasks(firebase productActivity task, app icon task)
+    // TODO: orderActivity will reentry when relaunch from recent task(add again)
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -141,6 +142,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         byte[] dbUserPicture;
         String messageType, messageName,  messagePrice, messageIntro, imageUrl;
+        String retainRecentTask;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -155,13 +157,36 @@ public class MainActivity extends AppCompatActivity
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
+            retainRecentTask = bundle.getString("RetainRecentTask");
             if (messageType == null) {      //No data payload.
                 messageType = "No-data-payload";
+            }
+            if (retainRecentTask != null) {
+                if (retainRecentTask.equals("RECENT")) {
+                    retainRecentTaskId = getTaskId();
+
+                }
             }
         }
         else {      //regular load MainActivity
             messageType = "NotFirebaseMessage";
         }
+
+        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+        ActivityManager.AppTask eachTask;
+
+        if (tasks.size() > 1) {
+            for (int i = 0; i < tasks.size(); i++) {
+                eachTask = tasks.get(i);
+                if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
+                        (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                    retainRecentTaskId  = -1;
+                    eachTask.finishAndRemoveTask();
+                }
+            }
+        }
+
 
         switch (messageType) {
             case "FCM-console":

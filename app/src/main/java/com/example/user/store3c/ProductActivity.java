@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -32,6 +33,8 @@ import com.google.android.gms.tasks.Task;
 import java.util.List;
 import java.util.Objects;
 
+import static android.content.Intent.ACTION_MAIN;
+import static android.content.Intent.CATEGORY_LAUNCHER;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
@@ -373,7 +376,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             finishAndRemoveTask();
                         }
                         else {
-                            intent.setFlags(0);
+                            intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                            Bundle retainRecentsTaskBundle = new Bundle();
+                            retainRecentsTaskBundle.putString("RetainRecentTask", "RECENT");
+                            intent.putExtras(retainRecentsTaskBundle);
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                             startActivity(intent);
                             finishAndRemoveTask();
@@ -381,18 +387,15 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
                 else {
-                    intent = Intent.makeMainActivity(new ComponentName(this, MainActivity.class));
-                   // intent.setFlags(0);
-                  //  intent.setAction("ACTION_MAIN");
-                  //  intent.addCategory("CATEGORY_LAUNCHER");
-                  //  intent.addCategory("CATEGORY_DEFAULT");
+                    intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    Bundle retainRecentsTaskBundle = new Bundle();
+                    retainRecentsTaskBundle.putString("RetainRecentTask", "RECENT");
+                    intent.putExtras(retainRecentsTaskBundle);
+                    Log.i("Package list:  ", "===> " + intent.getPackage());
+                    Log.i("Category list:  ", "===> " + intent.getCategories());
+                    Log.i("Action list:  ", "===> " + intent.getAction());
+                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                    }
-                    else {
-                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY);
-                    }
                     startActivity(intent);
                     finishAndRemoveTask();
                 }
