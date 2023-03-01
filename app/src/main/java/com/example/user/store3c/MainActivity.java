@@ -104,8 +104,8 @@ public class MainActivity extends AppCompatActivity
     private static final Handler5 handlerDownload5 = new Handler5();
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
-    private static int retainRecentTaskId = -1;
 
+    public static int retainRecentTaskId = -1;
     public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
@@ -134,7 +134,10 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: orderActivity will reentry when relaunch from recent task(add again)
+    // TODO: orderActivity has recent task need to transport the bundle flag to another activity
+    // TODO: notification task not in recent task list (productActivity, orderFormActivity)
+    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
+    // TODO: ReorderToFrom flag, retainRecentTaskId is only one
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -162,9 +165,8 @@ public class MainActivity extends AppCompatActivity
                 messageType = "No-data-payload";
             }
             if (retainRecentTask != null) {
-                if (retainRecentTask.equals("RECENT")) {
+                if (retainRecentTask.equals("RECENT_TASK")) {
                     retainRecentTaskId = getTaskId();
-
                 }
             }
         }
@@ -186,7 +188,6 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         }
-
 
         switch (messageType) {
             case "FCM-console":

@@ -229,7 +229,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         finishAndRemoveTask()
                     } else {
                         intent.flags = 0
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                         startActivity(intent)
                         this@OrderFormActivity.finish()
                     }
@@ -237,7 +237,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
             } else {
                 Log.i("PreTask===> ", "null !") //default value, have only one task
                 intent.flags = 0
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 startActivity(intent)
                 this@OrderFormActivity.finish()
             }

@@ -45,6 +45,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
     private OrderRecyclerAdapter adapter = null;
     static float total_price = 0;
     private ArrayList<ProductItem> orderTable = new ArrayList<>();
+    private boolean recentTask = false;
     public static ArrayList<ListItem> promotionListItem = new ArrayList<>();
 
     ItemTouchHelper ith;
@@ -81,13 +82,19 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         ret_b = findViewById(R.id.orderReturnBtn_id);
         promotion_b = findViewById(R.id.promotionBtn_id);
         resetCheckBox_b = findViewById(R.id.orderCheckBoxClearBtn_id);
-
         OrderRecyclerView = findViewById(R.id.orderRecyclerView_id);
 
+        String retainRecentTask;
         if (bundle != null) {
             if (bundle.getString("Name") != null) {
                 if (bundle.getString("Search") != null) {
                     search_list = bundle.getString("Search");
+                }
+                retainRecentTask = bundle.getString("RetainRecentTask");
+                if (retainRecentTask != null) {
+                    if (retainRecentTask.equals("RECENT_ACTIVITY")) {
+                        recentTask = true;
+                    }
                 }
                 if (bundle.getString("Menu") != null) {
                     menu_item = bundle.getString("Menu");
@@ -352,7 +359,13 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(OrderActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    if (recentTask) {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
+                    }
                     break;
                 case "CAKE":
                     intent.setClass(OrderActivity.this, CakeActivity.class);
@@ -417,7 +430,13 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 default:
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     intent.setClass(OrderActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    if (recentTask) {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
+                    }
             }
         }
         startActivity(intent);
