@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -92,7 +93,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 }
                 retainRecentTask = bundle.getString("RetainRecentTask");
                 if (retainRecentTask != null) {
-                    if (retainRecentTask.equals("RECENT_ACTIVITY")) {
+                    if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
                         recentTask = true;
                     }
                 }
@@ -147,6 +148,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 }
                 if (bundle.getString("upMenu") != null) {
                     up_menu_item = bundle.getString("upMenu");
+                }
+                retainRecentTask = bundle.getString("RetainRecentTask");
+                if (retainRecentTask != null) {
+                    if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // orderFormActivity task
+                        recentTask = true;
+                    }
                 }
             }
         }
@@ -361,7 +368,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     intent.setClass(OrderActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     if (recentTask) {
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent.setPackage(getApplicationContext().getPackageName());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
@@ -432,7 +441,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     intent.setClass(OrderActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     if (recentTask) {
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent.setPackage(getApplicationContext().getPackageName());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);

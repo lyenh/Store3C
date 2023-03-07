@@ -134,8 +134,9 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
+    // TODO: promotionActivity add in AsyncTask
     // TODO: orderActivity has recent task need to transport the bundle flag to another activity
-    // TODO: notification task not in recent task list (productActivity, orderFormActivity)
+    // TODO: notification task not in recent task list (productActivity, orderFormActivity), how to know is the system create task
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
     // TODO: ReorderToFrom flag, retainRecentTaskId is only one
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter

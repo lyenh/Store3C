@@ -321,7 +321,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent.setFlags(0);
-                intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
+
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                Bundle retainRecentTaskBundle = new Bundle();
+                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                intent.putExtras(retainRecentTaskBundle);
                 startActivity(intent);
                 ProductActivity.this.finish();
             }
@@ -382,7 +387,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             Bundle retainRecentTaskBundle = new Bundle();
                             retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                             intent.putExtras(retainRecentTaskBundle);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                             startActivity(intent);
                             finishAndRemoveTask();
                         }
@@ -390,14 +395,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 else {
                     intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                    intent.setPackage(getApplicationContext().getPackageName());
                     Bundle retainRecentTaskBundle = new Bundle();
                     retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                     intent.putExtras(retainRecentTaskBundle);
                     Log.i("Package list:  ", "===> " + intent.getPackage());
                     Log.i("Category list:  ", "===> " + intent.getCategories());
                     Log.i("Action list:  ", "===> " + intent.getAction());
-                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
 
                     startActivity(intent);
                     finishAndRemoveTask();

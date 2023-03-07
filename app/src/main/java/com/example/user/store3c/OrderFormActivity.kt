@@ -2,7 +2,6 @@ package com.example.user.store3c
 
 import android.app.ActivityManager
 import android.app.ActivityManager.AppTask
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -43,34 +42,6 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
             notification_list = bundle.getString("Notification").toString()
             if (notification_list != "") {   // notification promotion product
                 orderFormList = orderFormList + "\n\n" + PromotionFirebaseMessagingService.orderMessageText
-                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                val tasks = am.appTasks
-                if (tasks.size > 1) {
-                    preTask = tasks[tasks.size - 1]// Should be the main task
-                    preTask = null
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        for (i in tasks.indices) {
-                            if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
-                                preTask = tasks[i]      // Should be the main task
-                            }
-                        }
-                    } else {
-                        for (i in tasks.indices) {
-                            if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
-                                preTask = tasks[i]      // Should be the main task
-                            }
-                        }
-                    }
-                    if (preTask == null) {
-                        preTask = tasks[tasks.size - 1]
-                        Toast.makeText(
-                            this@OrderFormActivity,
-                            "MainActivity taskId is not found !",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-
-                }
                 menuItem = "DISH"
             }
             else {
@@ -230,6 +201,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     } else {
                         intent.flags = 0
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        val retainRecentTaskBundle = Bundle()
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY")
+                        intent.putExtras(retainRecentTaskBundle)
                         startActivity(intent)
                         this@OrderFormActivity.finish()
                     }
@@ -238,6 +212,11 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 Log.i("PreTask===> ", "null !") //default value, have only one task
                 intent.flags = 0
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                if (intent.getPackage() == null) {
+                    val retainRecentTaskBundle = Bundle()
+                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY")
+                    intent.putExtras(retainRecentTaskBundle)
+                }
                 startActivity(intent)
                 this@OrderFormActivity.finish()
             }
