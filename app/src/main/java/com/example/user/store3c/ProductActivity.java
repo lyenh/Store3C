@@ -148,7 +148,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 Toast.makeText(this, "已加入購物車!", Toast.LENGTH_SHORT).show();
 
                 intent.setClass(ProductActivity.this, OrderActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                 if (notification_list != null) {
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -166,12 +165,28 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
                     if (preTask != null) {
-                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(0);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                        intent.putExtras(retainRecentTaskBundle);
+                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         preTask.startActivity(this, intent, bundle);
                         finishAndRemoveTask();
                     }
                     else {
+                        intent.setFlags(0);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                        if (intent.getPackage() == null) {
+                            Bundle retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            intent.putExtras(retainRecentTaskBundle);
+                            Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
+                        }
+                        else {
+                            Toast.makeText(ProductActivity.this, "Task created by system", Toast.LENGTH_LONG).show();
+                        }
                         startActivity(intent);
+                        finishAndRemoveTask();
                     }
                 }
                 else if (firebase_message != null) {
@@ -191,7 +206,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
                         }
                         if (preTask != null) {
-                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            Bundle retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            intent.putExtras(retainRecentTaskBundle);
                             preTask.startActivity(this, intent, bundle);
                             finishAndRemoveTask();
                         }
@@ -208,8 +226,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 else {
                     startActivity(intent);
+                    ProductActivity.this.finish();
                 }
-                ProductActivity.this.finish();
                 break;
 
         }
@@ -312,23 +330,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     else {
                         intent.setFlags(0);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
-                        ProductActivity.this.finish();
+                        finishAndRemoveTask();
                     }
                 }
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent.setFlags(0);
-
-
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                 Bundle retainRecentTaskBundle = new Bundle();
                 retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                 intent.putExtras(retainRecentTaskBundle);
                 startActivity(intent);
-                ProductActivity.this.finish();
+                finishAndRemoveTask();
             }
         }
         else if (firebase_message != null) {
@@ -402,7 +421,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     Log.i("Category list:  ", "===> " + intent.getCategories());
                     Log.i("Action list:  ", "===> " + intent.getAction());
                     intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-
                     startActivity(intent);
                     finishAndRemoveTask();
                 }

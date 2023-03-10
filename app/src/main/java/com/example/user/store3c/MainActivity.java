@@ -129,16 +129,17 @@ public class MainActivity extends AppCompatActivity
     private ViewPager2 pager;
     private ImageView dot1, dot2, dot3, dot4, dot5;
     private List<Fragment> fragments;
+    private String retainRecentTask;
 
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
     // TODO: promotionActivity add in AsyncTask
+    // TODO: how to decision the task is created by multitask or system
     // TODO: orderActivity has recent task need to transport the bundle flag to another activity
-    // TODO: notification task not in recent task list (productActivity, orderFormActivity), how to know is the system create task
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
-    // TODO: ReorderToFrom flag, retainRecentTaskId is only one
+    // TODO: retainRecentTaskId is only one, need to save in recentTaskList data(service)
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -146,7 +147,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         byte[] dbUserPicture;
         String messageType, messageName,  messagePrice, messageIntro, imageUrl;
-        String retainRecentTask;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -1374,6 +1374,11 @@ public class MainActivity extends AppCompatActivity
                     for (int i = 1; i < tasks.size(); i++) {
                         eachTask = tasks.get(i);
                         eachTask.finishAndRemoveTask();
+                    }
+                }
+                if (retainRecentTask != null) {
+                    if (retainRecentTask.equals("RECENT_TASK")) {
+                        retainRecentTaskId = getTaskId();
                     }
                 }
                 MainActivity.this.finish();

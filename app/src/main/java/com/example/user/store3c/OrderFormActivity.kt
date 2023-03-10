@@ -212,11 +212,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 Log.i("PreTask===> ", "null !") //default value, have only one task
                 intent.flags = 0
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                if (intent.getPackage() == null) {
-                    val retainRecentTaskBundle = Bundle()
-                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY")
-                    intent.putExtras(retainRecentTaskBundle)
-                }
+                val retainRecentTaskBundle = Bundle()
+                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY")
+                intent.putExtras(retainRecentTaskBundle)
                 startActivity(intent)
                 this@OrderFormActivity.finish()
             }
