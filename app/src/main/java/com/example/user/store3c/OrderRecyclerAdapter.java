@@ -198,6 +198,9 @@ public class OrderRecyclerAdapter extends  RecyclerView.Adapter<OrderRecyclerAda
                 bundle.putString("Price", orderTable.get(position).getPrice());
                 bundle.putString("Intro", orderTable.get(position).getIntro());
                 bundle.putString("Order", "ORDER");
+                if (orderActivity.recentTaskOrder) {
+                    bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                }
                 intentItem.putExtras(bundle);
                 intentItem.setClass(orderActivity, ProductActivity.class);
                 orderActivity.startActivity(intentItem);

@@ -46,7 +46,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
     private OrderRecyclerAdapter adapter = null;
     static float total_price = 0;
     private ArrayList<ProductItem> orderTable = new ArrayList<>();
-    private boolean recentTask = false;
+    public boolean recentTaskOrder = false;
     public static ArrayList<ListItem> promotionListItem = new ArrayList<>();
 
     ItemTouchHelper ith;
@@ -94,7 +94,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 retainRecentTask = bundle.getString("RetainRecentTask");
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
-                        recentTask = true;
+                        recentTaskOrder = true;
                     }
                 }
                 if (bundle.getString("Menu") != null) {
@@ -152,7 +152,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 retainRecentTask = bundle.getString("RetainRecentTask");
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // orderFormActivity task
-                        recentTask = true;
+                        recentTaskOrder = true;
                     }
                 }
             }
@@ -313,6 +313,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                                 if (!up_menu_item.equals("")) {
                                     bundle.putString("upMenu", up_menu_item);
                                 }
+                                if (recentTaskOrder) {
+                                    bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                }
                                 intentItem.putExtras(bundle);
                                 intentItem.setClass(OrderActivity.this, PromotionActivity.class);
                                 startActivity(intentItem);
@@ -352,7 +355,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         Intent intent = new Intent();
         Bundle bundle;
 
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (search_list.equals("SEARCH")) {
             bundle = new Bundle();
             bundle.putString("Menu", menu_item);
@@ -365,15 +368,17 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         else {
             switch (menu_item) {
                 case "DISH":
-                    intent.setClass(OrderActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                    if (recentTask) {
+                    if (recentTaskOrder) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                         intent.setPackage(getApplicationContext().getPackageName());
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
+                    }
+                    else {
+                        intent.setClass(OrderActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     }
                     break;
                 case "CAKE":
@@ -438,15 +443,17 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     break;
                 default:
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                    intent.setClass(OrderActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                    if (recentTask) {
+                    if (recentTaskOrder) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                         intent.setPackage(getApplicationContext().getPackageName());
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
+                    }
+                    else {
+                        intent.setClass(OrderActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     }
             }
         }

@@ -135,11 +135,10 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: promotionActivity add in AsyncTask
     // TODO: how to decision the task is created by multitask or system
-    // TODO: orderActivity has recent task need to transport the bundle flag to another activity
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
     // TODO: retainRecentTaskId is only one, need to save in recentTaskList data(service)
+    // TODO: promotionActivity add in AsyncTask
     // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
     // TODO: YPlayer initialize in Emulator, install app on api 21
 

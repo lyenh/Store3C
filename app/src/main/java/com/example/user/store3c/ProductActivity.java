@@ -46,6 +46,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private String notification_list = "", firebase_message = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
+    private boolean recentTaskProduct = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,9 +73,16 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         Intent Intent = getIntent();
         Bundle bundle = Intent.getExtras();
+        String retainRecentTask;
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
             firebase_message = bundle.getString("Firebase");
+            retainRecentTask = bundle.getString("RetainRecentTask");
+            if (retainRecentTask != null) {
+                if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
+                    recentTaskProduct = true;
+                }
+            }
             if (notification_list != null || firebase_message != null) {   // notification promotion product
                 menu_item = "DISH";
             }
@@ -140,6 +148,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (!up_menu_item.equals("")) {
                     bundle.putString("upMenu", up_menu_item);
                 }
+                if (recentTaskProduct) {
+                    bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                }
                 bundle.putByteArray("Pic", product_pic);
                 bundle.putString("Name", product_name);
                 bundle.putString("Price", product_price);
@@ -168,6 +179,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         intent.setFlags(0);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                        retainRecentTaskBundle.putString("Menu", "DISH");
                         intent.putExtras(retainRecentTaskBundle);
                         intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         preTask.startActivity(this, intent, bundle);
@@ -179,6 +191,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         if (intent.getPackage() == null) {
                             Bundle retainRecentTaskBundle = new Bundle();
                             retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            retainRecentTaskBundle.putString("Menu", "DISH");
                             intent.putExtras(retainRecentTaskBundle);
                             Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
                         }
@@ -209,6 +222,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                             Bundle retainRecentTaskBundle = new Bundle();
                             retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            retainRecentTaskBundle.putString("Menu", "DISH");
                             intent.putExtras(retainRecentTaskBundle);
                             preTask.startActivity(this, intent, bundle);
                             finishAndRemoveTask();
@@ -217,6 +231,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intent.setFlags(0);
                             Bundle retainRecentTaskBundle = new Bundle();
                             retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            retainRecentTaskBundle.putString("Menu", "DISH");
                             intent.putExtras(retainRecentTaskBundle);
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             startActivity(intent);
@@ -243,6 +258,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             bundle.putString("Menu", menu_item);
             if (!up_menu_item.equals("")) {
                 bundle.putString("upMenu", up_menu_item);
+            }
+            if (recentTaskProduct) {
+                bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
             }
             intent.putExtras(bundle);
             intent.setClass(ProductActivity.this, OrderActivity.class);

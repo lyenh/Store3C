@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -44,6 +45,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
     private AccountDbAdapter dbhelper;
     private int orderTableSize = 0;
     private ArrayList<Integer> orderSet = new ArrayList<>();
+    private boolean recentTask = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -54,6 +56,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         Button ret_b;
         DatabaseReference amountRef;
         Bundle bundle = getIntent().getExtras();
+        String retainRecentTask;
         if (bundle != null) {
             totalPrice = bundle.getString("totalPrice");
             orderTableSize = bundle.getInt("orderTableSize");
@@ -63,6 +66,12 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             }
             if (bundle.getString("upMenu") != null) {
                 up_menu_item = bundle.getString("upMenu");
+            }
+            retainRecentTask = bundle.getString("RetainRecentTask");
+            if (retainRecentTask != null) {
+                if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
+                    recentTask = true;
+                }
             }
         }
         promotionRef = db.getReference("promotion");
@@ -212,11 +221,22 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
     public void onBackPressed() {
         Intent intentItem = new Intent();
         intentItem.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        Bundle bundle;
+        Bundle bundle, retainRecentTaskBundle;
+
         switch (menu_item) {
             case "DISH":
-                intentItem.setClass(PromotionActivity.this, MainActivity.class);
-                intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                if (recentTask) {
+                    intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    intentItem.setPackage(getApplicationContext().getPackageName());
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    retainRecentTaskBundle = new Bundle();
+                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    intentItem.putExtras(retainRecentTaskBundle);
+                }
+                else {
+                    intentItem.setClass(PromotionActivity.this, MainActivity.class);
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                }
                 break;
             case "CAKE":
                 intentItem.setClass(PromotionActivity.this, CakeActivity.class);
@@ -296,8 +316,18 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 break;
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                intentItem.setClass(PromotionActivity.this, MainActivity.class);
-                intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                if (recentTask) {
+                    intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    intentItem.setPackage(getApplicationContext().getPackageName());
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    retainRecentTaskBundle = new Bundle();
+                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    intentItem.putExtras(retainRecentTaskBundle);
+                }
+                else {
+                    intentItem.setClass(PromotionActivity.this, MainActivity.class);
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                }
         }
         startActivity(intentItem);
         PromotionActivity.this.finish();
