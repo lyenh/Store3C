@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -70,7 +71,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             }
         }
 
-        new UploadOrderToFirebaseTask(orderTableSize, orderSet, PromotionActivity.this).execute(totalPrice);
+        new UploadOrderToFirebaseTask(orderTableSize, orderSet, getApplicationContext()).execute(totalPrice);
 
         ret_b = findViewById(R.id.promotionRtn_id);
         ret_b.setOnClickListener(this);
@@ -202,34 +203,33 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
 
 }
 
-class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
+class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, Void> {
     private DatabaseReference promotionRef, amountRef, userUidRef, uidRef;
     private static int totalOrderAmount = 0;
     private String userId, userToken;
     private Map<String, Object> promotionValues;
     private final FirebaseDatabase db = FirebaseDatabase.getInstance();
     private AccountDbAdapter dbhelper;
-    private final WeakReference<PromotionActivity> weakRefPromotionActivity;
+    private final WeakReference<Context> weakRefContext;
     private final ArrayList<Integer> orderSet;
     private final int orderTableSize;
-    private String uploadResult = "";
 
-    UploadOrderToFirebaseTask(int orderTableSize, ArrayList<Integer> orderSet, PromotionActivity activity) {
+    UploadOrderToFirebaseTask(int orderTableSize, ArrayList<Integer> orderSet, Context activity) {
         this.orderTableSize = orderTableSize;
         this.orderSet = orderSet;
-        weakRefPromotionActivity = new WeakReference<>(activity);
+        weakRefContext = new WeakReference<>(activity);
     }
 
-    protected String doInBackground(String... params) {
+    protected Void doInBackground(String... params) {
         String totalPrice = params[0];
-        PromotionActivity promotionActivity = weakRefPromotionActivity.get();
+        Context contextActivity = weakRefContext.get();
         promotionRef = db.getReference("promotion");
         promotionRef.keepSynced(true);
         promotionRef.child("list").push();
         amountRef = promotionRef.child("promotionAmount").getRef();
         amountRef.keepSynced(true);
         mAuth = FirebaseAuth.getInstance();
-        dbhelper = new AccountDbAdapter(promotionActivity);
+        dbhelper = new AccountDbAdapter(contextActivity);
 
         amountRef.runTransaction(new Transaction.Handler() {
             @Override
@@ -253,7 +253,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                 Log.i("runTransaction===>", "postTransaction:onComplete: " + databaseError);
                 if (databaseError != null) {
                     Log.i("runTransaction saved: ", "fail !" + databaseError.getMessage());
-                    Toast.makeText(promotionActivity, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(contextActivity, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                 } else {
                     Log.i("runTransaction saved: ", "successfully !");
                     //Toast.makeText(PromotionActivity.this, "Version: " + Build.VERSION.SDK_INT, Toast.LENGTH_SHORT).show();
@@ -282,7 +282,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                                         @Override
                                         public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                             if (databaseError != null) {
-                                                Toast.makeText(promotionActivity, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(contextActivity, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                             } else {
                                                 Log.i("updateChildren saved: ", "successfully !");
@@ -311,7 +311,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                                                                         @Override
                                                                         public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                                                                             if (databaseError != null) {
-                                                                                Toast.makeText(promotionActivity, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                                                                                Toast.makeText(contextActivity, "DatabaseError: " + databaseError.getMessage(), Toast.LENGTH_SHORT).show();
                                                                                 Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
                                                                             } else {
                                                                                 Log.i("updateChildren saved: ", "successfully !");
@@ -319,7 +319,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                                                                                     if (dbhelper.deletePartOrder(orderTableSize, orderSet) == 0) {
                                                                                         Log.i("delete Order: ", "no data change!");
                                                                                     } else {
-                                                                                        uploadResult = "Success";
+                                                                                        Toast.makeText(contextActivity, "Server會發送推播簡訊和E-mail訂單通知 !", Toast.LENGTH_LONG).show();
                                                                                     }
                                                                                 }
                                                                                 else {
@@ -337,7 +337,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                                                         public void onCancelled(@NonNull DatabaseError error) {
                                                             // Failed to read value
                                                             Log.i("Firebase ==>", "Failed to read user data.", error.toException());
-                                                            Toast.makeText(promotionActivity, "DatabaseError, userRef, Uid: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                                                            Toast.makeText(contextActivity, "DatabaseError, userRef, Uid: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                                                         }
                                                     });
                                                 }
@@ -345,7 +345,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                                         }
                                     });
                                 } catch (Exception e) {
-                                    Toast.makeText(promotionActivity, "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(contextActivity, "Exception: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
 
                             }
@@ -354,28 +354,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, String> {
                 }
             }
         });
-
-      if(uploadResult.equals("Success")) {
-          return "UploadSuccess";
-      }
-      else {
-          return "UploadFail";
-      }
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-
-        switch (result) {
-            case "UploadSuccess":
-                Toast.makeText(weakRefPromotionActivity.get(), "Server會發送推播簡訊和E-mail訂單通知 !", Toast.LENGTH_LONG).show();
-                break;
-            case "UploadFail":
-
-                break;
-            default:
-
-        }
+        return null;
     }
 
 }
