@@ -14,11 +14,42 @@
     tools:context="com.example.user.store3c.PhoneActivity"
     tools:showIn="@layout/app_bar_phone">
 
-    <androidx.viewpager.widget.ViewPager
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/phoneTabLayout_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="fill_horizontal"
+
+        android:background="#50c3ed"
+        app:layout_scrollFlags="scroll"
+        app:tabGravity="fill"
+        app:tabIndicatorFullWidth="true"
+        app:tabMode="fixed">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/htc"
+            app:layout_scrollFlags="scroll" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/asus"
+            app:layout_scrollFlags="scroll" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/samsung"
+            app:layout_scrollFlags="scroll" />
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPagerPhone_id"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="0.7"
         android:background="#6ae7d8"
         app:layout_scrollFlags="scroll" />
 
