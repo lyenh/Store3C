@@ -32,14 +32,14 @@ public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.View
 
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         private final TextView TypeName;
-        private final LinearLayout LayoutWidth;
+        private final LinearLayout linearLayout;
         public MyViewHolderClick mListener;
 
         private ViewHolder(View itemView, MyViewHolderClick listener) {
             super(itemView);
 
             TypeName = itemView.findViewById(R.id.phoneTypeText_id);
-            LayoutWidth = itemView.findViewById(R.id.phoneTypeLayout_id);
+            linearLayout = itemView.findViewById(R.id.phoneTypeLayout_id);
             mListener = listener;
             itemView.setOnClickListener(this);
         }
@@ -76,16 +76,16 @@ public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.View
         holder.TypeName.setText(PhoneType[typeNumber][position]);
         if (isTab) {
             if (screenWidth > rotationTabScreenWidth && getItemCount() < 5) {
-                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 100));
-            } else {
-                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 130));
+                holder.linearLayout.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, LinearLayout.LayoutParams.MATCH_PARENT));
+            }else{
+                holder.linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT));
             }
         }
         else {
-            if (screenWidth > rotationScreenWidth && getItemCount() < 5) {
-                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, 80));
+            if (screenWidth > rotationTabScreenWidth && getItemCount() < 5) {
+                holder.linearLayout.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, LinearLayout.LayoutParams.MATCH_PARENT));
             } else {
-                holder.LayoutWidth.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 80));
+                holder.linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT));
             }
         }
     }

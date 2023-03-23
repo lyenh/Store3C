@@ -151,7 +151,7 @@ public class PhoneAdapter extends RecyclerView.Adapter<PhoneAdapter.ViewHolder>{
             imgWidth = (screenWidth / 2) - 8;
             imgHeight = (imgWidth * 3) / 2;
             holder.ProductImage.setLayoutParams(new LinearLayout.LayoutParams(imgWidth, imgHeight));
-            holder.ProductImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            holder.ProductImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
             holder.ProductImage.setPadding(1, 1, 1, 1);
 
             holder.ProductImage.setImageBitmap(product.getImg());

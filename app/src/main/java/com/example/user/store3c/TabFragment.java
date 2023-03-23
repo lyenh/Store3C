@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ public class TabFragment extends Fragment {
     private static final String ARG_POSITION = "position";
     private OnTabFragmentInteractionListener mListener;
     private PhoneAdapter phoneAdapter = null;
-    private PhoneTypeAdapter phoneTypeAdapter;
     private int position;
     private String[][] PhoneTypeList = { {"HTC U", "HTC One", "HTC Butterfly", "HTC Desire"},
             {"ZenFone", "ZenFone Deluxe", "ZenFone Zoom", "ZenFone Selfie", "ZenFone Max", "ZenFone Ultra", "ZenFone AR", "ZenFone Live"},
@@ -44,6 +44,8 @@ public class TabFragment extends Fragment {
     private static ArrayList<ProductItem> PhoneData1 = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneData2 = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneData3 = new ArrayList<>();
+
+    public PhoneTypeAdapter phoneTypeAdapter;
 
     public static TabFragment newInstance(int position, ArrayList<ProductItem> PhoneData) {
         switch (position) {
@@ -138,11 +140,6 @@ public class TabFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
-       // Bundle args = getArguments();
-        //((TextView) view.findViewById(android.R.id.text1))
-         //       .setText(Integer.toString(args.getInt(ARG_OBJECT)));
-
         super.onViewCreated(view, savedInstanceState);
 
     }
@@ -307,10 +304,16 @@ public class TabFragment extends Fragment {
             if (screenWidth > rotationTabScreenWidth && typeCount < 5) {
                 phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
             }
+            else {
+                phoneTypeAdapter.layoutWidth = LinearLayout.LayoutParams.WRAP_CONTENT;
+            }
         }
         else {
             if (screenWidth > rotationScreenWidth && typeCount < 5) {
                 phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
+            }
+            else {
+                phoneTypeAdapter.layoutWidth = LinearLayout.LayoutParams.WRAP_CONTENT;
             }
         }
         phoneTypeAdapter.notifyDataSetChanged();
