@@ -236,6 +236,7 @@ public class PhoneActivity extends AppCompatActivity
                 @Override
                 public void onTabSelected(TabLayout.Tab tab) {
                     pager.setCurrentItem(tab.getPosition());
+                    PhonePosition = tab.getPosition();
                 }
 
                 @Override
@@ -312,44 +313,44 @@ public class PhoneActivity extends AppCompatActivity
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig){
-        if (InternetConnection.checkConnection(PhoneActivity.this)) {
-            if (download == 0) {
-                phoneAdapter.notifyDataSetChanged();
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationAdapter();
-                        break;
-                    case 1:
-                        tabFragment2.notificationAdapter();
-                        break;
-                    case 2:
-                        tabFragment3.notificationAdapter();
-                        break;
-                    default :
-                        Toast.makeText(PhoneActivity.this, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        }
-        else {
-            if (download == 0 && PhoneData.size() != 0) {
-                phoneAdapter.notifyDataSetChanged();
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationAdapter();
-                        break;
-                    case 1:
-                        tabFragment2.notificationAdapter();
-                        break;
-                    case 2:
-                        tabFragment3.notificationAdapter();
-                        break;
-                    default :
-                        Toast.makeText(PhoneActivity.this, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
+
+        if (!InternetConnection.checkConnection(PhoneActivity.this)) {
             Toast.makeText(PhoneActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
+        }
+        if (download == 0 && PhoneData.size() != 0) {
+            pager.setAdapter(null);
+            pager.setAdapter(phoneAdapter);
+            pager.setCurrentItem(PhonePosition);
+            new TabLayoutMediator(tabs, pager,
+                    new TabLayoutMediator.TabConfigurationStrategy() {
+                        @Override public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                            if (position == 0) {
+                                tab.setText("HTC");
+                            }
+                            if(position == 1) {
+                                tab.setText("ASUS");
+                            }
+                            if(position == 2) {
+                                tab.setText("SAMSUNG");
+                            }
+                        }
+                    }).attach();
+            tabs.selectTab(tabs.getTabAt(PhonePosition));
+
+            switch (PhonePosition) {
+                case 0:
+                    tabFragment1.notificationAdapter();
+                    break;
+                case 1:
+                    tabFragment2.notificationAdapter();
+                    break;
+                case 2:
+                    tabFragment3.notificationAdapter();
+                    break;
+                default :
+                    Toast.makeText(PhoneActivity.this, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
+                    break;
+            }
         }
         Log.v("===>","ORIENTATION");
         super.onConfigurationChanged(newConfig);
@@ -675,6 +676,7 @@ public class PhoneActivity extends AppCompatActivity
                         @Override
                         public void onTabSelected(TabLayout.Tab tab) {
                             hmPager.setCurrentItem(tab.getPosition());
+                            PhonePosition = tab.getPosition();
                         }
 
                         @Override

@@ -17,6 +17,7 @@
         android:gravity="center_horizontal|center_vertical"
         android:text="@string/product_name"
         android:textColor="#d250ca"
+        android:textColorHighlight="#7826EC"
         android:textSize="20sp"
         android:textStyle="bold" />
 </LinearLayout>

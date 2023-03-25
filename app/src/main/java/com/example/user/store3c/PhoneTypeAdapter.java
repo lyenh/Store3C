@@ -18,7 +18,7 @@ import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
 public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.ViewHolder>{
     private String[][] PhoneType;
-    private int typeNumber;
+    private int typeNumber, phoneTypeRecyclerViewWidth;
     private TabFragment tabFragment;
     int layoutWidth, screenWidth;
 
@@ -63,7 +63,13 @@ public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.View
         return new ViewHolder(view, new ViewHolder.MyViewHolderClick() {
             @Override
             public void clickOnView(View v, int position) {
+                TextView TypeName;
                 tabFragment.reloadAdapter(typeNumber, false, position);
+                TypeName = v.findViewById(R.id.phoneTypeText_id);
+
+                TypeName.setSelected(true);
+                TypeName.setHighlightColor(67);
+
                 //Log.i("position => ", Integer.toString(position));
                 //Toast.makeText(activity, "The Type number is " + position, Toast.LENGTH_SHORT).show();
             }
@@ -74,10 +80,12 @@ public class PhoneTypeAdapter extends RecyclerView.Adapter<PhoneTypeAdapter.View
     @Override
     public void onBindViewHolder(PhoneTypeAdapter.ViewHolder holder, int position) {
         holder.TypeName.setText(PhoneType[typeNumber][position]);
+        layoutWidth = screenWidth / getItemCount();
         if (isTab) {
-            if (screenWidth > rotationTabScreenWidth && getItemCount() < 5) {
+            if (getItemCount() < 5) {
                 holder.linearLayout.setLayoutParams(new LinearLayout.LayoutParams(layoutWidth, LinearLayout.LayoutParams.MATCH_PARENT));
-            }else{
+            }
+            else {
                 holder.linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT));
             }
         }
