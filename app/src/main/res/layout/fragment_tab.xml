@@ -16,12 +16,17 @@
         android:orientation="horizontal"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewPhoneType_id"
+        <com.example.user.store3c.ScrollableNestedFrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal|fill_horizontal|center_vertical|fill_vertical"
-            app:layout_scrollFlags="scroll" />
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewPhoneType_id"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal|fill_horizontal|center_vertical|fill_vertical"
+                app:layout_scrollFlags="scroll" />
+        </com.example.user.store3c.ScrollableNestedFrameLayout>
 
     </LinearLayout>
 

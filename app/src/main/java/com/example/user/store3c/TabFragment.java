@@ -298,20 +298,4 @@ public class TabFragment extends Fragment {
         //Toast.makeText(getActivity(), "fragment " + position + " reloadAdapter " , Toast.LENGTH_SHORT).show();
     }
 
-    void notificationAdapter() {
-        int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-
-        phoneTypeAdapter.screenWidth = screenWidth;
-        phoneTypeAdapter.notifyDataSetChanged();
-        phoneAdapter.screenWidth = screenWidth;
-        phoneAdapter.notifyDataSetChanged();
-    }
-
-    void notificationPhoneTypeLayout() {
-        int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-
-        phoneTypeAdapter.screenWidth = screenWidth;
-        phoneTypeAdapter.notifyDataSetChanged();
-    }
-
 }

@@ -138,7 +138,6 @@ public class MainActivity extends AppCompatActivity
     // TODO: how to decision the task is created by multitask or system
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
     // TODO: retainRecentTaskId is only one, need to save in recentTaskList data(service)
-    // TODO:  focus on phoneType recyclerView, onClick trig text light
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
