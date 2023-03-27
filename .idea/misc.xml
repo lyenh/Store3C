@@ -5,8 +5,18 @@
       <map>
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_maps.xml" value="0.13541666666666666" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_order_item.xml" value="0.13903985507246377" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_phone.xml" value="0.15806159420289856" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/app_bar_main.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/app_bar_phone.xml" value="0.15806159420289856" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_cake.xml" value="0.1125" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_phone.xml" value="0.15806159420289856" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_map.xml" value="0.11458333333333333" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_tab.xml" value="0.132" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/phone_item_view.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/phone_type_item_view.xml" value="0.268" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/menu/activity_main_drawer.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/menu/main.xml" value="0.1" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_memo.xml" value="0.165" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order.xml" value="0.165" />
         <entry key="..\:/StudioWorkspace/Store3C/app/src/main/res/layout/activity_order_form.xml" value="0.125" />

@@ -2,8 +2,11 @@ package com.example.user.store3c;
 
 import android.app.ActivityManager;
 import android.app.TaskStackBuilder;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,6 +18,7 @@ import androidx.core.app.NavUtils;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -29,6 +33,8 @@ import com.google.android.gms.tasks.Task;
 import java.util.List;
 import java.util.Objects;
 
+import static android.content.Intent.ACTION_MAIN;
+import static android.content.Intent.CATEGORY_LAUNCHER;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
@@ -40,6 +46,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private String notification_list = "", firebase_message = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
+    private boolean recentTaskProduct = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,25 +73,17 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         Intent Intent = getIntent();
         Bundle bundle = Intent.getExtras();
+        String retainRecentTask;
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
             firebase_message = bundle.getString("Firebase");
-            if (notification_list != null) {   // notification promotion product
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                Log.i("TaskListSize ===> ", "num: " + am.getAppTasks().size());
-                preTask = null;
-                if (tasks.size() > 1) {
-                    for (int i = 0; i < tasks.size(); i++) {
-                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
-                            preTask = tasks.get(i);     // Should be the main task
-                        }
-                    }
-                    if (preTask == null) {
-                        preTask = tasks.get(tasks.size()-1);
-                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                    }
+            retainRecentTask = bundle.getString("RetainRecentTask");
+            if (retainRecentTask != null) {
+                if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
+                    recentTaskProduct = true;
                 }
+            }
+            if (notification_list != null || firebase_message != null) {   // notification promotion product
                 menu_item = "DISH";
             }
             else {
@@ -149,6 +148,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (!up_menu_item.equals("")) {
                     bundle.putString("upMenu", up_menu_item);
                 }
+                if (recentTaskProduct) {
+                    bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                }
                 bundle.putByteArray("Pic", product_pic);
                 bundle.putString("Name", product_name);
                 bundle.putString("Price", product_price);
@@ -157,7 +159,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 Toast.makeText(this, "已加入購物車!", Toast.LENGTH_SHORT).show();
 
                 intent.setClass(ProductActivity.this, OrderActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                 if (notification_list != null) {
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -175,12 +176,30 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
                     if (preTask != null) {
-                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(0);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                        retainRecentTaskBundle.putString("Menu", "DISH");
+                        intent.putExtras(retainRecentTaskBundle);
+                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         preTask.startActivity(this, intent, bundle);
                         finishAndRemoveTask();
                     }
                     else {
+                        intent.setFlags(0);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                        if (intent.getPackage() == null) {
+                            Bundle retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            retainRecentTaskBundle.putString("Menu", "DISH");
+                            intent.putExtras(retainRecentTaskBundle);
+                            Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
+                        }
+                        else {
+                            Toast.makeText(ProductActivity.this, "Task created by system", Toast.LENGTH_LONG).show();
+                        }
                         startActivity(intent);
+                        finishAndRemoveTask();
                     }
                 }
                 else if (firebase_message != null) {
@@ -200,13 +219,21 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
                         }
                         if (preTask != null) {
-                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                            Bundle retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            retainRecentTaskBundle.putString("Menu", "DISH");
+                            intent.putExtras(retainRecentTaskBundle);
                             preTask.startActivity(this, intent, bundle);
                             finishAndRemoveTask();
                         }
                         else {
                             intent.setFlags(0);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                            Bundle retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            retainRecentTaskBundle.putString("Menu", "DISH");
+                            intent.putExtras(retainRecentTaskBundle);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             startActivity(intent);
                             finishAndRemoveTask();
                         }
@@ -214,8 +241,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 }
                 else {
                     startActivity(intent);
+                    ProductActivity.this.finish();
                 }
-                ProductActivity.this.finish();
                 break;
 
         }
@@ -231,6 +258,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             bundle.putString("Menu", menu_item);
             if (!up_menu_item.equals("")) {
                 bundle.putString("upMenu", up_menu_item);
+            }
+            if (recentTaskProduct) {
+                bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
             }
             intent.putExtras(bundle);
             intent.setClass(ProductActivity.this, OrderActivity.class);
@@ -248,7 +278,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -270,7 +300,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             }
         }
         if (notification_list != null) {
@@ -318,18 +348,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     else {
                         intent.setFlags(0);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
-                        ProductActivity.this.finish();
+                        finishAndRemoveTask();
                     }
                 }
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent.setFlags(0);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                Bundle retainRecentTaskBundle = new Bundle();
+                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                intent.putExtras(retainRecentTaskBundle);
                 startActivity(intent);
-                ProductActivity.this.finish();
+                finishAndRemoveTask();
             }
         }
         else if (firebase_message != null) {
@@ -384,7 +420,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             finishAndRemoveTask();
                         }
                         else {
-                            intent.setFlags(0);
+                            intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                            Bundle retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                            intent.putExtras(retainRecentTaskBundle);
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                             startActivity(intent);
                             finishAndRemoveTask();
@@ -392,7 +431,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
                 else {
-                    intent.setFlags(0);
+                    intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    Bundle retainRecentTaskBundle = new Bundle();
+                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    intent.putExtras(retainRecentTaskBundle);
+                    Log.i("Package list:  ", "===> " + intent.getPackage());
+                    Log.i("Category list:  ", "===> " + intent.getCategories());
+                    Log.i("Action list:  ", "===> " + intent.getAction());
                     intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     startActivity(intent);
                     finishAndRemoveTask();

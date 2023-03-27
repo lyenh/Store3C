@@ -2,9 +2,12 @@ package com.example.user.store3c;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,8 +16,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static com.example.user.store3c.MainActivity.isTab;
@@ -27,22 +32,27 @@ import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
 public class TabFragment extends Fragment {
     private static final String ARG_POSITION = "position";
-    private OnTabFragmentInteractionListener mListener;
-    private PhoneAdapter phoneAdapter = null;
-    private PhoneTypeAdapter phoneTypeAdapter;
-    private int position;
-    private String[][] PhoneTypeList = { {"HTC U", "HTC One", "HTC Butterfly", "HTC Desire"},
-            {"ZenFone", "ZenFone Deluxe", "ZenFone Zoom", "ZenFone Selfie", "ZenFone Max", "ZenFone Ultra", "ZenFone AR", "ZenFone Live"},
-            {"Galaxy S", "Galaxy Note", "Galaxy A", "Galaxy J"}};
-    private static boolean[] tabLoadAll = {true, true, true};
-    private ArrayList<ProductItem> PhoneDataList = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneDataBrand1 = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneDataBrand2 = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneDataBrand3 = new ArrayList<>();
-    private ArrayList<ProductItem> PhoneData = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneData1 = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneData2 = new ArrayList<>();
     private static ArrayList<ProductItem> PhoneData3 = new ArrayList<>();
+    private static boolean[] tabLoadAll = {true, true, true};
+
+    private OnTabFragmentInteractionListener mListener;
+    private PhoneAdapter phoneAdapter = null;
+    private int position;
+    private ArrayList<ProductItem> PhoneDataList = new ArrayList<>();
+    private ArrayList<ProductItem> PhoneData = new ArrayList<>();
+    private RecyclerView phoneRecyclerView;
+    private RecyclerView phoneTypeRecyclerView;
+    private LinearLayoutManager layoutManager;
+    private String[][] PhoneTypeList = { {"HTC U", "HTC One", "HTC Butterfly", "HTC Desire"},
+            {"ZenFone", "ZenFone Deluxe", "ZenFone Zoom", "ZenFone Selfie", "ZenFone Max", "ZenFone Ultra", "ZenFone AR", "ZenFone Live"},
+            {"Galaxy S", "Galaxy Note", "Galaxy A", "Galaxy J"}};
+
+    public PhoneTypeAdapter phoneTypeAdapter;
 
     public static TabFragment newInstance(int position, ArrayList<ProductItem> PhoneData) {
         switch (position) {
@@ -77,9 +87,6 @@ public class TabFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        LinearLayoutManager layoutManager;
-        RecyclerView phoneRecyclerView;
-        RecyclerView phoneTypeRecyclerView;
         View row;
 
         row = inflater.inflate(R.layout.fragment_tab, container, false);
@@ -133,6 +140,11 @@ public class TabFragment extends Fragment {
         });
 */
         return row;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -284,44 +296,6 @@ public class TabFragment extends Fragment {
         phoneAdapter.notifyDataSetChanged();
 
         //Toast.makeText(getActivity(), "fragment " + position + " reloadAdapter " , Toast.LENGTH_SHORT).show();
-    }
-
-    void notificationAdapter() {
-        int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int typeCount = phoneTypeAdapter.getItemCount();
-
-        phoneTypeAdapter.screenWidth = screenWidth;
-        if (isTab) {
-            if (screenWidth > rotationTabScreenWidth && typeCount < 5) {
-                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
-            }
-        }
-        else {
-            if (screenWidth > rotationScreenWidth && typeCount < 5) {
-                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
-            }
-        }
-        phoneTypeAdapter.notifyDataSetChanged();
-        phoneAdapter.screenWidth = screenWidth;
-        phoneAdapter.notifyDataSetChanged();
-    }
-
-    void notificationPhoneTypeLayout() {
-        int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int typeCount = phoneTypeAdapter.getItemCount();
-
-        phoneTypeAdapter.screenWidth = screenWidth;
-        if (isTab) {
-            if (screenWidth > rotationTabScreenWidth && typeCount < 5) {
-                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
-            }
-        }
-        else {
-            if (screenWidth > rotationScreenWidth && typeCount < 5) {
-                phoneTypeAdapter.layoutWidth = screenWidth/typeCount;
-            }
-        }
-        phoneTypeAdapter.notifyDataSetChanged();
     }
 
 }

@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.lifecycle.Lifecycle;
 import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.view.View;
@@ -33,6 +34,9 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -44,6 +48,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -69,15 +74,13 @@ import static com.example.user.store3c.MainActivity.userImg;
 public class PhoneActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener,
         TabFragment.OnTabFragmentInteractionListener{
-    private ViewPager pager;
-    private TabLayout tabs;
     private static TabFragment tabFragment1, tabFragment2, tabFragment3;
     private static int PhonePosition = 0;
     private static ArrayList<ProductItem> PhoneData = new ArrayList<>();
     private static ArrayList<ProductItem> Brand1Data = new ArrayList<>();
     private static ArrayList<ProductItem> Brand2Data = new ArrayList<>();
     private static ArrayList<ProductItem> Brand3Data = new ArrayList<>();
-    private static ViewPagerAdapter phoneAdapter = null;
+    private static ViewPagerAdapter phoneAdapter;
     private static DatabaseReference phoneAmount;
     private static DatabaseReference phoneName;
     private static DatabaseReference phoneImgName;
@@ -99,6 +102,9 @@ public class PhoneActivity extends AppCompatActivity
     private static int Reload = 0;
     private static int download = 0;
 
+    private ViewPager2 pager;
+    private TabLayout tabs;
+    private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private ImageView logoImage;
     private byte[] dbUserPicture;
     private NavigationView navigationView;
@@ -109,6 +115,7 @@ public class PhoneActivity extends AppCompatActivity
     private static handler5 handlerDownload5 = new handler5();
     private static handler6 handlerDownload6 = new handler6();
     private static FragmentManager staticFragmentManager;
+    private static Lifecycle staticLifecycle;
     private AdView mAdView;
 
     @Override
@@ -126,6 +133,7 @@ public class PhoneActivity extends AppCompatActivity
         toggle.syncState();
 
         staticFragmentManager = getSupportFragmentManager();
+        staticLifecycle = getLifecycle();
         navigationView = findViewById(R.id.nav_view_phone);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -207,73 +215,49 @@ public class PhoneActivity extends AppCompatActivity
                 Toast.makeText(PhoneActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
             }
             setUserAccountText();
-            phoneAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+            phoneAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
             pager.setAdapter(phoneAdapter);
             tabs = findViewById(R.id.phoneTabLayout_id);
-            tabs.setupWithViewPager(pager);
-            pager.setCurrentItem(PhonePosition);
-            if (isTab) {
-                if (Resources.getSystem().getDisplayMetrics().widthPixels > rotationTabScreenWidth) {
-                    switch (PhonePosition) {
-                        case 0:
-                            tabFragment1.notificationPhoneTypeLayout();
-                            break;
-                        case 1:
-                            tabFragment2.notificationPhoneTypeLayout();
-                            break;
-                        case 2:
-                            tabFragment3.notificationPhoneTypeLayout();
-                            break;
-                        default:
-                            Toast.makeText(PhoneActivity.this, "Fragment error:  " + PhonePosition, Toast.LENGTH_SHORT).show();
-                            break;
-                    }
+            new TabLayoutMediator(tabs, pager,
+                    (tab, position) -> {
+                        if (position == 0) {
+                            tab.setText("HTC");
+                        }
+                        if(position == 1) {
+                            tab.setText("ASUS");
+                        }
+                        if(position == 2) {
+                            tab.setText("SAMSUNG");
+                        }
+                    }).attach();
+
+            tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    PhonePosition = tab.getPosition();
+                    pager.setCurrentItem(PhonePosition);
                 }
-            }
-            else {
-                if (Resources.getSystem().getDisplayMetrics().widthPixels > rotationScreenWidth) {
-                    switch (PhonePosition) {
-                        case 0:
-                            tabFragment1.notificationPhoneTypeLayout();
-                            break;
-                        case 1:
-                            tabFragment2.notificationPhoneTypeLayout();
-                            break;
-                        case 2:
-                            tabFragment3.notificationPhoneTypeLayout();
-                            break;
-                        default:
-                            Toast.makeText(PhoneActivity.this, "Fragment error:  " + PhonePosition, Toast.LENGTH_SHORT).show();
-                            break;
-                    }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {
                 }
-            }
+
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
+                }
+            });
+            pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    PhonePosition = position;
+                    tabs.selectTab(tabs.getTabAt(position));
+                    super.onPageSelected(position);
+                }
+            };
+            pager.registerOnPageChangeCallback(pageChangeCallback);
         }
 
         logoImage.setOnClickListener(this);
-
-        pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                PhonePosition = position;
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationAdapter();
-                        break;
-                    case 1:
-                        tabFragment2.notificationAdapter();
-                        break;
-                    case 2:
-                        tabFragment3.notificationAdapter();
-                        break;
-                    default :
-                        Toast.makeText(PhoneActivity.this, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
-                }
-                //Toast.makeText(PhoneActivity.this, "The fragment "+ position, Toast.LENGTH_SHORT).show();
-            }
-        });
-
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
             public void onInitializationComplete(@NonNull InitializationStatus initializationStatus) {
@@ -287,44 +271,58 @@ public class PhoneActivity extends AppCompatActivity
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig){
-        if (InternetConnection.checkConnection(PhoneActivity.this)) {
-            if (download == 0) {
-                phoneAdapter.notifyDataSetChanged();
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationAdapter();
-                        break;
-                    case 1:
-                        tabFragment2.notificationAdapter();
-                        break;
-                    case 2:
-                        tabFragment3.notificationAdapter();
-                        break;
-                    default :
-                        Toast.makeText(PhoneActivity.this, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        }
-        else {
-            if (download == 0 && PhoneData.size() != 0) {
-                phoneAdapter.notifyDataSetChanged();
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationAdapter();
-                        break;
-                    case 1:
-                        tabFragment2.notificationAdapter();
-                        break;
-                    case 2:
-                        tabFragment3.notificationAdapter();
-                        break;
-                    default :
-                        Toast.makeText(PhoneActivity.this, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
+
+        if (!InternetConnection.checkConnection(PhoneActivity.this)) {
             Toast.makeText(PhoneActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
+        }
+        if (download == 0 && PhoneData.size() != 0) {
+            new TabLayoutMediator(tabs, pager,
+                    (tab, position) -> {
+                        if (position == 0) {
+                            tab.setText("HTC");
+                        }
+                        if(position == 1) {
+                            tab.setText("ASUS");
+                        }
+                        if(position == 2) {
+                            tab.setText("SAMSUNG");
+                        }
+                    }).detach();
+            tabs.clearOnTabSelectedListeners();
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
+            pager.setAdapter(null);
+
+            pager.setAdapter(phoneAdapter);
+            new TabLayoutMediator(tabs, pager,
+                    (tab, position) -> {
+                        if (position == 0) {
+                            tab.setText("HTC");
+                        }
+                        if(position == 1) {
+                            tab.setText("ASUS");
+                        }
+                        if(position == 2) {
+                            tab.setText("SAMSUNG");
+                        }
+                    }).attach();
+            tabs.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    PhonePosition = tab.getPosition();
+                    pager.setCurrentItem(PhonePosition);
+                }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {
+                }
+
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
+                }
+            });
+            pager.registerOnPageChangeCallback(pageChangeCallback);
+            tabs.selectTab(tabs.getTabAt(PhonePosition));
+            pager.setCurrentItem(PhonePosition, false);     //rotation screen and page smoothScroll can't concurrent draw, so set the current page immediately
         }
         Log.v("===>","ORIENTATION");
         super.onConfigurationChanged(newConfig);
@@ -360,13 +358,19 @@ public class PhoneActivity extends AppCompatActivity
         phoneIntro.keepSynced(true);
         mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
         tabs = findViewById(R.id.phoneTabLayout_id);
-        handlerDownload4 = new handler4(PhoneActivity.this, pager, tabs);
+        pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                tabs.selectTab(tabs.getTabAt(position));
+                super.onPageSelected(position);
+            }
+        };
+        handlerDownload4 = new handler4(PhoneActivity.this, pager, tabs, pageChangeCallback);
         new Thread(runnable1).start();
         dialog = new ProgressDialog(PhoneActivity.this);
         dialog.setMessage("正在載入...");
         dialog.setCanceledOnTouchOutside(false);
         dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-
             @Override
             public void onCancel(DialogInterface dialog) {
                 // DO SOME STUFF HERE
@@ -417,7 +421,6 @@ public class PhoneActivity extends AppCompatActivity
 
         @Override
         public void run() {
-
 
             // TODO: http request.
             // Read from the database
@@ -569,13 +572,15 @@ public class PhoneActivity extends AppCompatActivity
 
     static class handler4 extends Handler {
         private WeakReference<PhoneActivity> weakRefActivity;
-        private WeakReference<ViewPager> weakRefPager;
+        private WeakReference<ViewPager2> weakRefPager;
         private WeakReference<TabLayout> weakRefTab;
+        private WeakReference<ViewPager2.OnPageChangeCallback> weakRefPageCallback;
 
-        handler4(PhoneActivity hActivity, ViewPager hPager, TabLayout hTab) {
+        handler4(PhoneActivity hActivity, ViewPager2 hPager, TabLayout hTab, ViewPager2.OnPageChangeCallback hPageCallback) {
             weakRefActivity = new WeakReference<>(hActivity);
             weakRefPager = new WeakReference<>(hPager);
             weakRefTab = new WeakReference<>(hTab);
+            weakRefPageCallback = new WeakReference<>(hPageCallback);
         }
 
         @Override
@@ -623,30 +628,48 @@ public class PhoneActivity extends AppCompatActivity
                         }
                     }
                 }
-                phoneAdapter = new ViewPagerAdapter(staticFragmentManager);
-                ViewPager hmPager = weakRefPager.get();
+                phoneAdapter = new ViewPagerAdapter(staticFragmentManager, staticLifecycle);
+                ViewPager2 hmPager = weakRefPager.get();
                 TabLayout hmTab = weakRefTab.get();
+                ViewPager2.OnPageChangeCallback hmPageCallback = weakRefPageCallback.get();
 
                 if (hmPager != null) {
                     hmPager.setAdapter(phoneAdapter);
                 }
                 if (hmPager != null && hmTab != null) {
-                    hmTab.setupWithViewPager(hmPager);
+                    new TabLayoutMediator(hmTab, hmPager,
+                            new TabLayoutMediator.TabConfigurationStrategy() {
+                                @Override public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                                    if (position == 0) {
+                                        tab.setText("HTC");
+                                    }
+                                    if(position == 1) {
+                                        tab.setText("ASUS");
+                                    }
+                                    if(position == 2) {
+                                        tab.setText("SAMSUNG");
+                                    }
+                                }
+                            }).attach();
+
+                    hmTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                        @Override
+                        public void onTabSelected(TabLayout.Tab tab) {
+                            PhonePosition = tab.getPosition();
+                            hmPager.setCurrentItem(PhonePosition);
+                        }
+
+                        @Override
+                        public void onTabUnselected(TabLayout.Tab tab) {
+                        }
+
+                        @Override
+                        public void onTabReselected(TabLayout.Tab tab) {
+                        }
+                    });
+                    hmPager.registerOnPageChangeCallback(hmPageCallback);
                 }
-                switch (PhonePosition) {
-                    case 0:
-                        tabFragment1.notificationPhoneTypeLayout();
-                        break;
-                    case 1:
-                        tabFragment2.notificationPhoneTypeLayout();
-                        break;
-                    case 2:
-                        tabFragment3.notificationPhoneTypeLayout();
-                        break;
-                    default :
-                        Toast.makeText(hmActivity, "Fragment error:  "+ PhonePosition, Toast.LENGTH_SHORT).show();
-                        break;
-                }
+
                 download = 0;
                 dialog.dismiss();
             }
@@ -845,40 +868,52 @@ public class PhoneActivity extends AppCompatActivity
 
     }
 
-    public static class ViewPagerAdapter extends FragmentPagerAdapter {
-        private String[] tabTitle = {"HTC", "ASUS", "SAMSUNG"};
+    @Override
+    protected void onDestroy() {
+        tabs.clearOnTabSelectedListeners();
+        pager.unregisterOnPageChangeCallback(pageChangeCallback);
 
-        private ViewPagerAdapter(FragmentManager fm) {
-            super(fm, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        super.onDestroy();
+    }
+
+    public static class ViewPagerAdapter extends FragmentStateAdapter{
+
+        public ViewPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
+            super(fragmentManager, lifecycle);
+
+            if (tabFragment1 == null) {
+                tabFragment1 = TabFragment.newInstance(0, Brand1Data);
+            }
+            if (tabFragment2 == null) {
+                tabFragment2 = TabFragment.newInstance(1, Brand2Data);
+            }
+            if (tabFragment3 == null) {
+                tabFragment3 = TabFragment.newInstance(2, Brand3Data);
+            }
         }
 
+        @NonNull
         @Override
-        public CharSequence getPageTitle(int position) {
-            return tabTitle[position];
-        }
+        public Fragment createFragment(int position) {
 
-        @Override
-        public int getCount() {
-            return tabTitle.length;
-        }
-
-        @Override
-        public @NonNull Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    tabFragment1 = TabFragment.newInstance(position, Brand1Data);
                     return tabFragment1;
                 case 1:
-                    tabFragment2 = TabFragment.newInstance(position, Brand2Data);
                     return tabFragment2;
                 case 2:
-                    tabFragment3 =TabFragment.newInstance(position, Brand3Data);
                     return tabFragment3;
                 default:
                     Log.i("Fragment getItem error:", "Failed to read the position value: " + position);
                     //Toast.makeText(PhoneActivity.this, "The fragment number " + position + " is error.", Toast.LENGTH_SHORT).show();
-                    return TabFragment.newInstance(position, Brand1Data);
+                    return tabFragment1;
             }
+
+        }
+
+        @Override
+        public int getItemCount() {
+            return 3;       //the tabFragment amount of brand
         }
 
     }
@@ -897,7 +932,7 @@ public class PhoneActivity extends AppCompatActivity
         } else {
             intent = new Intent();
             intent.setClass(PhoneActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intent);
             PhoneActivity.this.finish();
         }
@@ -1039,7 +1074,7 @@ public class PhoneActivity extends AppCompatActivity
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(PhoneActivity.this, MainActivity.class);
-            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intentItem);
             PhoneActivity.this.finish();
         } else if (id == R.id.nav_cake) {
@@ -1066,3 +1101,5 @@ public class PhoneActivity extends AppCompatActivity
         return true;
     }
 }
+
+

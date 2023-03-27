@@ -79,7 +79,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             title = data.get("titleText");
             messageType = data.get("messageType");
             if (messageType != null) {
-                if (messageType.equals("promotion")) {
+                if (messageType.equals("promotion")) {          //Message from cloud function server; orderFormActivity
                     messageText = data.get("messageText");
                     subText = data.get("subText");
                     Bundle bundle = new Bundle();
@@ -172,7 +172,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
 
-                } else  if (messageType.equals("Talend-promotion")) {        //broadcast message  :  Restlet talend API tester  ;  firebase cloud message with data defined by user
+                } else  if (messageType.equals("Talend-promotion") || messageType.equals("FCM-console")) {        //broadcast message  :  Restlet talend API tester; Firebase message with Notification and Data(user defined) payload
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
 
@@ -296,11 +296,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     if (notificationManager != null) {
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
-                }
-                else if (messageType.equals("FCM-console")) {
-                    messagePrice = data.get("messagePrice");
-                    messageIntro = data.get("messageIntro");
-                    Log.i("Messaging===> ", title + messagePrice + messageIntro );
                 }
             }
         }

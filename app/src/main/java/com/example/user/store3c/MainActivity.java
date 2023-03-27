@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity
     private static final ArrayList<ProductItem> ProductData = new ArrayList<>();
     private static FirebaseDatabase db = null;
     private static final ArrayList<Integer> picShowIndex = new ArrayList<> ();
-    private static ProgressDialog dialog;
     private static int dishProductAmount = 0;
     private static int Reload = 0;
     private static DatabaseReference dishRef;
@@ -106,6 +105,8 @@ public class MainActivity extends AppCompatActivity
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
 
+    public static int retainRecentTaskId = -1;
+    public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
     public static volatile int adapterLayout = 0;
@@ -128,13 +129,15 @@ public class MainActivity extends AppCompatActivity
     private ViewPager2 pager;
     private ImageView dot1, dot2, dot3, dot4, dot5;
     private List<Fragment> fragments;
+    private String retainRecentTask;
 
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: firebase notification message receive message 6 state
-    // TODO: FragmentPagerAdapter => androidx.viewpager2.adapter.FragmentStateAdapter
+    // TODO: how to decision the task is created by multitask or system
+    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
+    // TODO: retainRecentTaskId is only one, need to save in recentTaskList data(service)
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
@@ -153,20 +156,52 @@ public class MainActivity extends AppCompatActivity
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
 
-
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
+            retainRecentTask = bundle.getString("RetainRecentTask");
             if (messageType == null) {      //No data payload.
                 messageType = "No-data-payload";
+            }
+            if (retainRecentTask != null) {
+                if (retainRecentTask.equals("RECENT_TASK")) {
+                    retainRecentTaskId = getTaskId();
+                }
             }
         }
         else {      //regular load MainActivity
             messageType = "NotFirebaseMessage";
         }
 
+        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+        ActivityManager.AppTask eachTask;
+
+        if (tasks.size() > 1) {
+            for (int i = 0; i < tasks.size(); i++) {
+                eachTask = tasks.get(i);
+                if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
+                        (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                    retainRecentTaskId  = -1;
+                    eachTask.finishAndRemoveTask();
+                }
+            }
+        }
+
         switch (messageType) {
             case "FCM-console":
-                messageName = bundle.getString("titleText");
+                toolbar = findViewById(R.id.toolbarMain);
+                setSupportActionBar(toolbar);
+                dialog = new ProgressDialog(MainActivity.this);
+                dialog.setMessage("正在載入...");
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        // DO SOME STUFF HERE
+                    }
+                });
+                dialog.show();
+                messageName = bundle.getString("messageText");
                 messagePrice = bundle.getString("messagePrice");
                 messageIntro = bundle.getString("messageIntro");
                 imageUrl = bundle.getString("imagePath");
@@ -1327,11 +1362,20 @@ public class MainActivity extends AppCompatActivity
                         if (eachTask.getTaskInfo().taskId != getTaskId()) {
                             eachTask.finishAndRemoveTask();
                         }
+                        else {
+                            Log.i("Activity number", ": "+ eachTask.getTaskInfo().numActivities );
+                            Log.i("BaseActivity", "===>"+ eachTask.getTaskInfo().baseActivity );
+                        }
                     }
                 } else {
                     for (int i = 1; i < tasks.size(); i++) {
                         eachTask = tasks.get(i);
                         eachTask.finishAndRemoveTask();
+                    }
+                }
+                if (retainRecentTask != null) {
+                    if (retainRecentTask.equals("RECENT_TASK")) {
+                        retainRecentTaskId = getTaskId();
                     }
                 }
                 MainActivity.this.finish();
@@ -1516,14 +1560,12 @@ public class MainActivity extends AppCompatActivity
 }
 
 class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
-    private final WeakReference<String> WRmessageName, WRmessagePrice, WRmessageIntro;
-    private final WeakReference<MainActivity> WRmainActivity;
+    private final String MessageName, MessagePrice, MessageIntro;
+    private final WeakReference<MainActivity> weakRefMainActivity;
 
     ImageDownloadTask(String name, String price, String intro, MainActivity activity) {
-        WRmessageName = new WeakReference<>(name);
-        WRmessagePrice = new WeakReference<>(price);
-        WRmessageIntro = new WeakReference<>(intro);
-        WRmainActivity = new WeakReference<>(activity);
+        MessageName = name; MessagePrice = price; MessageIntro = intro;
+        weakRefMainActivity = new WeakReference<>(activity);
     }
 
     protected Bitmap doInBackground(String... params) {
@@ -1545,10 +1587,7 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
     @Override
     protected void onPostExecute(Bitmap result) {
         Bitmap picture = result;
-        MainActivity activity = WRmainActivity.get();
-        String Name = WRmessageName.get();
-        String Price = WRmessagePrice.get();
-        String Intro = WRmessageIntro.get();
+        MainActivity activity = weakRefMainActivity.get();
         if (picture == null) {
             picture = BitmapFactory.decodeResource(activity.getResources(), R.drawable.store_icon);
         }
@@ -1557,13 +1596,14 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         if (picture != null) {
             bundleProduct.putByteArray("Pic", MainActivity.Bitmap2Bytes(picture));
         }
-        bundleProduct.putString("Name", Name);
-        bundleProduct.putString("Price", Price);
-        bundleProduct.putString("Intro", Intro);
+        bundleProduct.putString("Name", MessageName);
+        bundleProduct.putString("Price", MessagePrice);
+        bundleProduct.putString("Intro", MessageIntro);
         bundleProduct.putString("Menu", "DISH");
         bundleProduct.putString("Firebase", "MESSAGE");
         intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
+        MainActivity.dialog.dismiss();
         activity.startActivity(intentProduct);
         activity.finish();
         this.cancel(true);

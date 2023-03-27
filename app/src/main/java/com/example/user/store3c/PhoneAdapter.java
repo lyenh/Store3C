@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -80,7 +81,6 @@ public class PhoneAdapter extends RecyclerView.Adapter<PhoneAdapter.ViewHolder>{
 
     }
 
-
     @Override
     public @NonNull PhoneAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
@@ -140,6 +140,15 @@ public class PhoneAdapter extends RecyclerView.Adapter<PhoneAdapter.ViewHolder>{
                     public void onClick(View view) {
                         if (view.getId() == R.id.listAllPhone_id ) {
                             tabFragment.reloadAdapter(framePosition, true, 1);
+                            if (PhoneTypeAdapter.selectedTextView.get(framePosition).size() !=0) {
+                                TextView selectedTypeName;
+                                for (View v : PhoneTypeAdapter.selectedTextView.get(framePosition)) {
+                                    selectedTypeName = v.findViewById(R.id.phoneTypeText_id);
+                                    selectedTypeName.setTextColor(tabFragment.phoneTypeAdapter.textColor);
+                                    selectedTypeName.setTypeface(null, Typeface.NORMAL);
+                                }
+                                PhoneTypeAdapter.selectedTextView.get(framePosition).clear();
+                            }
                             //Toast.makeText(OrderActivity.this, "The delete number: " + favDeleteBtn, Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -151,7 +160,7 @@ public class PhoneAdapter extends RecyclerView.Adapter<PhoneAdapter.ViewHolder>{
             imgWidth = (screenWidth / 2) - 8;
             imgHeight = (imgWidth * 3) / 2;
             holder.ProductImage.setLayoutParams(new LinearLayout.LayoutParams(imgWidth, imgHeight));
-            holder.ProductImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            holder.ProductImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
             holder.ProductImage.setPadding(1, 1, 1, 1);
 
             holder.ProductImage.setImageBitmap(product.getImg());
