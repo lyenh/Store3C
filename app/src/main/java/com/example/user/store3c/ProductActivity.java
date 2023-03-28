@@ -178,7 +178,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     if (preTask != null) {
                         intent.setFlags(0);
                         Bundle retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                         retainRecentTaskBundle.putString("Menu", "DISH");
                         intent.putExtras(retainRecentTaskBundle);
                         intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
@@ -221,7 +220,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         if (preTask != null) {
                             intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                             Bundle retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                             retainRecentTaskBundle.putString("Menu", "DISH");
                             intent.putExtras(retainRecentTaskBundle);
                             preTask.startActivity(this, intent, bundle);

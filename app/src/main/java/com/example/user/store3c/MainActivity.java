@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: how to decision the task is created by multitask or system
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
-    // TODO: retainRecentTaskId is only one, need to save in recentTaskList data(service)
+    // TODO: retainRecentTaskId is need to save in recentTaskList data(service)
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
@@ -159,12 +159,12 @@ public class MainActivity extends AppCompatActivity
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
             retainRecentTask = bundle.getString("RetainRecentTask");
-            if (messageType == null) {      //No data payload.
-                messageType = "No-data-payload";
-            }
             if (retainRecentTask != null) {
-                if (retainRecentTask.equals("RECENT_TASK")) {
-                    retainRecentTaskId = getTaskId();
+                messageType = "NotFirebaseMessage";
+            }
+            else {
+                if (messageType == null) {      //No data payload.
+                    messageType = "No-data-payload";
                 }
             }
         }
@@ -175,17 +175,6 @@ public class MainActivity extends AppCompatActivity
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> tasks = am.getAppTasks();
         ActivityManager.AppTask eachTask;
-
-        if (tasks.size() > 1) {
-            for (int i = 0; i < tasks.size(); i++) {
-                eachTask = tasks.get(i);
-                if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
-                        (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                    retainRecentTaskId  = -1;
-                    eachTask.finishAndRemoveTask();
-                }
-            }
-        }
 
         switch (messageType) {
             case "FCM-console":
@@ -216,6 +205,16 @@ public class MainActivity extends AppCompatActivity
 
             case "NotFirebaseMessage":
                 try {
+                    if (tasks.size() > 1 && !messageType.equals("No-data-payload")) {
+                        for (int i = 0; i < tasks.size(); i++) {
+                            eachTask = tasks.get(i);
+                            if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
+                                    (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                                retainRecentTaskId  = -1;
+                                eachTask.finishAndRemoveTask();
+                            }
+                        }
+                    }
                     taskIdMainActivity = getTaskId();
                     toolbar = findViewById(R.id.toolbarMain);
                     setSupportActionBar(toolbar);

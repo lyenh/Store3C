@@ -103,6 +103,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             }
                             if (appRunningForeground) {
                                 bundle.putString("Notification", "IN_APP");
+                                bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                                 resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             } else {
                                 bundle.putString("Notification", "UPPER_APP");
@@ -205,6 +206,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             }
                             if (appRunningForeground) {
                                 bundle.putString("Notification", "IN_APP");
+                                if (messageType.equals("Talend-promotion")) {
+                                    bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                }
                                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                                 Log.i("Notification===> ", "fork new task.  ");
 
@@ -316,7 +320,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             PendingIntent pendingIntent;
             Bundle bundle = new Bundle();
             Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-            intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
 
             ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -337,10 +340,12 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
                     if (appRunningForeground) {
                         bundle.putString("Notification", "IN_APP");
-                        Log.i("Notification===> ", "fork new task.  ");
+                        intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+                        Log.i("Notification===> ", "fork a new task.  ");
 
                     } else {
-                        bundle.putString("Notification", "UPPER_APP");
+                        Log.i("Notification===> ", "System tray send message to here. ");  //It should be impossible,  notification will send to the MainActivity
                     }
                 }
                 else {
@@ -348,7 +353,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 }
             }
             else {          // user clear all app in recent screen
-                bundle.putString("Notification", "UPPER_APP");
+                Log.i("Notification===> ", "System tray send message to here.");  //It should be impossible,  notification will send to the MainActivity
             }
 
             bundle.putByteArray("Pic", Bitmap2Bytes(picture));
