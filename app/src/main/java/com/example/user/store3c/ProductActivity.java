@@ -164,10 +164,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                     List<ActivityManager.AppTask> tasks = am.getAppTasks();
                     preTask = null;
+                    ActivityManager.AppTask currentTask = null;
                     if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
-                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                                     preTask = tasks.get(i);     // Should be the main task
+                            }
+                            if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                currentTask = tasks.get(i);
                             }
                         }
                         if (preTask == null) {
@@ -182,7 +186,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         intent.putExtras(retainRecentTaskBundle);
                         intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         preTask.startActivity(this, intent, bundle);
-                        finishAndRemoveTask();
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask();
+                        }
+                        else {
+                            this.finishAndRemoveTask();
+                        }
                     }
                     else {
                         intent.setFlags(0);
@@ -206,10 +215,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                         List<ActivityManager.AppTask> tasks = am.getAppTasks();
                         preTask = null;
+                        ActivityManager.AppTask currentTask = null;
                         if (tasks.size() > 1) {
                             for (int i = 0; i < tasks.size(); i++) {
-                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                                     preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                                }
+                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                    currentTask = tasks.get(i);
                                 }
                             }
                             if (preTask == null) {
@@ -223,7 +236,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             retainRecentTaskBundle.putString("Menu", "DISH");
                             intent.putExtras(retainRecentTaskBundle);
                             preTask.startActivity(this, intent, bundle);
-                            finishAndRemoveTask();
+                            if (currentTask != null) {
+                                currentTask.finishAndRemoveTask();
+                            }
+                            else {
+                                this.finishAndRemoveTask();
+                            }
                         }
                         else {
                             intent.setFlags(0);
@@ -305,10 +323,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
             preTask = null;
+            ActivityManager.AppTask currentTask = null;
             if (tasks.size() > 1) {
                 for (int i = 0; i < tasks.size(); i++) {
-                    if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                    if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity  && taskIdMainActivity != getTaskId()) {
                         preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                    }
+                    if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                        currentTask = tasks.get(i);
                     }
                 }
                 if (preTask == null) {
@@ -323,14 +345,23 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     intent.setAction("");
                     intent.setData(null);
                     intent.setFlags(0);
-                    finishAndRemoveTask();
+                    if (currentTask != null) {
+                        currentTask.finishAndRemoveTask();
+                    }
+                    else {
+                        this.finishAndRemoveTask();
+                    }
                 }catch (Exception e) {      // user has removed the task from the recent screen (task)
                     tasks = am.getAppTasks();
                     preTask = null;
+                    currentTask = null;
                     if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
-                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                                 preTask = tasks.get(i);     // Should be the main task
+                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                    currentTask = tasks.get(i);
+                                }
                             }
                         }
                         if (preTask == null) {
@@ -342,7 +373,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         intent.setAction("");
                         intent.setData(null);
                         intent.setFlags(0);
-                        finishAndRemoveTask();
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask();
+                        }
+                        else {
+                            this.finishAndRemoveTask();
+                        }
                     }
                     else {
                         intent.setFlags(0);
@@ -378,10 +414,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 preTask = null;
+                ActivityManager.AppTask currentTask = null;
                 if (tasks.size() > 1) {
                     for (int i = 0; i < tasks.size(); i++) {
-                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                             preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
+                        }
+                        if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                            currentTask = tasks.get(i);
                         }
                     }
                     if (preTask == null) {
@@ -396,14 +436,23 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         intent.setAction("");
                         intent.setData(null);
                         intent.setFlags(0);
-                        finishAndRemoveTask();
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask();
+                        }
+                        else {
+                            this.finishAndRemoveTask();
+                        }
                     }catch (Exception e) {      // user has removed the task from the recent screen (task)
                         tasks = am.getAppTasks();
                         if (tasks.size() > 1) {
                             preTask = null;
+                            currentTask = null;
                             for (int i = 0; i < tasks.size(); i++) {
-                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity) {
+                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                                     preTask = tasks.get(i);     // Should be the main task
+                                }
+                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                    currentTask = tasks.get(i);
                                 }
                             }
                             if (preTask == null) {
@@ -415,7 +464,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intent.setAction("");
                             intent.setData(null);
                             intent.setFlags(0);
-                            finishAndRemoveTask();
+                            if (currentTask != null) {
+                                currentTask.finishAndRemoveTask();
+                            }
+                            else {
+                                this.finishAndRemoveTask();
+                            }
                         }
                         else {
                             intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));

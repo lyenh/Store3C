@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
-    public static int taskIdMainActivity;
+    public static int taskIdMainActivity = -1;
 
     private DishAdapter dishAdapter;
     private ImageView logoImage;
@@ -136,8 +136,9 @@ public class MainActivity extends AppCompatActivity
     public UserHandler userAdHandler;
 
     // TODO: how to decision the task is created by multitask or system
+    // TODO: Notification and firebase message type in PromotionFirebaseMessagingService
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
-    // TODO: retainRecentTaskId is need to save in recentTaskList data(service)
+    // TODO: retainRecentTaskId is need to save in recentTaskList data(service, SQLite)
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
@@ -1377,6 +1378,7 @@ public class MainActivity extends AppCompatActivity
                         retainRecentTaskId = getTaskId();
                     }
                 }
+                taskIdMainActivity = getTaskId();
                 MainActivity.this.finish();
             }
         }
