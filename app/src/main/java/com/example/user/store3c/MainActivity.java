@@ -105,7 +105,6 @@ public class MainActivity extends AppCompatActivity
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
 
-    public static int retainRecentTaskId = -1;
     public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
@@ -116,6 +115,7 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdMainActivity = -1;
+    public static int retainRecentTaskId = -1;
 
     private DishAdapter dishAdapter;
     private ImageView logoImage;
@@ -136,9 +136,7 @@ public class MainActivity extends AppCompatActivity
     public UserHandler userAdHandler;
 
     // TODO: how to decision the task is created by multitask or system
-    // TODO: Notification and firebase message type in PromotionFirebaseMessagingService
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
-    // TODO: retainRecentTaskId is need to save in recentTaskList data(service, SQLite)
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
@@ -156,6 +154,13 @@ public class MainActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+
+        if (intent.getPackage() == null) {
+            Toast.makeText(MainActivity.this, "Task created by system", Toast.LENGTH_LONG).show();
+        }
+        else {
+            Toast.makeText(MainActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
+        }
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
@@ -206,7 +211,7 @@ public class MainActivity extends AppCompatActivity
 
             case "NotFirebaseMessage":
                 try {
-                    if (tasks.size() > 1 && !messageType.equals("No-data-payload")) {
+                    if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
                             eachTask = tasks.get(i);
                             if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
@@ -1601,7 +1606,7 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Price", MessagePrice);
         bundleProduct.putString("Intro", MessageIntro);
         bundleProduct.putString("Menu", "DISH");
-        bundleProduct.putString("Firebase", "MESSAGE");
+        bundleProduct.putString("Notification", "UPPER_APP");
         intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
         MainActivity.dialog.dismiss();

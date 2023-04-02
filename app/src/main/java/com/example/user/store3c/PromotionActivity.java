@@ -231,6 +231,11 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, Void> {
         mAuth = FirebaseAuth.getInstance();
         dbhelper = new AccountDbAdapter(contextActivity);
 
+        try{
+            Thread.sleep(15000);
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
         amountRef.runTransaction(new Transaction.Handler() {
             @Override
             public @NonNull Transaction.Result doTransaction(@NonNull MutableData mutableData) {

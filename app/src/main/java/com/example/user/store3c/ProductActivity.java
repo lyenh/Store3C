@@ -43,7 +43,7 @@ import static com.example.user.store3c.MainActivity.taskIdMainActivity;
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
     private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
-    private String notification_list = "", firebase_message = "";
+    private String notification_list = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
     private boolean recentTaskProduct = false;
@@ -76,14 +76,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         String retainRecentTask;
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
-            firebase_message = bundle.getString("Firebase");
             retainRecentTask = bundle.getString("RetainRecentTask");
             if (retainRecentTask != null) {
                 if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
                     recentTaskProduct = true;
                 }
             }
-            if (notification_list != null || firebase_message != null) {   // notification promotion product
+            if (notification_list != null) {   // notification promotion product
                 menu_item = "DISH";
             }
             else {
@@ -180,7 +179,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
                     if (preTask != null) {
-                        intent.setFlags(0);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("Menu", "DISH");
                         intent.putExtras(retainRecentTaskBundle);
@@ -194,65 +192,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
                     else {
-                        intent.setFlags(0);
                         intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                        if (intent.getPackage() == null) {
-                            Bundle retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
-                            retainRecentTaskBundle.putString("Menu", "DISH");
-                            intent.putExtras(retainRecentTaskBundle);
-                            Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
-                        }
-                        else {
-                            Toast.makeText(ProductActivity.this, "Task created by system", Toast.LENGTH_LONG).show();
-                        }
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                        retainRecentTaskBundle.putString("Menu", "DISH");
+                        intent.putExtras(retainRecentTaskBundle);
+                        Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
                         startActivity(intent);
                         finishAndRemoveTask();
-                    }
-                }
-                else if (firebase_message != null) {
-                    if (firebase_message.equals("MESSAGE")) {
-                        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                        List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                        preTask = null;
-                        ActivityManager.AppTask currentTask = null;
-                        if (tasks.size() > 1) {
-                            for (int i = 0; i < tasks.size(); i++) {
-                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
-                                    preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
-                                }
-                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
-                                    currentTask = tasks.get(i);
-                                }
-                            }
-                            if (preTask == null) {
-                                preTask = tasks.get(tasks.size()-1);
-                                Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                            }
-                        }
-                        if (preTask != null) {
-                            intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                            Bundle retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("Menu", "DISH");
-                            intent.putExtras(retainRecentTaskBundle);
-                            preTask.startActivity(this, intent, bundle);
-                            if (currentTask != null) {
-                                currentTask.finishAndRemoveTask();
-                            }
-                            else {
-                                this.finishAndRemoveTask();
-                            }
-                        }
-                        else {
-                            intent.setFlags(0);
-                            Bundle retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
-                            retainRecentTaskBundle.putString("Menu", "DISH");
-                            intent.putExtras(retainRecentTaskBundle);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            startActivity(intent);
-                            finishAndRemoveTask();
-                        }
                     }
                 }
                 else {
@@ -359,9 +306,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         for (int i = 0; i < tasks.size(); i++) {
                             if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                                 preTask = tasks.get(i);     // Should be the main task
-                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
-                                    currentTask = tasks.get(i);
-                                }
+                            }
+                            if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                currentTask = tasks.get(i);
                             }
                         }
                         if (preTask == null) {
@@ -381,126 +328,31 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
                     else {
-                        intent.setFlags(0);
+                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                         intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
-                        finishAndRemoveTask();
+                        tasks.get(0).finishAndRemoveTask();
                     }
                 }
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
-                intent.setFlags(0);
+                intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                 Bundle retainRecentTaskBundle = new Bundle();
                 retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                 intent.putExtras(retainRecentTaskBundle);
                 startActivity(intent);
-                finishAndRemoveTask();
-            }
-        }
-        else if (firebase_message != null) {
-            if (firebase_message.equals("MESSAGE")) {     //      from firebase notification message
-                intent.setClass(ProductActivity.this, MainActivity.class);
-                bundle = intent.getExtras();
-                if (bundle != null) {
-                    bundle.clear();
-                    intent.putExtras(bundle);
-                }
-
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                preTask = null;
-                ActivityManager.AppTask currentTask = null;
-                if (tasks.size() > 1) {
-                    for (int i = 0; i < tasks.size(); i++) {
-                        if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
-                            preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
-                        }
-                        if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
-                            currentTask = tasks.get(i);
-                        }
-                    }
-                    if (preTask == null) {
-                        preTask = tasks.get(tasks.size()-1);
-                        Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                    }
-                }
-                if (preTask != null) {
-                    try {
-                        preTask.moveToFront();
-                        intent.replaceExtras(new Bundle());
-                        intent.setAction("");
-                        intent.setData(null);
-                        intent.setFlags(0);
-                        if (currentTask != null) {
-                            currentTask.finishAndRemoveTask();
-                        }
-                        else {
-                            this.finishAndRemoveTask();
-                        }
-                    }catch (Exception e) {      // user has removed the task from the recent screen (task)
-                        tasks = am.getAppTasks();
-                        if (tasks.size() > 1) {
-                            preTask = null;
-                            currentTask = null;
-                            for (int i = 0; i < tasks.size(); i++) {
-                                if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
-                                    preTask = tasks.get(i);     // Should be the main task
-                                }
-                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
-                                    currentTask = tasks.get(i);
-                                }
-                            }
-                            if (preTask == null) {
-                                preTask = tasks.get(tasks.size()-1);
-                                Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                            }
-                            preTask.moveToFront();
-                            intent.replaceExtras(new Bundle());
-                            intent.setAction("");
-                            intent.setData(null);
-                            intent.setFlags(0);
-                            if (currentTask != null) {
-                                currentTask.finishAndRemoveTask();
-                            }
-                            else {
-                                this.finishAndRemoveTask();
-                            }
-                        }
-                        else {
-                            intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                            Bundle retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                            intent.putExtras(retainRecentTaskBundle);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                            startActivity(intent);
-                            finishAndRemoveTask();
-                        }
-                    }
-                }
-                else {
-                    intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                    Bundle retainRecentTaskBundle = new Bundle();
-                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                    intent.putExtras(retainRecentTaskBundle);
-                    Log.i("Package list:  ", "===> " + intent.getPackage());
-                    Log.i("Category list:  ", "===> " + intent.getCategories());
-                    Log.i("Action list:  ", "===> " + intent.getAction());
-                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                    startActivity(intent);
-                    finishAndRemoveTask();
-                }
+                tasks.get(0).finishAndRemoveTask();
             }
         }
         else {
             startActivity(intent);
             ProductActivity.this.finish();
         }
-
     }
 
 }

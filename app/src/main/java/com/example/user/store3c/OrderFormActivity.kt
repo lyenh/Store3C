@@ -31,7 +31,6 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
     private var orderFromFullData: String = "購買明細資料: "
     private var notification_list = ""
     private var preTask: AppTask? = null
-    private var upActivityName = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -139,19 +138,31 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         if (notification_list != "") {
             val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
             val tasks = am.appTasks
+            var currentTask: AppTask? = null
+            preTask = null
             if (tasks.size > 1) {
-                preTask = null
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (i in tasks.indices) {
-                        if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                        if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
                             preTask = tasks[i]      // Should be the main task
+                        }
+                        if (tasks[i].taskInfo.taskId == taskId) {
+                            currentTask = tasks[i]
                         }
                     }
                 } else {
-                    for (i in tasks.indices) {
-                        if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
-                            preTask = tasks[i]      // Should be the main task
+                    try {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
+                                preTask = tasks[i]      // Should be the main task
+                            }
+                            if (tasks[i].taskInfo.persistentId == taskId) {
+                                currentTask = tasks[i]
+                            }
                         }
+                    } catch (e: Exception) {
+                        preTask = null
+                        currentTask = null
                     }
                 }
                 if (preTask == null) {
@@ -170,22 +181,38 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     intent.setAction("")
                     intent.setData(null)
                     intent.setFlags(0)
-                    finishAndRemoveTask()
+                    if (currentTask != null) {
+                        currentTask.finishAndRemoveTask()
+                    } else {
+                        finishAndRemoveTask()
+                    }
                 } catch (e: Exception) {      // user has removed the task from the recent screen (task)
                     val tasksRemain = am.appTasks
+                    preTask = null
+                    currentTask = null
                     if (tasksRemain.size > 1) {
-                        preTask = null
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             for (i in tasksRemain.indices) {
-                                if (tasksRemain[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                                if (tasksRemain[i].taskInfo.taskId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
                                     preTask = tasksRemain[i]      // Should be the main task
+                                }
+                                if (tasksRemain[i].taskInfo.taskId == taskId) {
+                                    currentTask = tasksRemain[i]
                                 }
                             }
                         } else {
-                            for (i in tasksRemain.indices) {
-                                if (tasksRemain[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
-                                    preTask = tasksRemain[i]      // Should be the main task
+                            try {
+                                for (i in tasksRemain.indices) {
+                                    if (tasksRemain[i].taskInfo.persistentId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
+                                        preTask = tasksRemain[i]      // Should be the main task
+                                    }
+                                    if (tasksRemain[i].taskInfo.persistentId == taskId) {
+                                        currentTask = tasksRemain[i]
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                preTask = null
+                                currentTask = null
                             }
                         }
                         if (preTask == null) {
@@ -197,7 +224,11 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         intent.setAction("")
                         intent.setData(null)
                         intent.setFlags(0)
-                        finishAndRemoveTask()
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask()
+                        } else {
+                            finishAndRemoveTask()
+                        }
                     } else {
                         intent.flags = 0
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
