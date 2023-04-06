@@ -206,9 +206,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             }
                             if (appRunningForeground) {
                                 bundle.putString("Notification", "IN_APP");
-                                if (messageType.equals("Talend-promotion")) {
-                                    bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
-                                }
+                                bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                                 Log.i("Notification===> ", "fork new task.  ");
 
@@ -439,6 +437,22 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             //((Activity) getBaseContext()).getWindow().setAttributes(params);
 
         }
+    }
+
+    @Override
+    public void handleIntent(@NonNull Intent intent) {
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+  /*          intent.removeExtra("titleText");
+            intent.removeExtra("messageText");
+            intent.removeExtra("messagePrice");
+            intent.removeExtra("messageIntro");
+            intent.removeExtra("imagePath");
+            intent.removeExtra("messageType");
+            bundle.clear();
+            intent.putExtras(bundle); */
+        }
+        super.handleIntent(intent);
     }
 
     @Override

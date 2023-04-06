@@ -370,8 +370,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 case "DISH":
                     if (recentTaskOrder) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intent.setPackage(getApplicationContext().getPackageName());
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
@@ -445,8 +443,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     if (recentTaskOrder) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intent.setPackage(getApplicationContext().getPackageName());
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);

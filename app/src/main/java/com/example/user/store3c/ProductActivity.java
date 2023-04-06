@@ -197,7 +197,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                         retainRecentTaskBundle.putString("Menu", "DISH");
                         intent.putExtras(retainRecentTaskBundle);
-                        Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(ProductActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
                         startActivity(intent);
                         finishAndRemoveTask();
                     }
@@ -329,24 +329,26 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     else {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                   //     intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
-                        tasks.get(0).finishAndRemoveTask();
+                        ProductActivity.this.finish();
+                   //     tasks.get(0).finishAndRemoveTask();
                     }
                 }
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+              //  intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                 Bundle retainRecentTaskBundle = new Bundle();
                 retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                 intent.putExtras(retainRecentTaskBundle);
                 startActivity(intent);
-                tasks.get(0).finishAndRemoveTask();
+                ProductActivity.this.finish();
+            //    tasks.get(0).finishAndRemoveTask();
             }
         }
         else {

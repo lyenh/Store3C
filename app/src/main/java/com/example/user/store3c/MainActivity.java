@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity
     private static final Handler5 handlerDownload5 = new Handler5();
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
+    private static boolean FCMload = false;
 
     public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
@@ -135,7 +136,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: how to decision the task is created by multitask or system
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -154,13 +154,6 @@ public class MainActivity extends AppCompatActivity
 
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-
-        if (intent.getPackage() == null) {
-            Toast.makeText(MainActivity.this, "Task created by system", Toast.LENGTH_LONG).show();
-        }
-        else {
-            Toast.makeText(MainActivity.this, "Task created by document", Toast.LENGTH_LONG).show();
-        }
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");      //have data payload
@@ -182,6 +175,19 @@ public class MainActivity extends AppCompatActivity
         List<ActivityManager.AppTask> tasks = am.getAppTasks();
         ActivityManager.AppTask eachTask;
 
+        if (messageType.equals("FCM-console") && FCMload) {
+            intent.removeExtra("titleText");
+            intent.removeExtra("messageText");
+            intent.removeExtra("messagePrice");
+            intent.removeExtra("messageIntro");
+            intent.removeExtra("imagePath");
+            intent.removeExtra("messageType");
+            bundle.clear();
+            intent.putExtras(bundle);
+            FCMload = false;
+            messageType = "NotFirebaseMessage";
+        }
+
         switch (messageType) {
             case "FCM-console":
                 toolbar = findViewById(R.id.toolbarMain);
@@ -202,6 +208,7 @@ public class MainActivity extends AppCompatActivity
                 imageUrl = bundle.getString("imagePath");
                 bundle.clear();
                 intent.putExtras(bundle);
+                FCMload = true;
                 new ImageDownloadTask(messageName, messagePrice, messageIntro, MainActivity.this).execute(imageUrl);
                 break;
 

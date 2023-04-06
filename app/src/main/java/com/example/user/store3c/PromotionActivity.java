@@ -95,8 +95,6 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             case "DISH":
                 if (recentTask) {
                     intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                    intentItem.setPackage(getApplicationContext().getPackageName());
-                    intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                     retainRecentTaskBundle = new Bundle();
                     retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                     intentItem.putExtras(retainRecentTaskBundle);
@@ -186,9 +184,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 if (recentTask) {
                     intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                    intentItem.setPackage(getApplicationContext().getPackageName());
-                    intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                    retainRecentTaskBundle = new Bundle();
+                     retainRecentTaskBundle = new Bundle();
                     retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                     intentItem.putExtras(retainRecentTaskBundle);
                 }
@@ -232,7 +228,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, Void> {
         dbhelper = new AccountDbAdapter(contextActivity);
 
         try{
-            Thread.sleep(15000);
+            Thread.sleep(5000);
         }catch (Exception e) {
             e.printStackTrace();
         }
