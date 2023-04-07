@@ -343,6 +343,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
               //  intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 Bundle retainRecentTaskBundle = new Bundle();
                 retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                 intent.putExtras(retainRecentTaskBundle);
