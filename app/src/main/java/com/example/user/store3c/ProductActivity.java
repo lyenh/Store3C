@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 
@@ -43,10 +44,10 @@ import static com.example.user.store3c.MainActivity.taskIdMainActivity;
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
     private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
-    private String notification_list = "";
+    private String notification_list = "", firebaseNotification = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
-    private boolean recentTaskProduct = false;
+    private boolean recentTaskProduct = false, firebaseDataPayload = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,9 +78,15 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         if (bundle != null) {
             notification_list = bundle.getString("Notification");
             retainRecentTask = bundle.getString("RetainRecentTask");
+            firebaseNotification = bundle.getString("Firebase");
             if (retainRecentTask != null) {
                 if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
                     recentTaskProduct = true;
+                }
+            }
+            if (firebaseNotification != null) {
+                if (firebaseNotification.equals("DATA_PAYLOAD")) {       // productActivity task
+                    firebaseDataPayload = true;
                 }
             }
             if (notification_list != null) {   // notification promotion product
@@ -329,27 +336,46 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                     else {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                   //     intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                        Bundle retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                        intent.putExtras(retainRecentTaskBundle);
-                        startActivity(intent);
-                        ProductActivity.this.finish();
-                   //     tasks.get(0).finishAndRemoveTask();
+                        if (firebaseDataPayload) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                                startActivity(intent);
+                                ProductActivity.this.finish();
+                            } else {
+                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                                Bundle retainRecentTaskBundle = new Bundle();
+                                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                                intent.putExtras(retainRecentTaskBundle);
+                                startActivity(intent);
+                                tasks.get(0).finishAndRemoveTask();
+                            }
+                        } else {
+                            startActivity(intent);
+                            ProductActivity.this.finish();
+                        }
                     }
                 }
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-              //  intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                Bundle retainRecentTaskBundle = new Bundle();
-                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                intent.putExtras(retainRecentTaskBundle);
-                startActivity(intent);
-                ProductActivity.this.finish();
-            //    tasks.get(0).finishAndRemoveTask();
+                if (firebaseDataPayload) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                        startActivity(intent);
+                        ProductActivity.this.finish();
+                    } else {
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
+                        startActivity(intent);
+                        tasks.get(0).finishAndRemoveTask();
+                    }
+                } else {
+                    startActivity(intent);
+                    ProductActivity.this.finish();
+                }
             }
         }
         else {

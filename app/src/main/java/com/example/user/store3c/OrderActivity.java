@@ -370,9 +370,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 case "DISH":
                     if (recentTaskOrder) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        Bundle retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                        intent.putExtras(retainRecentTaskBundle);
                     }
                     else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
@@ -443,9 +440,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     if (recentTaskOrder) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        Bundle retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                        intent.putExtras(retainRecentTaskBundle);
                     }
                     else {
                         intent.setClass(OrderActivity.this, MainActivity.class);

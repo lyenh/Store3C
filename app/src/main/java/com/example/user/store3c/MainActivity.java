@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdMainActivity = -1;
     public static int retainRecentTaskId = -1;
-    public static boolean FCMload = false;
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
 
     private DishAdapter dishAdapter;
@@ -141,10 +140,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    private FirebaseServiceConnection firebaseServiceConnection;
-    private PromotionFirebaseMessagingService promotionFirebaseMessagingService;
-
-    // TODO: bundle clear, retainRecentTaskId remove
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -166,11 +161,6 @@ public class MainActivity extends AppCompatActivity
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");
-            if (messageType != null) {
-                if (!messageType.equals("FCM-console")) {
-                    messageType = bundle.getString("messageType");      //have data payload
-                }
-            }
             retainRecentTask = bundle.getString("RetainRecentTask");
             if (retainRecentTask != null) {
                 messageType = "NotFirebaseMessage";
@@ -189,6 +179,11 @@ public class MainActivity extends AppCompatActivity
         List<ActivityManager.AppTask> tasks = am.getAppTasks();
         ActivityManager.AppTask eachTask;
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && tasks.get(0) != null) {
+            int numActivities = tasks.get(0).getTaskInfo().numActivities;
+            Log.i("Number of activity: ", "===> "+ numActivities);
+        }
+
         switch (messageType) {
             case "FCM-console":
                 toolbar = findViewById(R.id.toolbarMain);
@@ -203,19 +198,28 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
                 dialog.show();
-                messageName = bundle.getString("messageText");
-                messagePrice = bundle.getString("messagePrice");
-                messageIntro = bundle.getString("messageIntro");
-                messageImageUrl = bundle.getString("imagePath");
-                bundle.clear();
-                intent.putExtras(bundle);
-                FCMload = true;
+                if (bundle != null) {
+                    messageName = bundle.getString("messageText");
+                    messagePrice = bundle.getString("messagePrice");
+                    messageIntro = bundle.getString("messageIntro");
+                    messageImageUrl = bundle.getString("imagePath");
+                    bundle.clear();
+                    intent.putExtras(bundle);
+                }
+                else {
+                    messageName = "雞肉飯";
+                    messagePrice = "80元";
+                    messageIntro = "香噴噴的雞肉飯，吃了以後讓人再三的回味!";
+                    messageImageUrl = "http://apptech.website/store3c/image/dish/d13.jpg";
+                }
                 new ImageDownloadTask(messageName, messagePrice, messageIntro, MainActivity.this).execute(messageImageUrl);
                 break;
 
             case "No-data-payload":
-                bundle.clear();
-                intent.putExtras(bundle);
+                if (bundle != null) {
+                    bundle.clear();
+                    intent.putExtras(bundle);
+                }
 
             case "NotFirebaseMessage":
                 try {
@@ -1346,23 +1350,6 @@ public class MainActivity extends AppCompatActivity
         return  baos.toByteArray();
     }
 
-    private class FirebaseServiceConnection implements ServiceConnection {
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            //透過Binder調用Service內的方法
-            promotionFirebaseMessagingService = ((PromotionFirebaseMessagingService.FirebaseServiceBinder)service).getService();
-            promotionFirebaseMessagingService.cleanBundle();
-            String serviceName = promotionFirebaseMessagingService.getServiceName();
-            Log.i("service name is ", serviceName);
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            //service 物件設為null
-            promotionFirebaseMessagingService = null;
-        }
-    }
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
@@ -1379,7 +1366,7 @@ public class MainActivity extends AppCompatActivity
                 appRntTimer = 0;
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                ActivityManager.AppTask eachTask, currentTask = null;
+                ActivityManager.AppTask eachTask;
                 Intent intentM = getIntent();
                 Bundle bundleB = intentM.getExtras();
 
@@ -1390,7 +1377,6 @@ public class MainActivity extends AppCompatActivity
                             eachTask.finishAndRemoveTask();
                         }
                         else {
-                            currentTask = tasks.get(i);
                             Log.i("Activity number", ": "+ eachTask.getTaskInfo().numActivities );
                             Log.i("BaseActivity", "===>"+ eachTask.getTaskInfo().baseActivity );
                         }
@@ -1400,44 +1386,11 @@ public class MainActivity extends AppCompatActivity
                         eachTask = tasks.get(i);
                         eachTask.finishAndRemoveTask();
                     }
-                    currentTask = tasks.get(0);
                 }
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
                         retainRecentTaskId = getTaskId();
                     }
-                }
-
-                if (FCMload) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && currentTask != null) {
-                        int numActivities = currentTask.getTaskInfo().numActivities;
-                        Log.i("Number of activity: ", "===> "+ numActivities);
-                    }
-                    //firebaseServiceConnection = new FirebaseServiceConnection();
-                    //bindService(new Intent(MainActivity.this, PromotionFirebaseMessagingService.class), firebaseServiceConnection, Service.BIND_AUTO_CREATE);
-                    PromotionFirebaseMessagingService.cleanBundle();
-                  /*  PromotionFirebaseMessagingService.firebaseIntent.removeExtra("titleText");
-                    PromotionFirebaseMessagingService.firebaseIntent.removeExtra("messageText");
-                    PromotionFirebaseMessagingService.firebaseIntent.removeExtra("messagePrice");
-                    PromotionFirebaseMessagingService.firebaseIntent.removeExtra("messageIntro");
-                    PromotionFirebaseMessagingService.firebaseIntent.removeExtra("imagePath");
-                    PromotionFirebaseMessagingService.firebaseIntent.removeExtra("messageType");
-*/
-                    if (bundleB != null) {
-                        bundleB.remove("titleText");
-                        bundleB.remove("messageText");
-                        bundleB.remove("messagePrice");
-                        bundleB.remove("messageIntro");
-                        bundleB.remove("imagePath");
-                        bundleB.remove("messageType");
-                    }
-                    intentM.removeExtra("titleText");
-                    intentM.removeExtra("messageText");
-                    intentM.removeExtra("messagePrice");
-                    intentM.removeExtra("messageIntro");
-                    intentM.removeExtra("imagePath");
-                    intentM.removeExtra("messageType");
-                    FCMload = false;
                 }
                 if (bundleB != null) {
                     bundleB.clear();
@@ -1667,6 +1620,7 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Intro", MessageIntro);
         bundleProduct.putString("Menu", "DISH");
         bundleProduct.putString("Notification", "UPPER_APP");
+        bundleProduct.putString("Firebase", "DATA_PAYLOAD");
         intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
         MainActivity.dialog.dismiss();

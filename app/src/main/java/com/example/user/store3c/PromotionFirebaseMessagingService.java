@@ -61,22 +61,10 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     public String userId = "defaultId";
     public String refreshedToken;
     public static String orderMessageText = "";
-    private static Intent firebaseIntent;
 
     @Override
     public boolean onUnbind(Intent intent) {
-
         return super.onUnbind(intent);
-    }
-
-    @Override
-    public boolean handleIntentOnMainThread(@NonNull Intent intent) {
-        return super.handleIntentOnMainThread(intent);
-    }
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(newBase);
     }
 
     @Override
@@ -454,62 +442,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     @Override
     public void handleIntent(@NonNull Intent intent) {
-        Bundle bundle = intent.getExtras();
-        if (bundle != null) {
-            String messageType = bundle.getString("messageType");
-            if (messageType != null && messageType.equals("FCM-console")) {
-                firebaseIntent = intent;
-
-         /*       MainActivity.messageType = messageType;
-                MainActivity.messageName = bundle.getString("messageText");
-                MainActivity.messagePrice = bundle.getString("messagePrice");
-                MainActivity.messageIntro = bundle.getString("messageIntro");
-                MainActivity.messageImageUrl = bundle.getString("imagePath");
-
-                intent.removeExtra("titleText");
-                intent.removeExtra("messageText");
-                intent.removeExtra("messagePrice");
-                intent.removeExtra("messageIntro");
-                intent.removeExtra("imagePath");
-                intent.removeExtra("messageType"); */
-    /*            bundle.clear();
-                intent.putExtras(bundle); */
-            }
-        }
         super.handleIntent(intent);
-    }
-
-    public String getServiceName(){
-        return PromotionFirebaseMessagingService.class.getSimpleName();
-    }
-
-    public class FirebaseServiceBinder extends Binder {
-        public PromotionFirebaseMessagingService getService(){
-            return PromotionFirebaseMessagingService.this;
-        }
-    }
-
-    public static void cleanBundle() {
-        Bundle bundle = firebaseIntent.getExtras();
-
-        if (bundle != null) {
-            firebaseIntent.removeExtra("titleText");
-            firebaseIntent.removeExtra("messageText");
-            firebaseIntent.removeExtra("messagePrice");
-            firebaseIntent.removeExtra("messageIntro");
-            firebaseIntent.removeExtra("imagePath");
-            firebaseIntent.removeExtra("messageType");
-            bundle.remove("titleText");
-            bundle.remove("messageText");
-            bundle.remove("messagePrice");
-            bundle.remove("messageIntro");
-            bundle.remove("imagePath");
-            bundle.remove("messageType");
-
-            //bundle.clear();
-            firebaseIntent.putExtras(bundle);
-            //this.handleIntent(firebaseIntent);
-        }
     }
 
     @Override
@@ -704,6 +637,5 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     public PromotionFirebaseMessagingService() {
         super();
     }
-
 
 }

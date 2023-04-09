@@ -95,9 +95,6 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             case "DISH":
                 if (recentTask) {
                     intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                    retainRecentTaskBundle = new Bundle();
-                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                    intentItem.putExtras(retainRecentTaskBundle);
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
@@ -184,9 +181,6 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 if (recentTask) {
                     intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                     retainRecentTaskBundle = new Bundle();
-                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                    intentItem.putExtras(retainRecentTaskBundle);
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
