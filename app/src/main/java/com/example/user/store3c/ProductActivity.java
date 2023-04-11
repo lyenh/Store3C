@@ -360,18 +360,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                 intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                 if (firebaseDataPayload) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                        startActivity(intent);
-                        ProductActivity.this.finish();
-                    } else {
+           //         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+           //             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+           //             startActivity(intent);
+           //             ProductActivity.this.finish();
+           //         } else {
                         intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
                         tasks.get(0).finishAndRemoveTask();
-                    }
+           //         }
                 } else {
                     startActivity(intent);
                     ProductActivity.this.finish();

@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity
     private ViewPager2 pager;
     private ImageView dot1, dot2, dot3, dot4, dot5;
     private List<Fragment> fragments;
-    private String retainRecentTask;
+    private String retainRecentTask = null;
 
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
@@ -203,8 +203,6 @@ public class MainActivity extends AppCompatActivity
                     messagePrice = bundle.getString("messagePrice");
                     messageIntro = bundle.getString("messageIntro");
                     messageImageUrl = bundle.getString("imagePath");
-                    bundle.clear();
-                    intent.putExtras(bundle);
                 }
                 else {
                     messageName = "雞肉飯";
@@ -216,10 +214,6 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "No-data-payload":
-                if (bundle != null) {
-                    bundle.clear();
-                    intent.putExtras(bundle);
-                }
 
             case "NotFirebaseMessage":
                 try {
@@ -493,6 +487,11 @@ public class MainActivity extends AppCompatActivity
                     logoImage.setOnClickListener(this);
                 } catch (Throwable e) {
                     Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
+                }
+                if (retainRecentTask != null) {
+                    if (retainRecentTask.equals("RECENT_TASK")) {
+                        retainRecentTaskId = getTaskId();
+                    }
                 }
                 break;
         }
@@ -1367,8 +1366,6 @@ public class MainActivity extends AppCompatActivity
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 ActivityManager.AppTask eachTask;
-                Intent intentM = getIntent();
-                Bundle bundleB = intentM.getExtras();
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (int i = 0; i < tasks.size(); i++) {
@@ -1391,10 +1388,6 @@ public class MainActivity extends AppCompatActivity
                     if (retainRecentTask.equals("RECENT_TASK")) {
                         retainRecentTaskId = getTaskId();
                     }
-                }
-                if (bundleB != null) {
-                    bundleB.clear();
-                    intentM.putExtras(bundleB);
                 }
                 taskIdMainActivity = getTaskId();
                 MainActivity.this.finish();
