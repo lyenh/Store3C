@@ -442,7 +442,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     @Override
     public void handleIntent(@NonNull Intent intent) {
-        super.handleIntent(intent);
+         super.handleIntent(intent);
     }
 
     @Override

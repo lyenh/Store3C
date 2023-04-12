@@ -136,6 +136,8 @@ public class MainActivity extends AppCompatActivity
     private List<Fragment> fragments;
     private String retainRecentTask = null;
 
+    public ActivityManager.AppTask currentTask;
+    public boolean overLoadActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
@@ -179,9 +181,16 @@ public class MainActivity extends AppCompatActivity
         List<ActivityManager.AppTask> tasks = am.getAppTasks();
         ActivityManager.AppTask eachTask;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && tasks.get(0) != null) {
-            int numActivities = tasks.get(0).getTaskInfo().numActivities;
-            Log.i("Number of activity: ", "===> "+ numActivities);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            for (ActivityManager.AppTask task : tasks) {
+                if (task.getTaskInfo().persistentId == getTaskId()) {
+                    currentTask = task;
+                    if (currentTask.getTaskInfo().numActivities > 1) {
+                        overLoadActivity = true;
+                        Log.i("Number of activity: ", "===> "+ currentTask.getTaskInfo().numActivities);
+                    }
+                }
+            }
         }
 
         switch (messageType) {
@@ -203,8 +212,7 @@ public class MainActivity extends AppCompatActivity
                     messagePrice = bundle.getString("messagePrice");
                     messageIntro = bundle.getString("messageIntro");
                     messageImageUrl = bundle.getString("imagePath");
-                }
-                else {
+                } else {
                     messageName = "雞肉飯";
                     messagePrice = "80元";
                     messageIntro = "香噴噴的雞肉飯，吃了以後讓人再三的回味!";
@@ -214,6 +222,16 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "No-data-payload":
+                if (overLoadActivity) {
+                    Intent reloadIntent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    Bundle reloadBundle = new Bundle();
+                    reloadBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    reloadIntent.putExtras(reloadBundle);
+                    reloadIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    startActivity(reloadIntent);
+                    currentTask.finishAndRemoveTask();
+                    break;
+                }
 
             case "NotFirebaseMessage":
                 try {
@@ -1614,12 +1632,23 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Menu", "DISH");
         bundleProduct.putString("Notification", "UPPER_APP");
         bundleProduct.putString("Firebase", "DATA_PAYLOAD");
-        intentProduct.putExtras(bundleProduct);
         intentProduct.setClass(activity, ProductActivity.class);
-        MainActivity.dialog.dismiss();
-        activity.startActivity(intentProduct);
-        activity.finish();
-        this.cancel(true);
+        if (activity.overLoadActivity) {
+            bundleProduct.putString("RetainRecentTask", "RECENT_ACTIVITY");
+            intentProduct.putExtras(bundleProduct);
+            intentProduct.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            MainActivity.dialog.dismiss();
+            activity.startActivity(intentProduct);
+            activity.currentTask.finishAndRemoveTask();
+            this.cancel(true);
+        }
+        else {
+            intentProduct.putExtras(bundleProduct);
+            MainActivity.dialog.dismiss();
+            activity.startActivity(intentProduct);
+            activity.finish();
+            this.cancel(true);
+        }
     }
 
 }
