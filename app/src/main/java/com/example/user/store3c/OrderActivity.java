@@ -373,7 +373,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     }
                     else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
                     break;
                 case "CAKE":
@@ -443,7 +443,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     }
                     else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
             }
         }

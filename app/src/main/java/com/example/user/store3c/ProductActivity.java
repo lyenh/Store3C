@@ -249,7 +249,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             switch (menu_item) {
                 case "DISH":
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     break;
                 case "CAKE":
                     intent.setClass(ProductActivity.this, CakeActivity.class);
@@ -271,7 +271,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 default:
                     intent.setClass(ProductActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             }
         }
         if (notification_list != null) {
@@ -336,19 +336,33 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
                     else {
-                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                         if (firebaseDataPayload) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                                startActivity(intent);
-                                ProductActivity.this.finish();
-                            } else {
+                            intent.setFlags(0);
+                            if (recentTaskProduct) {
+                                intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
                                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                                 Bundle retainRecentTaskBundle = new Bundle();
                                 retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                                 intent.putExtras(retainRecentTaskBundle);
                                 startActivity(intent);
                                 tasks.get(0).finishAndRemoveTask();
+                            }
+                            else {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                    intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                                    startActivity(intent);
+                                    ProductActivity.this.finish();
+                                }
+                                else {
+                                    intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                                    Bundle retainRecentTaskBundle = new Bundle();
+                                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                                    intent.putExtras(retainRecentTaskBundle);
+                                    startActivity(intent);
+                                    tasks.get(0).finishAndRemoveTask();
+                                }
                             }
                         } else {
                             startActivity(intent);
@@ -359,19 +373,26 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             }
             else {
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
-                intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                if (firebaseDataPayload) {
+                 if (firebaseDataPayload) {
+                     intent.setFlags(0);
                     if (recentTaskProduct) {
+                        intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
-                        finishAndRemoveTask();
+                        tasks.get(0).finishAndRemoveTask();
                     }
                     else {
-                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                             startActivity(intent);
-                             ProductActivity.this.finish();
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                           intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                           intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                           startActivity(intent);
+                           ProductActivity.this.finish();
                          }
                          else {
+                            intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                             Bundle retainRecentTaskBundle = new Bundle();
                             retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");

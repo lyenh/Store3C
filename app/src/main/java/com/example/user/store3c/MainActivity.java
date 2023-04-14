@@ -137,12 +137,12 @@ public class MainActivity extends AppCompatActivity
     private String retainRecentTask = null;
 
     public ActivityManager.AppTask currentTask;
-    public boolean overLoadActivity = false;
+    public boolean combinedActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
+    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 21 and Api 30
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
@@ -186,8 +186,18 @@ public class MainActivity extends AppCompatActivity
                 if (task.getTaskInfo().persistentId == getTaskId()) {
                     currentTask = task;
                     if (currentTask.getTaskInfo().numActivities > 1) {
-                        overLoadActivity = true;
+                        combinedActivity = true;            // MainActivity is not the root activity so to create a new task
                         Log.i("Number of activity: ", "===> "+ currentTask.getTaskInfo().numActivities);
+                    }
+                }
+            }
+        }
+        else {
+            if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
+                for (ActivityManager.AppTask task : tasks) {
+                    if (task.getTaskInfo().persistentId== getTaskId()) {
+                        currentTask = task;
+                        combinedActivity = true;        // always to create a new task
                     }
                 }
             }
@@ -222,8 +232,8 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case "No-data-payload":
-                if (overLoadActivity) {
-                    Intent reloadIntent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                if (combinedActivity) {
+                    Intent reloadIntent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
                     Bundle reloadBundle = new Bundle();
                     reloadBundle.putString("RetainRecentTask", "RECENT_TASK");
                     reloadIntent.putExtras(reloadBundle);
@@ -1633,7 +1643,7 @@ class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
         bundleProduct.putString("Notification", "UPPER_APP");
         bundleProduct.putString("Firebase", "DATA_PAYLOAD");
         intentProduct.setClass(activity, ProductActivity.class);
-        if (activity.overLoadActivity) {
+        if (activity.combinedActivity) {
             bundleProduct.putString("RetainRecentTask", "RECENT_ACTIVITY");
             intentProduct.putExtras(bundleProduct);
             intentProduct.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);

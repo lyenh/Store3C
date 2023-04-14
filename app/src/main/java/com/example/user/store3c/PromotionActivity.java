@@ -98,7 +98,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
-                    intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }
                 break;
             case "CAKE":
@@ -184,7 +184,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
-                    intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }
         }
         startActivity(intentItem);

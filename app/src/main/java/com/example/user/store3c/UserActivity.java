@@ -1442,7 +1442,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                                         Toast.makeText(UserActivity.this, "資料已刪除 !", Toast.LENGTH_SHORT).show();
                                                         intent = new Intent();
                                                         intent.setClass(UserActivity.this, MainActivity.class);
-                                                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                                         startActivity(intent);
                                                         UserActivity.this.finish();
                                                     } else {
@@ -2011,7 +2011,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
         switch (menu_item) {
             case "DISH":
                 intent.setClass(UserActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 break;
             case "CAKE":
                 intent.setClass(UserActivity.this, CakeActivity.class);
@@ -2028,7 +2028,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intent.setClass(UserActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         }
 
         startActivity(intent);
@@ -2072,7 +2072,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                 switch (menu_item) {
                     case "DISH":
                         intent.setClass(UserActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         break;
                     case "CAKE":
                         intent.setClass(UserActivity.this, CakeActivity.class);
@@ -2089,7 +2089,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                     default:
                         Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                         intent.setClass(UserActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }
                 startActivity(intent);
                 UserActivity.this.finish();
