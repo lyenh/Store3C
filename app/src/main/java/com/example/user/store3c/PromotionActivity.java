@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -94,7 +95,17 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         switch (menu_item) {
             case "DISH":
                 if (recentTask) {
-                    intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intentItem = Intent.makeRestartActivityTask(new ComponentName(getApplicationContext(), MainActivity.class));
+                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                    }
+                    else {
+                        intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intentItem.putExtras(retainRecentTaskBundle);
+                    }
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
@@ -180,7 +191,17 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 if (recentTask) {
-                    intentItem = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intentItem = Intent.makeRestartActivityTask(new ComponentName(getApplicationContext(), MainActivity.class));
+                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+                    }
+                    else {
+                        intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intentItem.putExtras(retainRecentTaskBundle);
+                    }
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
@@ -222,7 +243,7 @@ class  UploadOrderToFirebaseTask extends AsyncTask<String, Void, Void> {
         dbhelper = new AccountDbAdapter(contextActivity);
 
         try{
-            Thread.sleep(5000);
+            Thread.sleep(3000);
         }catch (Exception e) {
             e.printStackTrace();
         }

@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 21 and Api 30
+    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
     @Override
@@ -157,7 +157,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar;
         DrawerLayout drawer;
         ActionBarDrawerToggle toggle;
-
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
 
@@ -178,26 +177,27 @@ public class MainActivity extends AppCompatActivity
         }
 
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+        List<ActivityManager.AppTask> tasks;
         ActivityManager.AppTask eachTask;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            for (ActivityManager.AppTask task : tasks) {
-                if (task.getTaskInfo().persistentId == getTaskId()) {
-                    currentTask = task;
-                    if (currentTask.getTaskInfo().numActivities > 1) {
-                        combinedActivity = true;            // MainActivity is not the root activity so to create a new task
-                        Log.i("Number of activity: ", "===> "+ currentTask.getTaskInfo().numActivities);
+        synchronized(tasks = am.getAppTasks() ){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                for (ActivityManager.AppTask task : tasks) {
+                    if (task.getTaskInfo().persistentId == getTaskId()) {
+                        currentTask = task;
+                        if (currentTask.getTaskInfo().numActivities > 1) {
+                            combinedActivity = true;            // MainActivity is not the root activity so to create a new task
+                            Log.i("Number of activity: ", "===> " + currentTask.getTaskInfo().numActivities);
+                        }
                     }
                 }
-            }
-        }
-        else {
-            if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
-                for (ActivityManager.AppTask task : tasks) {
-                    if (task.getTaskInfo().persistentId== getTaskId()) {
-                        currentTask = task;
-                        combinedActivity = true;        // always to create a new task
+            } else {
+                if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
+                    for (ActivityManager.AppTask task : tasks) {
+                        if (task.getTaskInfo().persistentId == getTaskId()) {
+                            currentTask = task;
+                            combinedActivity = true;        // always to create a new task
+                        }
                     }
                 }
             }
@@ -245,6 +245,7 @@ public class MainActivity extends AppCompatActivity
 
             case "NotFirebaseMessage":
                 try {
+                    tasks = am.getAppTasks();
                     if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
                             eachTask = tasks.get(i);

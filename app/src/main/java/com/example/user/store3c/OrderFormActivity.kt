@@ -186,7 +186,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     } else {
                         finishAndRemoveTask()
                     }
-                } catch (e: Exception) {      // user has removed the task from the recent screen (task)
+                } catch (e: Exception) {      // It should not happen, prevent the moveToFront() has graph error
                     val tasksRemain = am.appTasks
                     preTask = null
                     currentTask = null

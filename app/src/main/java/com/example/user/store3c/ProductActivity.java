@@ -306,69 +306,14 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     else {
                         this.finishAndRemoveTask();
                     }
-                }catch (Exception e) {      // user has removed the task from the recent screen (task)
-                    tasks = am.getAppTasks();
-                    preTask = null;
-                    currentTask = null;
-                    if (tasks.size() > 1) {
-                        for (int i = 0; i < tasks.size(); i++) {
-                            if ( tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
-                                preTask = tasks.get(i);     // Should be the main task
-                            }
-                            if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
-                                currentTask = tasks.get(i);
-                            }
-                        }
-                        if (preTask == null) {
-                            preTask = tasks.get(tasks.size()-1);
-                            Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                        }
-                        preTask.moveToFront();
-                        intent.replaceExtras(new Bundle());
-                        intent.setAction("");
-                        intent.setData(null);
-                        intent.setFlags(0);
-                        if (currentTask != null) {
-                            currentTask.finishAndRemoveTask();
-                        }
-                        else {
-                            this.finishAndRemoveTask();
-                        }
-                    }
-                    else {
-                        if (firebaseDataPayload) {
-                            intent.setFlags(0);
-                            if (recentTaskProduct) {
-                                intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                                Bundle retainRecentTaskBundle = new Bundle();
-                                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                                intent.putExtras(retainRecentTaskBundle);
-                                startActivity(intent);
-                                tasks.get(0).finishAndRemoveTask();
-                            }
-                            else {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                                    startActivity(intent);
-                                    ProductActivity.this.finish();
-                                }
-                                else {
-                                    intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                                    Bundle retainRecentTaskBundle = new Bundle();
-                                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                                    intent.putExtras(retainRecentTaskBundle);
-                                    startActivity(intent);
-                                    tasks.get(0).finishAndRemoveTask();
-                                }
-                            }
-                        } else {
-                            startActivity(intent);
-                            ProductActivity.this.finish();
-                        }
-                    }
+                }catch (Exception e) {
+                    intent.setClass(ProductActivity.this, MainActivity.class);
+                    bundle = new Bundle();
+                    bundle.putString("Menu", menu_item);
+                    intent.putExtras(bundle);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    ProductActivity.this.finish();
                 }
             }
             else {
@@ -376,13 +321,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                  if (firebaseDataPayload) {
                      intent.setFlags(0);
                     if (recentTaskProduct) {
-                        intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                        Bundle retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                        intent.putExtras(retainRecentTaskBundle);
+                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                         startActivity(intent);
-                        tasks.get(0).finishAndRemoveTask();
+                        ProductActivity.this.finish();
                     }
                     else {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
