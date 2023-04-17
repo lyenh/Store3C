@@ -167,11 +167,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 }
                 if (preTask == null) {
                     preTask = tasks[tasks.size - 1]
-                    Toast.makeText(
-                        this@OrderFormActivity,
-                        "MainActivity taskId is not found !",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    //Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
                 }
             }
             if (preTask != null) {
@@ -186,7 +182,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     } else {
                         finishAndRemoveTask()
                     }
-                } catch (e: Exception) {      // It should not happen, prevent the moveToFront() has graph error
+                } catch (e: Exception) {      // prevent the system drop the preTask
                     val tasksRemain = am.appTasks
                     preTask = null
                     currentTask = null
@@ -217,7 +213,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         }
                         if (preTask == null) {
                             preTask = tasksRemain[tasksRemain.size - 1]
-                            Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
+                            //Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
                         }
                         preTask!!.moveToFront()
                         intent.replaceExtras(Bundle())

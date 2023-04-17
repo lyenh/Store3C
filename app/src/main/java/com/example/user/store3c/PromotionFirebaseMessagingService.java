@@ -53,14 +53,15 @@ import java.util.Random;
 import static com.example.user.store3c.MainActivity.setFirebaseDbPersistence;
 
 public class PromotionFirebaseMessagingService extends FirebaseMessagingService {
+    private static Integer totalUserAmount = 0;
+    private static Integer pendingIntentIndex = 0;
+    public static String orderMessageText = "";
+
     private DatabaseReference userTokenRef;
-    private static int totalUserAmount = 0;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
-    private static Integer pendingIntentIndex = 0;
     public String userId = "defaultId";
     public String refreshedToken;
-    public static String orderMessageText = "";
 
     @Override
     public boolean onUnbind(Intent intent) {
@@ -210,7 +211,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                 bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                                 Log.i("Notification===> ", "fork new task.  ");
-
                             } else {
                                 bundle.putString("Notification", "UPPER_APP");
                             }
@@ -231,9 +231,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     intent.putExtras(bundle);
                     TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
                     stackBuilder.addNextIntent(intent);
-                    pendingIntentIndex++;
-                    Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
-                    pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                    synchronized(pendingIntentIndex++) {
+                        pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                        Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
+                    }
 
                     String channelId = getString(R.string.default_notification_channel_id);
                     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -308,13 +310,13 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             Log.i("Messaging===> ", "Message Notification Body:  "+remoteMessage.getNotification().getBody());
             title = remoteMessage.getNotification().getTitle();
             message = remoteMessage.getNotification().getBody();
-            messagePrice = "80元";
-            messageIntro = "香噴噴的雞肉飯，吃了以後讓人再三的回味!";
+            messagePrice = "100元";
+            messageIntro = "挑選多種蔬菜水果，吐司、熱狗、豬排、煎蛋，豐富的食材，讓人有一種滿足的感覺!";
 
-            //Uri pic = remoteMessage.getNotification().getImageUrl();      need  SLL security  Web site
-            //if (pic != null) {
-            //    picture = getBitmapfromUrl(pic);
-            //}
+            Uri pic = remoteMessage.getNotification().getImageUrl();
+            if (pic != null) {
+                picture = getBitmapfromUrl(pic.toString());
+            }
 
             PendingIntent pendingIntent;
             Bundle bundle = new Bundle();
@@ -339,12 +341,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
                     if (appRunningForeground) {
                         bundle.putString("Notification", "IN_APP");
+                        bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                         intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-
                         Log.i("Notification===> ", "fork a new task.  ");
-
                     } else {
-                        Log.i("Notification===> ", "System tray send message to here. ");  //It should be impossible,  notification will send to the MainActivity
+                        Log.i("Notification===> ", "System tray send message to here. ");  //It should not happen, notification will send to MainActivity
                     }
                 }
                 else {
@@ -352,7 +353,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 }
             }
             else {          // user clear all app in recent screen
-                Log.i("Notification===> ", "System tray send message to here.");  //It should be impossible,  notification will send to the MainActivity
+                Log.i("Notification===> ", "System tray send message to here.");  //It should not happen, notification will send to the MainActivity
             }
 
             bundle.putByteArray("Pic", Bitmap2Bytes(picture));
@@ -363,8 +364,10 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             intent.putExtras(bundle);
             TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
             stackBuilder.addNextIntent(intent);
-            pendingIntentIndex++;
-            pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+
+            synchronized(pendingIntentIndex++) {
+                pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+            }
 
             String channelId = getString(R.string.default_notification_channel_id);
             Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -482,69 +485,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         if (counter == null) {
                             Log.i("Firebase ==>", "Total User Amount is null");
                         } else {
-                            totalUserAmount = counter;
-                            Log.i("Firebase ==>", "Total User Amount is: " + totalUserAmount);
-                            if (totalUserAmount == 0) {
-                                String key = userTokenRef.child("token").push().getKey();
-                                if (dbhelper.IsDbUserEmpty()) {
-                                    //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, "defaultEmail", "defaultName"));
-
-                                    UserItem newUser = new UserItem(userId, refreshedToken, "defaultEmail", "defaultName");
-                                    Map<String, Object> userValues = newUser.toMap();
-                                    Map<String, Object> userUpdates = new HashMap<>();
-                                    userUpdates.put("/token/" + key, userValues);
-                                    userTokenRef.updateChildren(userUpdates, new DatabaseReference.CompletionListener() {
-                                        @Override
-                                        public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                                            if (databaseError != null) {
-                                                Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
-                                            } else {
-                                                Log.i("updateChildren saved: ", "successfully !");
-                                            }
-                                        }
-                                    });
-
-                                } else {
-                                    try {
-                                        Cursor cursor = dbhelper.getSimpleUserData();
-                                        dbUserName = cursor.getString(1);
-                                        dbUserEmail = cursor.getString(2);
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
-                                    //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, dbUserEmail, dbUserName));
-
-                                    UserItem newUser = new UserItem(userId, refreshedToken, dbUserEmail, dbUserName);
-                                    Map<String, Object> userValues = newUser.toMap();
-                                    Map<String, Object> userUpdates = new HashMap<>();
-                                    userUpdates.put("/token/" + key, userValues);
-                                    userTokenRef.updateChildren(userUpdates, new DatabaseReference.CompletionListener() {
-                                        @Override
-                                        public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-                                            if (databaseError != null) {
-                                                Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
-                                            } else {
-                                                Log.i("updateChildren saved: ", "successfully !");
-                                            }
-                                        }
-                                    });
-
-                                }
-                                mutableData.setValue(++totalUserAmount);
-                            } else {
-                                MutableData tokenSnapshot = mutableData.child("token");
-                                Iterable<MutableData> tokenChildren = tokenSnapshot.getChildren();
-                                for (MutableData token : tokenChildren) {
-                                    UserItem c = token.getValue(UserItem.class);
-                                    if (c != null) {
-                                        Log.d("user: ", c.getUserToken() + "  " + c.getUserEmail() + "  " + c.getUserName());
-                                        if (c.getUserToken().equals(refreshedToken)) {
-                                            findToken = true;
-                                        }
-                                    }
-                                }
-                                if (!findToken) {
-                                    totalUserAmount++;
+                            synchronized (totalUserAmount = counter) {
+                                Log.i("Firebase ==>", "Total User Amount is: " + totalUserAmount);
+                                if (totalUserAmount == 0) {
                                     String key = userTokenRef.child("token").push().getKey();
                                     if (dbhelper.IsDbUserEmpty()) {
                                         //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, "defaultEmail", "defaultName"));
@@ -590,7 +533,68 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                         });
 
                                     }
-                                    mutableData.setValue(totalUserAmount);
+                                    mutableData.setValue(++totalUserAmount);
+                                } else {
+                                    MutableData tokenSnapshot = mutableData.child("token");
+                                    Iterable<MutableData> tokenChildren = tokenSnapshot.getChildren();
+                                    for (MutableData token : tokenChildren) {
+                                        UserItem c = token.getValue(UserItem.class);
+                                        if (c != null) {
+                                            Log.d("user: ", c.getUserToken() + "  " + c.getUserEmail() + "  " + c.getUserName());
+                                            if (c.getUserToken().equals(refreshedToken)) {
+                                                findToken = true;
+                                            }
+                                        }
+                                    }
+                                    if (!findToken) {
+                                        totalUserAmount++;
+                                        String key = userTokenRef.child("token").push().getKey();
+                                        if (dbhelper.IsDbUserEmpty()) {
+                                            //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, "defaultEmail", "defaultName"));
+
+                                            UserItem newUser = new UserItem(userId, refreshedToken, "defaultEmail", "defaultName");
+                                            Map<String, Object> userValues = newUser.toMap();
+                                            Map<String, Object> userUpdates = new HashMap<>();
+                                            userUpdates.put("/token/" + key, userValues);
+                                            userTokenRef.updateChildren(userUpdates, new DatabaseReference.CompletionListener() {
+                                                @Override
+                                                public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+                                                    if (databaseError != null) {
+                                                        Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
+                                                    } else {
+                                                        Log.i("updateChildren saved: ", "successfully !");
+                                                    }
+                                                }
+                                            });
+
+                                        } else {
+                                            try {
+                                                Cursor cursor = dbhelper.getSimpleUserData();
+                                                dbUserName = cursor.getString(1);
+                                                dbUserEmail = cursor.getString(2);
+                                            } catch (SQLException e) {
+                                                e.printStackTrace();
+                                            }
+                                            //userRef.child("token").child(key).setValue(new UserItem(refreshedToken, dbUserEmail, dbUserName));
+
+                                            UserItem newUser = new UserItem(userId, refreshedToken, dbUserEmail, dbUserName);
+                                            Map<String, Object> userValues = newUser.toMap();
+                                            Map<String, Object> userUpdates = new HashMap<>();
+                                            userUpdates.put("/token/" + key, userValues);
+                                            userTokenRef.updateChildren(userUpdates, new DatabaseReference.CompletionListener() {
+                                                @Override
+                                                public void onComplete(DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+                                                    if (databaseError != null) {
+                                                        Log.i("updateChildren saved: ", "fail !" + databaseError.getMessage());
+                                                    } else {
+                                                        Log.i("updateChildren saved: ", "successfully !");
+                                                    }
+                                                }
+                                            });
+
+                                        }
+                                        mutableData.setValue(totalUserAmount);
+                                    }
                                 }
                             }
                         }

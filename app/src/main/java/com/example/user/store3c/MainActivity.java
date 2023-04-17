@@ -212,9 +212,7 @@ public class MainActivity extends AppCompatActivity
                 dialog.setCanceledOnTouchOutside(false);
                 dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
                     @Override
-                    public void onCancel(DialogInterface dialog) {
-                        // DO SOME STUFF HERE
-                    }
+                    public void onCancel(DialogInterface dialog) {}
                 });
                 dialog.show();
                 if (bundle != null) {
@@ -312,7 +310,7 @@ public class MainActivity extends AppCompatActivity
                                             System.arraycopy(cursor.get(num).getBlob(0), 0, picture, length, cursor.get(num).getBlob(0).length);
                                             //picture[picture.length - 1] = '\0';
                                             if (totalLength == picture.length) {
-                                                Toast.makeText(MainActivity.this, "picture size: " + totalLength, Toast.LENGTH_LONG).show();
+                                                //Toast.makeText(MainActivity.this, "picture size: " + totalLength, Toast.LENGTH_LONG).show();
                                             }
                                             dbUserPicture = picture;
                                             //Toast.makeText(MainActivity.this, "picture size: " + dbUserPicture.length, Toast.LENGTH_LONG).show();
@@ -615,7 +613,7 @@ public class MainActivity extends AppCompatActivity
                                                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://apptech.website"));
                                                         startActivity(browserIntent);
                                                     } catch (Throwable e) {
-                                                        Toast.makeText(MainActivity.this, "Open webbrowser fail." + e.getClass().toString(), Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(MainActivity.this, "Open web browser fail." + e.getClass().toString(), Toast.LENGTH_LONG).show();
                                                     }
                                                 }
                                             })
