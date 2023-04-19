@@ -52,6 +52,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -64,6 +65,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.provider.FirebaseInitProvider;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -142,6 +144,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
+    // TODO: Upper App to buy product of notification from firebase with data payload 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: YPlayer initialize in Emulator, install app on api 21
 
@@ -175,6 +178,8 @@ public class MainActivity extends AppCompatActivity
         else {      //regular load MainActivity
             messageType = "NotFirebaseMessage";
         }
+
+
 
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> tasks;
@@ -723,6 +728,8 @@ public class MainActivity extends AppCompatActivity
         } catch (Throwable e) {
             Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
         }*/
+
+        FirebaseApp.initializeApp(getApplicationContext());
         FirebaseMessaging.getInstance().subscribeToTopic("store3c");
     }
 

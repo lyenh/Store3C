@@ -30,6 +30,7 @@ import android.view.View;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -223,6 +224,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         bundle.putString("Notification", "UPPER_APP");
                     }
 
+                    if (picture == null) {
+                        picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                    }
                     bundle.putByteArray("Pic", Bitmap2Bytes(picture));
                     bundle.putString("Name", message);
                     bundle.putString("Price", messagePrice);
@@ -356,6 +360,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 Log.i("Notification===> ", "System tray send message to here.");  //It should not happen, notification will send to the MainActivity
             }
 
+            if (picture == null) {
+                picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+            }
             bundle.putByteArray("Pic", Bitmap2Bytes(picture));
             bundle.putString("Name", message);
             bundle.putString("Price", messagePrice);
