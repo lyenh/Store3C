@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
+    // TODO: Upgrade Gradle, Library
     // TODO: Upper App to buy product of notification from firebase with data payload 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: YPlayer initialize in Emulator, install app on api 21
@@ -713,6 +714,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         /*try {
@@ -728,7 +735,6 @@ public class MainActivity extends AppCompatActivity
         } catch (Throwable e) {
             Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
         }*/
-
         FirebaseApp.initializeApp(getApplicationContext());
         FirebaseMessaging.getInstance().subscribeToTopic("store3c");
     }
