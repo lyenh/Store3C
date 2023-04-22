@@ -29,7 +29,6 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragmentX;
 
 import java.util.Objects;
 
-import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;

@@ -144,7 +144,9 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: Upgrade Gradle, Library
+    // TODO: productActivity onBack with talend notification in one task
+    // TODO: task.startActivity parameter: optional bundle, putExtras twice
+    // TODO: Flag: newTask and clearTop can be a relaunch activity
     // TODO: Upper App to buy product of notification from firebase with data payload 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: YPlayer initialize in Emulator, install app on api 21
@@ -186,27 +188,31 @@ public class MainActivity extends AppCompatActivity
         List<ActivityManager.AppTask> tasks;
         ActivityManager.AppTask eachTask;
 
-        synchronized(tasks = am.getAppTasks() ){
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                for (ActivityManager.AppTask task : tasks) {
-                    if (task.getTaskInfo().persistentId == getTaskId()) {
-                        currentTask = task;
-                        if (currentTask.getTaskInfo().numActivities > 1) {
-                            combinedActivity = true;            // MainActivity is not the root activity so to create a new task
-                            Log.i("Number of activity: ", "===> " + currentTask.getTaskInfo().numActivities);
-                        }
-                    }
-                }
-            } else {
-                if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
+        try {
+            synchronized (tasks = am.getAppTasks()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     for (ActivityManager.AppTask task : tasks) {
                         if (task.getTaskInfo().persistentId == getTaskId()) {
                             currentTask = task;
-                            combinedActivity = true;        // always to create a new task
+                            if (currentTask.getTaskInfo().numActivities > 1) {
+                                combinedActivity = true;            // MainActivity is not the root activity so to create a new task
+                                Log.i("Number of activity: ", "===> " + currentTask.getTaskInfo().numActivities);
+                            }
+                        }
+                    }
+                } else {
+                    if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
+                        for (ActivityManager.AppTask task : tasks) {
+                            if (task.getTaskInfo().persistentId == getTaskId()) {
+                                currentTask = task;
+                                combinedActivity = true;        // always to create a new task
+                            }
                         }
                     }
                 }
             }
+        } catch (Exception e) {
+            Log.i("Get task Id error: ", "==>" + e.getMessage());       // the previous task removed
         }
 
         switch (messageType) {

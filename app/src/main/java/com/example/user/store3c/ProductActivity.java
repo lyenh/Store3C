@@ -361,6 +361,11 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                 }
                             }
                         } else {
+                            if (recentTaskProduct) {
+                                Bundle retainRecentTaskBundle = new Bundle();
+                                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                                intent.putExtras(retainRecentTaskBundle);
+                            }
                             startActivity(intent);
                             ProductActivity.this.finish();
                         }
@@ -394,6 +399,11 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                          }
                     }
                 } else {
+                     if (recentTaskProduct) {
+                         Bundle retainRecentTaskBundle = new Bundle();
+                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                         intent.putExtras(retainRecentTaskBundle);
+                     }
                     startActivity(intent);
                     ProductActivity.this.finish();
                 }

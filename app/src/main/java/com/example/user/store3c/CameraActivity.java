@@ -59,7 +59,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
-import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
