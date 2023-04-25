@@ -7,6 +7,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -33,6 +34,7 @@ import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
+@Keep
 public class YouTubeFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     private static String ARG_PARAM1 = "param1";

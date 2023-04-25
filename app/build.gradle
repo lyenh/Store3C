@@ -32,7 +32,9 @@ android {
     buildTypes {
         release {
             minifyEnabled true
+       //     shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+       //     proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     productFlavors {
@@ -43,14 +45,14 @@ android {
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
     if(JavaVersion.current() != JavaVersion.VERSION_17){
         throw new Exception("This build must be run with java 8+ version:  JDK_17")
     }
     testOptions {
         unitTests.includeAndroidResources = true
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
     buildFeatures {
         viewBinding true
@@ -62,8 +64,7 @@ android {
 dependencies {
     api(group: "androidx.work", name: "work-runtime", version: '2.8.1')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestImplementation "androidx.test:core:1.5.0"
-    androidTestImplementation "androidx.test:core-ktx:1.5.0"
+    testImplementation 'junit:junit:4.13.2'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.appcompat:appcompat-resources:1.6.1'
@@ -105,7 +106,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-base:18.2.0'
     implementation 'com.google.android.gms:play-services-auth:20.5.0'
     implementation 'com.google.android.gms:play-services-identity:18.0.1'
-    implementation 'com.google.android.gms:play-services-analytics:18.0.2'
+    implementation 'com.google.android.gms:play-services-analytics:18.0.0'          //18.0.2 has the missing library com.google.protobuf error
     implementation 'com.google.android.gms:play-services-ads:22.0.0'
     implementation 'com.google.android.gms:play-services-cronet:18.0.1'
     implementation 'com.github.CanHub:Android-Image-Cropper:3.3.5'

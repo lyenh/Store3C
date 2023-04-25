@@ -144,9 +144,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: productActivity onBack with talend notification in one task
-    // TODO: task.startActivity parameter: optional bundle, putExtras twice
-    // TODO: Flag: newTask and clearTop can be a relaunch activity
+    // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
     // TODO: Upper App to buy product of notification from firebase with data payload 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: YPlayer initialize in Emulator, install app on api 21

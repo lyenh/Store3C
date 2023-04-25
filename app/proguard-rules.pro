@@ -12,6 +12,19 @@
 -keepattributes *Annotation*
 -keep class androidx.appcompat.widget.** { *; }
 
+-keep class com.google.android.YouTube.**{ *; }
+-keep class com.google.android.youtube.**{ *; }
+-keep class google.android.youtube.player.**{ *; }
+
+-printmapping build/outputs/mapping/debug/mapping.txt
+-printmapping build/outputs/mapping/release/mapping.txt
+-printusage  build/outputs/mapping/release/usage.txt
+-printseeds  build/outputs/mapping/release/seeds.txt
+
+
+#-keep class com.example.user.store3c.YouTubeFragment.**{ *; }
+#-keep class com.example.user.store3c.YouTubeFailureRecoveryActivity.**{ *; }
+
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
 # class:

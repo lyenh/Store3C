@@ -1,11 +1,11 @@
 <component name="libraryTable">
   <library name="Gradle: androidx.contentpager:contentpager:1.0.0@aar">
     <ANNOTATIONS>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e7f58641fbe3e55acb0ab0b58c534c0f/transformed/contentpager-1.0.0/annotations.zip!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/7b8baa8b424671a2ee548c7ca25c9fdd/transformed/contentpager-1.0.0/annotations.zip!/" />
     </ANNOTATIONS>
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e7f58641fbe3e55acb0ab0b58c534c0f/transformed/contentpager-1.0.0/AndroidManifest.xml" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e7f58641fbe3e55acb0ab0b58c534c0f/transformed/contentpager-1.0.0/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/7b8baa8b424671a2ee548c7ca25c9fdd/transformed/contentpager-1.0.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7b8baa8b424671a2ee548c7ca25c9fdd/transformed/contentpager-1.0.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
