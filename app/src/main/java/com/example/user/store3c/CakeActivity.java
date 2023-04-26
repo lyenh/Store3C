@@ -93,7 +93,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
     private static int Reload = 0;
     private ImageView logoImage;
     private byte[] dbUserPicture;
-    private YouTubePlayerSupportFragmentX YouTubeF;
+ //   private YouTubePlayerSupportFragmentX YouTubeF;
     private NavigationView navigationView;
     private handler1 handlerDownload1 = new handler1();
     private static handler2 handlerDownload2 = new handler2();
