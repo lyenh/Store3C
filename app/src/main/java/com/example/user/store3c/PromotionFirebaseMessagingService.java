@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.IntentCompat;
@@ -52,7 +53,7 @@ import java.util.Objects;
 import java.util.Random;
 
 import static com.example.user.store3c.MainActivity.setFirebaseDbPersistence;
-
+@Keep
 public class PromotionFirebaseMessagingService extends FirebaseMessagingService {
     private static Integer totalUserAmount = 0;
     private static Integer pendingIntentIndex = 0;

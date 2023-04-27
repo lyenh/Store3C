@@ -28,7 +28,7 @@ public class CameraAdapter extends  RecyclerView.Adapter<CameraAdapter.ViewHolde
     private String menuItem;
     private CameraActivity activity;
     private YouTubeFragment YouTubeF;
-    private String[][] cameraVideoId = { {"jHzU8Ixa75w", "I2W0Opbtrpg", "zywGqoPIc0k"},
+    private String[][] cameraVideoId = { {"jHzU8Ixa75w", "I2W0Opbtrpg", "bOYp-58MQNU"},
                                         {"Nd1wc8XMarg", "mzwPuyfQcrA", "ui525Iwe-cQ"},
                                         {"dUbZBlbmNng", "5nUcO-FvFbM", "D8AvEstX_3E"}};
     private int videoPlayBtn;

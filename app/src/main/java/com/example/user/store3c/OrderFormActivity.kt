@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.Keep
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +19,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 
+@Keep
 class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
     companion object {
@@ -26,8 +28,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
     private var menuItem = "DISH"
     private var upMenuItem = ""; private var searchItem = ""
-    private lateinit var orderText:TextView
-    private lateinit var userRef: DatabaseReference
+    private var orderText:TextView =  findViewById(R.id.orderFormItem_id)
+    private var userRef: DatabaseReference = Firebase.database.reference.child("user")
     private var orderFromFullData: String = "購買明細資料: "
     private var notification_list = ""
     private var preTask: AppTask? = null
@@ -59,10 +61,10 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         supportActionBar?.setLogo(R.drawable.store_logo)
         supportActionBar?.title = editTitle
 
-        orderText = findViewById(R.id.orderFormItem_id)
+     //   orderText = findViewById(R.id.orderFormItem_id)
         val retButton:Button = findViewById(R.id.orderFormReturnBtn_id)
 
-        userRef = Firebase.database.reference.child("user")
+    //    userRef = Firebase.database.reference.child("user")
         userRef.child("Uid").get().addOnSuccessListener {
             val currentUser = FirebaseAuth.getInstance().currentUser
             if (currentUser != null) {

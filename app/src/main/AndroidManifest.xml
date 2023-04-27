@@ -130,6 +130,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_provider_paths" />
         </provider> <!-- Sample AdMob app ID -->
+
         <service
             android:name=".PromotionFirebaseMessagingService"
             android:exported="false"
@@ -149,5 +150,11 @@
         </service>
 
     </application>
+
+    <queries>
+        <intent>
+            <action android:name="com.google.android.youtube.api.service.START" />
+        </intent>
+    </queries>
 
 </manifest>
