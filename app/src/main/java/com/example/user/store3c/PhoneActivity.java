@@ -870,9 +870,12 @@ public class PhoneActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-        tabs.clearOnTabSelectedListeners();
-        pager.unregisterOnPageChangeCallback(pageChangeCallback);
-
+        if (tabs != null) {
+            tabs.clearOnTabSelectedListeners();
+        }
+        if (pager != null) {
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
+        }
         super.onDestroy();
     }
 

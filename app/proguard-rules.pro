@@ -24,10 +24,27 @@
 
 -keep class com.example.user.store3c.** { *; }
 -keep class com.example.user.store3c.MainActivity.** { *; }
+-keep class com.example.user.store3c.LoginActivity.** { *; }
+-keep class com.example.user.store3c.BookActivity.** { *; }
 -keep class com.google.android.youtube.player.YouTubePlayerSupportFragmentX.**{ *; }
 
 -keep class com.example.user.store3c.OrderFormActivity.** { *; }
--keep class kotlin.Metadata
+-keep class com.example.user.store3c.OrderFormActivity$Companion
+-keep class com.example.user.store3c.OrderFormActivity {
+    private java.lang.String menuItem;
+    private java.lang.String upMenuItem;
+    private java.lang.String searchItem;
+    private java.lang.String orderFromFullData;
+    private java.lang.String notification_list;
+    private android.widget.TextView orderText;
+    private com.google.firebase.database.DatabaseReference userRef;
+    private android.app.ActivityManager$AppTask preTask;
+    void onCreate(android.os.Bundle);
+    void onClick(android.view.View);
+    void onBackPressed();
+}
+-keep class kotlin.Metadata { *; }
+
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
 }

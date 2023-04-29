@@ -28,8 +28,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
     private var menuItem = "DISH"
     private var upMenuItem = ""; private var searchItem = ""
-    private var orderText:TextView =  findViewById(R.id.orderFormItem_id)
-    private var userRef: DatabaseReference = Firebase.database.reference.child("user")
+    private lateinit var orderText:TextView
+    private lateinit var userRef: DatabaseReference
     private var orderFromFullData: String = "購買明細資料: "
     private var notification_list = ""
     private var preTask: AppTask? = null
@@ -61,14 +61,14 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         supportActionBar?.setLogo(R.drawable.store_logo)
         supportActionBar?.title = editTitle
 
-     //   orderText = findViewById(R.id.orderFormItem_id)
+        orderText = findViewById(R.id.orderFormItem_id)
         val retButton:Button = findViewById(R.id.orderFormReturnBtn_id)
 
-    //    userRef = Firebase.database.reference.child("user")
-        userRef.child("Uid").get().addOnSuccessListener {
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            if (currentUser != null) {
-                if (!currentUser.isAnonymous) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            if (!currentUser.isAnonymous) {
+                userRef = Firebase.database.reference.child("user")
+                userRef.child("Uid").get().addOnSuccessListener {
                     val key:String = currentUser.uid
                     var findOrderData = false
                     var orderFormEmail:String ; var orderFormName:String ; var orderFromDate:String ; var orderFormPrice:String
@@ -106,19 +106,18 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         orderFromFullData = "尚未購買產品喔 !"
                         orderText.text = orderFromFullData
                     }
-                } else {
+                }.addOnFailureListener{
                     orderText.text = orderFormList
-                    Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
+                    Log.e("firebase", "Error getting data", it)
                 }
             } else {
                 orderText.text = orderFormList
                 Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
             }
-        }.addOnFailureListener{
+        } else {
             orderText.text = orderFormList
-            Log.e("firebase", "Error getting data", it)
+            Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
         }
-
         retButton.setOnClickListener(this)
 
     }

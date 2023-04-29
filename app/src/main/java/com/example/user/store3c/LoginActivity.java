@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,7 +43,7 @@ import static com.example.user.store3c.MainActivity.mAuth;
 /**
  * Created by user on 2018/2/12.
  */
-
+@Keep
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
     private String menu_item;
@@ -356,7 +358,5 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         LoginActivity.this.finish();
 
     }
-
-
 
 }
