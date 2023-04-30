@@ -341,21 +341,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                 ProductActivity.this.finish();
                             }
                             else {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                                    startActivity(intent);
-                                    ProductActivity.this.finish();
-                                }
-                                else {
-                                    intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                                    Bundle retainRecentTaskBundle = new Bundle();
-                                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                                    intent.putExtras(retainRecentTaskBundle);
-                                    startActivity(intent);
-                                    tasks.get(0).finishAndRemoveTask();
-                                }
+                                intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                                Bundle retainRecentTaskBundle = new Bundle();
+                                retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                                intent.putExtras(retainRecentTaskBundle);
+                                startActivity(intent);
+                                tasks.get(0).finishAndRemoveTask();
                             }
                         } else {
                             if (recentTaskProduct) {
@@ -379,21 +371,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         ProductActivity.this.finish();
                     }
                     else {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                           intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                           intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                           startActivity(intent);
-                           ProductActivity.this.finish();
-                         }
-                         else {
-                            intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                            Bundle retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                            intent.putExtras(retainRecentTaskBundle);
-                            startActivity(intent);
-                            tasks.get(0).finishAndRemoveTask();
-                         }
+                        intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                        Bundle retainRecentTaskBundle = new Bundle();
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                        intent.putExtras(retainRecentTaskBundle);
+                        startActivity(intent);
+                        tasks.get(0).finishAndRemoveTask();
                     }
                 } else {
                      if (recentTaskProduct) {

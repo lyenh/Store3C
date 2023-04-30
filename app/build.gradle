@@ -103,7 +103,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.android.gms:play-services-maps:18.1.0'
     implementation 'com.google.android.gms:play-services-base:18.2.0'
-    implementation 'com.google.android.gms:play-services-auth:20.5.0'
+    implementation 'com.google.android.gms:play-services-auth:20.0.0'
     implementation 'com.google.android.gms:play-services-identity:18.0.1'
     implementation 'com.google.android.gms:play-services-analytics:18.0.0'          //18.0.2 has the missing library com.google.protobuf error
     implementation 'com.google.android.gms:play-services-ads:22.0.0'

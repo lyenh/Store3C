@@ -95,17 +95,11 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         switch (menu_item) {
             case "DISH":
                 if (recentTask) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        intentItem = Intent.makeRestartActivityTask(new ComponentName(getApplicationContext(), MainActivity.class));
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                    }
-                    else {
-                        intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                        retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                        intentItem.putExtras(retainRecentTaskBundle);
-                    }
+                    intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    retainRecentTaskBundle = new Bundle();
+                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    intentItem.putExtras(retainRecentTaskBundle);
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
@@ -191,17 +185,11 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 if (recentTask) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        intentItem = Intent.makeRestartActivityTask(new ComponentName(getApplicationContext(), MainActivity.class));
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
-                    }
-                    else {
-                        intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                        retainRecentTaskBundle = new Bundle();
-                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
-                        intentItem.putExtras(retainRecentTaskBundle);
-                    }
+                    intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                    intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    retainRecentTaskBundle = new Bundle();
+                    retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    intentItem.putExtras(retainRecentTaskBundle);
                 }
                 else {
                     intentItem.setClass(PromotionActivity.this, MainActivity.class);
