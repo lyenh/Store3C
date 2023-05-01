@@ -10,7 +10,6 @@
 # Add any project specific keep options here:
 
 
-
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class androidx.appcompat.widget.** { *; }
@@ -24,11 +23,8 @@
 
 -keep class com.example.user.store3c.** { *; }
 -keep class com.example.user.store3c.MainActivity.** { *; }
--keep class com.example.user.store3c.LoginActivity.** { *; }
--keep class com.example.user.store3c.BookActivity.** { *; }
 -keep class com.google.android.youtube.player.YouTubePlayerSupportFragmentX.**{ *; }
 
--keep class com.example.user.store3c.OrderFormActivity.** { *; }
 -keep class com.example.user.store3c.OrderFormActivity$Companion
 -keep class com.example.user.store3c.OrderFormActivity {
     private java.lang.String menuItem;
@@ -44,11 +40,12 @@
     void onBackPressed();
 }
 -keep class kotlin.Metadata { *; }
-
 -assumenosideeffects class kotlin.jvm.internal.Intrinsics {
     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
 }
 
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
 -keep class com.google.android.YouTube.** { *; }
 -keep class com.google.android.youtube.** { *; }
 -keep class com.google.android.youtube.player.** { *; }
@@ -56,17 +53,13 @@
 
 -libraryjars libs/YouTubeAndroidPlayerApi.jar
 
+
 -verbose
 -printmapping build/outputs/mapping/debug/mapping.txt
 -printmapping build/outputs/mapping/release/mapping.txt
 -printconfiguration build/outputs/mapping/release/config.txt
 -printusage  build/outputs/mapping/release/usage.txt
 -printseeds  build/outputs/mapping/release/seeds.txt
-
-#-keep class com.google.android.YouTube.**{ *; }
-#-keep class com.google.android.youtube.**{ *; }
-#-keep class com.example.user.store3c.YouTubeFragment.**{ *; }
-#-keep class com.example.user.store3c.YouTubeFailureRecoveryActivity.**{ *; }
 
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface

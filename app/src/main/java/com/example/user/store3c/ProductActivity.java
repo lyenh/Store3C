@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,6 +40,7 @@ import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.taskIdMainActivity;
 
+@Keep
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
     private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
@@ -188,7 +190,16 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         retainRecentTaskBundle.putString("Menu", "DISH");
                         intent.putExtras(retainRecentTaskBundle);
                         intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                        preTask.startActivity(this, intent, bundle);
+                        try {
+                            preTask.startActivity(this, intent, bundle);
+                        } catch (Exception e) {
+                            Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            retainRecentTaskBundle = new Bundle();
+                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            intent.putExtras(retainRecentTaskBundle);
+                            startActivity(intent);
+                        }
                         if (currentTask != null) {
                             currentTask.finishAndRemoveTask();
                         }

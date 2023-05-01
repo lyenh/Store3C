@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,6 +40,7 @@ import java.util.TimeZone;
 
 import static com.example.user.store3c.MainActivity.mAuth;
 
+@Keep
 public class PromotionActivity extends AppCompatActivity implements View.OnClickListener{
     private String menu_item = "DISH", up_menu_item = "";
     private String totalPrice;

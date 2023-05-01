@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -38,6 +39,7 @@ import java.util.TreeMap;
 
 import static com.example.user.store3c.MainActivity.mAuth;
 
+@Keep
 public class OrderActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
     TextView orderText;
