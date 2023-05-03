@@ -163,7 +163,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 bundle.putString("Intro", product_intro);
                 intent.putExtras(bundle);
                 Toast.makeText(this, "已加入購物車!", Toast.LENGTH_SHORT).show();
-
                 intent.setClass(ProductActivity.this, OrderActivity.class);
 
                 if (notification_list != null) {
@@ -180,25 +179,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                 currentTask = tasks.get(i);
                             }
                         }
-                        if (preTask == null) {
-                            preTask = tasks.get(tasks.size()-1);
-                            Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
-                        }
                     }
                     if (preTask != null) {
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("Menu", "DISH");
+                        retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                         intent.putExtras(retainRecentTaskBundle);
-                        intent.setFlags( Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                         try {
+                            preTask.moveToFront();
                             preTask.startActivity(this, intent, bundle);
                         } catch (Exception e) {
                             Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Log.i("preTask ===>", "no startActivity: " + e.getMessage());
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             retainRecentTaskBundle = new Bundle();
                             retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                             intent.putExtras(retainRecentTaskBundle);
                             startActivity(intent);
+                            preTask.finishAndRemoveTask();
                         }
                         if (currentTask != null) {
                             currentTask.finishAndRemoveTask();

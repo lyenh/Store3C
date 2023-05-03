@@ -357,7 +357,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         Intent intent = new Intent();
         Bundle bundle;
 
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (search_list.equals("SEARCH")) {
             bundle = new Bundle();
             bundle.putString("Menu", menu_item);

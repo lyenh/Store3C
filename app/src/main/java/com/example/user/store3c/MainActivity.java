@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity
     public UserHandler userAdHandler;
 
     // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
+    // TODO: ProgressDialog deprecated: Main, Cake, Phone, Camara, Book activity
     // TODO: Upper App to buy product of notification from firebase with data payload 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
@@ -181,8 +182,6 @@ public class MainActivity extends AppCompatActivity
         else {      //regular load MainActivity
             messageType = "NotFirebaseMessage";
         }
-
-
 
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> tasks;
