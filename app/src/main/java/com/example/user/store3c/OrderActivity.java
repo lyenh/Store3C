@@ -2,6 +2,7 @@ package com.example.user.store3c;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -87,7 +88,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         resetCheckBox_b = findViewById(R.id.orderCheckBoxClearBtn_id);
         OrderRecyclerView = findViewById(R.id.orderRecyclerView_id);
 
-        String retainRecentTask;
+        String retainRecentTask, orderActivityTaskId;
         if (bundle != null) {
             if (bundle.getString("Name") != null) {
                 if (bundle.getString("Search") != null) {
@@ -97,6 +98,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
                         recentTaskOrder = true;
+                    }
+                }
+                orderActivityTaskId = bundle.getString("OrderTask");
+                if (orderActivityTaskId != null) {
+                    if (orderActivityTaskId.equals("ORDER_ACTIVITY")) {
+                        MainActivity.taskIdOrderActivity = getTaskId();
                     }
                 }
                 if (bundle.getString("Menu") != null) {
@@ -155,6 +162,12 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // orderFormActivity task
                         recentTaskOrder = true;
+                    }
+                }
+                orderActivityTaskId = bundle.getString("OrderTask");
+                if (orderActivityTaskId != null) {
+                    if (orderActivityTaskId.equals("ORDER_ACTIVITY")) {
+                        MainActivity.taskIdOrderActivity = getTaskId();
                     }
                 }
             }
@@ -365,18 +378,16 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             }
             intent.putExtras(bundle);
             intent.setClass(OrderActivity.this, SearchActivity.class);
-        }
-        else {
+        } else {
             switch (menu_item) {
                 case "DISH":
                     if (recentTaskOrder) {
-                        intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent = Intent.makeMainActivity(new ComponentName(getApplicationContext(), MainActivity.class));
                         intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
-                    }
-                    else {
+                    } else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
@@ -444,20 +455,35 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 default:
                     Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     if (recentTaskOrder) {
-                        intent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent = Intent.makeMainActivity(new ComponentName(getApplicationContext(), MainActivity.class));
                         intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
-                    }
-                    else {
+                    } else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
             }
         }
+        ActivityManager.AppTask currentTask = null;
+        if (recentTaskOrder) {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks;
+            synchronized(tasks = am.getAppTasks()) {
+                for (int i = 0; i < tasks.size(); i++) {
+                    if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                        currentTask = tasks.get(i);
+                    }
+                }
+            }
+        }
         startActivity(intent);
-        OrderActivity.this.finish();
+        if (recentTaskOrder && currentTask != null) {
+            currentTask.finishAndRemoveTask();
+        } else {
+            OrderActivity.this.finish();
+        }
 
     }
 

@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdMainActivity = -1;
+    public static int taskIdOrderActivity = -1;
     public static int retainRecentTaskId = -1;
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
 
@@ -149,7 +150,7 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
     // TODO: ProgressDialog deprecated: Main, Cake, Phone, Camara, Book activity
-    // TODO: Upper App to buy product of notification from firebase with data payload 
+    // TODO: retainRecentTaskId not keep
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
     @Override
@@ -254,14 +255,16 @@ public class MainActivity extends AppCompatActivity
 
             case "NotFirebaseMessage":
                 try {
-                    tasks = am.getAppTasks();
-                    if (tasks.size() > 1) {
-                        for (int i = 0; i < tasks.size(); i++) {
-                            eachTask = tasks.get(i);
-                            if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
-                                    (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                                retainRecentTaskId  = -1;
-                                eachTask.finishAndRemoveTask();
+                    Toast.makeText(MainActivity.this, "RetainRecentTaskId: " + retainRecentTaskId, Toast.LENGTH_LONG).show();
+                    synchronized(tasks = am.getAppTasks()) {
+                        if (tasks.size() > 1) {
+                            for (int i = 0; i < tasks.size(); i++) {
+                                eachTask = tasks.get(i);
+                                if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
+                                        (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                                    retainRecentTaskId = -1;
+                                    eachTask.finishAndRemoveTask();
+                                }
                             }
                         }
                     }
@@ -1435,6 +1438,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 taskIdMainActivity = getTaskId();
+                taskIdOrderActivity = -1;
                 MainActivity.this.finish();
             }
         }

@@ -1,5 +1,6 @@
 package com.example.user.store3c;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -46,7 +48,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
     private String totalPrice;
     private int orderTableSize = 0;
     private ArrayList<Integer> orderSet = new ArrayList<>();
-    private boolean recentTask = false;
+    private boolean recentTaskPromotion = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,7 +71,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             retainRecentTask = bundle.getString("RetainRecentTask");
             if (retainRecentTask != null) {
                 if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // recent task created by newDocument flag
-                    recentTask = true;
+                    recentTaskPromotion = true;
                 }
             }
         }
@@ -96,7 +98,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
 
         switch (menu_item) {
             case "DISH":
-                if (recentTask) {
+                if (recentTaskPromotion) {
                     intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
                     intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     retainRecentTaskBundle = new Bundle();
@@ -186,7 +188,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 break;
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
-                if (recentTask) {
+                if (recentTaskPromotion) {
                     intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
                     intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     retainRecentTaskBundle = new Bundle();
@@ -198,8 +200,24 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                     intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }
         }
+        ActivityManager.AppTask currentTask = null;
+        if (recentTaskPromotion) {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks;
+            synchronized(tasks = am.getAppTasks()) {
+                for (int i = 0; i < tasks.size(); i++) {
+                    if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                        currentTask = tasks.get(i);
+                    }
+                }
+            }
+        }
         startActivity(intentItem);
-        PromotionActivity.this.finish();
+        if (recentTaskPromotion && currentTask != null) {
+            currentTask.finishAndRemoveTask();
+        } else {
+            PromotionActivity.this.finish();
+        }
     }
 
 }
