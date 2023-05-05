@@ -130,7 +130,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStop() {
         super.onStop();
         mAuth.removeAuthStateListener(authListener);
-        dbhelper.close();
+        if (dbhelper != null) {
+            dbhelper.close();
+        }
     }
 
     @Override

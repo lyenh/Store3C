@@ -174,19 +174,19 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         preTask = null;
                         if (tasks.size() > 1) {
                             for (int i = 0; i < tasks.size(); i++) {
-                                if (tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
+                                if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == taskIdMainActivity && taskIdMainActivity != getTaskId()) {
                                     preTask = tasks.get(i);     // Should be the main task
                                     Toast.makeText(this, "Got main preTask! ", Toast.LENGTH_LONG).show();
                                 }
-                                if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
                                     currentTask = tasks.get(i);
                                 }
                             }
                             if (preTask == null) {
                                 if (MainActivity.taskIdOrderActivity != -1) {
                                     for (int i = 0; i < tasks.size(); i++) {
-                                        if (tasks.get(i).getTaskInfo().persistentId == MainActivity.taskIdOrderActivity) {
-                                            if (tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
+                                        if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == MainActivity.taskIdOrderActivity) {
+                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                                 preTask = tasks.get(i);
                                                 Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
                                             }

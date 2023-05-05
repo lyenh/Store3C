@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity
     private List<Fragment> fragments;
     private String retainRecentTask = null;
 
-    public ActivityManager.AppTask currentTask;
+    public ActivityManager.AppTask currentTask = null;
     public boolean combinedActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
     // TODO: ProgressDialog deprecated: Main, Cake, Phone, Camara, Book activity
-    // TODO: retainRecentTaskId not keep
+    // TODO: retainRecentTaskId is not always keep in device when relaunch
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
     @Override
@@ -167,6 +167,7 @@ public class MainActivity extends AppCompatActivity
         ActionBarDrawerToggle toggle;
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+        int index = 0, DbRecentTaskId = -1, recentTaskId;
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");
@@ -192,7 +193,7 @@ public class MainActivity extends AppCompatActivity
             synchronized (tasks = am.getAppTasks()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     for (ActivityManager.AppTask task : tasks) {
-                        if (task.getTaskInfo().persistentId == getTaskId()) {
+                        if (task != null && task.getTaskInfo().persistentId == getTaskId()) {
                             currentTask = task;
                             if (currentTask.getTaskInfo().numActivities > 1) {
                                 combinedActivity = true;            // MainActivity is not the root activity so to create a new task
@@ -203,7 +204,7 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
                         for (ActivityManager.AppTask task : tasks) {
-                            if (task.getTaskInfo().persistentId == getTaskId()) {
+                            if (task != null && task.getTaskInfo().persistentId == getTaskId()) {
                                 currentTask = task;
                                 combinedActivity = true;        // always to create a new task
                             }
@@ -249,22 +250,55 @@ public class MainActivity extends AppCompatActivity
                     reloadIntent.putExtras(reloadBundle);
                     reloadIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     startActivity(reloadIntent);
-                    currentTask.finishAndRemoveTask();
+                    if (currentTask != null) {
+                        currentTask.finishAndRemoveTask();
+                    }
+                    else {
+                        this.finishAndRemoveTask();
+                    }
                     break;
                 }
 
             case "NotFirebaseMessage":
                 try {
-                    Toast.makeText(MainActivity.this, "RetainRecentTaskId: " + retainRecentTaskId, Toast.LENGTH_LONG).show();
                     synchronized(tasks = am.getAppTasks()) {
                         if (tasks.size() > 1) {
-                            for (int i = 0; i < tasks.size(); i++) {
-                                eachTask = tasks.get(i);
-                                if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
-                                        (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                                    retainRecentTaskId = -1;
-                                    eachTask.finishAndRemoveTask();
+                            if (dbHelper == null) {
+                                dbHelper = new AccountDbAdapter(this);
+                            }
+                            boolean isDbRecentTaskIdEmpty = dbHelper.IsDbTaskIdEmpty();
+                            if (!isDbRecentTaskIdEmpty) {
+                                try {
+                                    Cursor cursor = dbHelper.getRecentTaskId();
+                                    index = cursor.getInt(0);
+                                    DbRecentTaskId = cursor.getInt(1);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
+                            }
+                            if (retainRecentTaskId == -1) {
+                                recentTaskId = DbRecentTaskId;
+                            }
+                            else {
+                                recentTaskId = retainRecentTaskId;
+                            }
+                            Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
+                            try {
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    if (eachTask != null && (eachTask.getTaskInfo().persistentId == recentTaskId) &&
+                                            (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                                        retainRecentTaskId = -1;
+                                        if (!isDbRecentTaskIdEmpty) {
+                                            if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
+                                                Log.i("update recent task id: ", "no data change!");
+                                            }
+                                        }
+                                        eachTask.finishAndRemoveTask();
+                                    }
+                                }
+                            } catch (Exception e) {
+                                Log.i("Get task Id error: ", "==>" + e.getMessage());       // the previous task removed
                             }
                         }
                     }
@@ -302,8 +336,10 @@ public class MainActivity extends AppCompatActivity
                     if (navigationView.getHeaderCount() > 0) {
                         View header = navigationView.getHeaderView(0);
                         logoImage = header.findViewById(R.id.logoImage_id);
-                        dbHelper = new AccountDbAdapter(this);
                         try {
+                            if (dbHelper == null) {
+                                dbHelper = new AccountDbAdapter(this);
+                            }
                             if (!dbHelper.IsDbUserEmpty()) {
                                 try {
                                     if (userImg == null) {
@@ -527,7 +563,7 @@ public class MainActivity extends AppCompatActivity
 
                     logoImage.setOnClickListener(this);
                 } catch (Throwable e) {
-                    Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "NotFirebaseMessage error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
                 }
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
@@ -652,7 +688,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 } catch (Throwable e) {
-                    Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "CheckVersion error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -730,21 +766,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
-        /*try {
-            if (InternetConnection.checkConnection(MainActivity.this)) {
-                // Check if user is signed in (non-null) and update UI accordingly.
-                FirebaseUser currentUser = mAuth.getCurrentUser();
-                if (currentUser != null) {
-            Toast.makeText(MainActivity.this, "currentUser: " +
-                            (currentUser.isAnonymous() ? "Anonymous" : currentUser.getEmail()),
-                            Toast.LENGTH_LONG).show();
-                }
-            }
-        } catch (Throwable e) {
-            Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
-        }*/
         FirebaseApp.initializeApp(getApplicationContext());
         FirebaseMessaging.getInstance().subscribeToTopic("store3c");
+        if (dbHelper == null) {
+            dbHelper = new AccountDbAdapter(this);
+        }
     }
 
     @Override
@@ -1400,6 +1426,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
+        int index = 0;
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -1435,6 +1463,25 @@ public class MainActivity extends AppCompatActivity
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
                         retainRecentTaskId = getTaskId();
+                        if (dbHelper == null) {
+                            dbHelper = new AccountDbAdapter(this);
+                        }
+                        if (!dbHelper.IsDbTaskIdEmpty()) {
+                            try {
+                                Cursor cursor = dbHelper.getRecentTaskId();
+                                index = cursor.getInt(0);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
+                                Log.i("update recent task id: ", "no data change!");
+                            }
+                        }
+                        else {
+                            if (dbHelper.createTaskId(retainRecentTaskId) == -1) {
+                                Log.i("create recent task id: ", "fail !");
+                            }
+                        }
                     }
                 }
                 taskIdMainActivity = getTaskId();
