@@ -33,6 +33,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
     private var orderFromFullData: String = "購買明細資料: "
     private var notification_list = ""
     private var preTask: AppTask? = null
+    private var dbHelper: AccountDbAdapter? = null
+    private var DbMainActivityTaskId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +124,11 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
     }
 
+    override fun onDestroy() {
+        dbHelper?.close()
+        super.onDestroy()
+    }
+
     override fun onBackPressed() {
         val intent = Intent()
         val bundle: Bundle?
@@ -141,10 +148,23 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
             val tasks = am.appTasks
             var currentTask: AppTask? = null
             preTask = null
+
+            if (dbHelper == null) {
+                dbHelper = AccountDbAdapter(this)
+            }
+            try {
+                if (!dbHelper!!.IsDbTaskIdEmpty()) {
+                    val cursor = dbHelper!!.getTaskIdList()
+                    DbMainActivityTaskId = cursor.getInt(2)
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+
             if (tasks.size > 1) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (i in tasks.indices) {
-                        if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
+                        if (tasks[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                             preTask = tasks[i]      // Should be the main task
                         }
                         if (tasks[i].taskInfo.taskId == taskId) {
@@ -154,7 +174,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 } else {
                     try {
                         for (i in tasks.indices) {
-                            if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
+                            if (tasks[i].taskInfo.persistentId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                                 preTask = tasks[i]      // Should be the main task
                             }
                             if (tasks[i].taskInfo.persistentId == taskId) {
@@ -167,8 +187,20 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     }
                 }
                 if (preTask == null) {
+                    if (MainActivity.taskIdOrderActivity != -1) {
+                        for (i in tasks.indices) {
+                            if (tasks[i] != null && tasks[i].taskInfo.persistentId == MainActivity.taskIdOrderActivity) {
+                                if (tasks[i] != null && tasks[i].taskInfo.persistentId != taskId) {
+                                    preTask = tasks[i]
+                                    //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
+                    }
+                }
+                if (preTask == null) {
                     preTask = tasks[tasks.size - 1]
-                    //Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this@OrderFormActivity,"MainActivity and OrderActivity(from notification product buy) taskId is not found !", Toast.LENGTH_SHORT).show()
                 }
             }
             if (preTask != null) {
@@ -190,7 +222,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     if (tasksRemain.size > 1) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             for (i in tasksRemain.indices) {
-                                if (tasksRemain[i].taskInfo.taskId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
+                                if (tasksRemain[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                                     preTask = tasksRemain[i]      // Should be the main task
                                 }
                                 if (tasksRemain[i].taskInfo.taskId == taskId) {
@@ -200,7 +232,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                         } else {
                             try {
                                 for (i in tasksRemain.indices) {
-                                    if (tasksRemain[i].taskInfo.persistentId == MainActivity.taskIdMainActivity && MainActivity.taskIdMainActivity != taskId) {
+                                    if (tasksRemain[i].taskInfo.persistentId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                                         preTask = tasksRemain[i]      // Should be the main task
                                     }
                                     if (tasksRemain[i].taskInfo.persistentId == taskId) {

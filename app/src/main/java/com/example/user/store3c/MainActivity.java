@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
-    public static int taskIdMainActivity = -1;
     public static int taskIdOrderActivity = -1;
     public static int retainRecentTaskId = -1;
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
@@ -150,7 +149,6 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
     // TODO: ProgressDialog deprecated: Main, Cake, Phone, Camara, Book activity
-    // TODO: retainRecentTaskId is not always keep in device when relaunch
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
     @Override
@@ -167,7 +165,7 @@ public class MainActivity extends AppCompatActivity
         ActionBarDrawerToggle toggle;
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        int index = 0, DbRecentTaskId = -1, recentTaskId;
+        int index = 0, DbRecentTaskId = -1, recentTaskId, DbMainActivityTaskId = -1;
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");
@@ -261,35 +259,36 @@ public class MainActivity extends AppCompatActivity
 
             case "NotFirebaseMessage":
                 try {
+                    if (dbHelper == null) {
+                        dbHelper = new AccountDbAdapter(this);
+                    }
+                    boolean isDbTaskIdListEmpty = dbHelper.IsDbTaskIdEmpty();
+                    if (!isDbTaskIdListEmpty) {
+                        try {
+                            Cursor cursor = dbHelper.getTaskIdList();
+                            index = cursor.getInt(0);
+                            DbRecentTaskId = cursor.getInt(1);
+                            DbMainActivityTaskId = cursor.getInt(2);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                     synchronized(tasks = am.getAppTasks()) {
                         if (tasks.size() > 1) {
-                            if (dbHelper == null) {
-                                dbHelper = new AccountDbAdapter(this);
-                            }
-                            boolean isDbRecentTaskIdEmpty = dbHelper.IsDbTaskIdEmpty();
-                            if (!isDbRecentTaskIdEmpty) {
-                                try {
-                                    Cursor cursor = dbHelper.getRecentTaskId();
-                                    index = cursor.getInt(0);
-                                    DbRecentTaskId = cursor.getInt(1);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
                             if (retainRecentTaskId == -1) {
                                 recentTaskId = DbRecentTaskId;
                             }
                             else {
                                 recentTaskId = retainRecentTaskId;
                             }
-                            Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
+                            //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
                             try {
                                 for (int i = 0; i < tasks.size(); i++) {
                                     eachTask = tasks.get(i);
                                     if (eachTask != null && (eachTask.getTaskInfo().persistentId == recentTaskId) &&
                                             (eachTask.getTaskInfo().persistentId != getTaskId())) {
                                         retainRecentTaskId = -1;
-                                        if (!isDbRecentTaskIdEmpty) {
+                                        if (!isDbTaskIdListEmpty) {
                                             if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
                                                 Log.i("update recent task id: ", "no data change!");
                                             }
@@ -302,7 +301,16 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                     }
-                    taskIdMainActivity = getTaskId();
+                    if (!isDbTaskIdListEmpty) {
+                        if (dbHelper.updateMainActivityTaskId(index, getTaskId()) == 0) {
+                            Log.i("mainActivityTaskId: ", "update result, no data change!");
+                        }
+                    }
+                    else {
+                        if (dbHelper.createTaskId(-1, getTaskId()) == -1) {
+                            Log.i("mainActivityTaskId: ", "create result, fail !");
+                        }
+                    }
                     toolbar = findViewById(R.id.toolbarMain);
                     setSupportActionBar(toolbar);
                     isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
@@ -1460,31 +1468,43 @@ public class MainActivity extends AppCompatActivity
                         eachTask.finishAndRemoveTask();
                     }
                 }
+                boolean isDbTaskIdListEmpty = dbHelper.IsDbTaskIdEmpty();
+                if (!isDbTaskIdListEmpty) {
+                    try {
+                        Cursor cursor = dbHelper.getTaskIdList();
+                        index = cursor.getInt(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
                         retainRecentTaskId = getTaskId();
                         if (dbHelper == null) {
                             dbHelper = new AccountDbAdapter(this);
                         }
-                        if (!dbHelper.IsDbTaskIdEmpty()) {
-                            try {
-                                Cursor cursor = dbHelper.getRecentTaskId();
-                                index = cursor.getInt(0);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                        if (!isDbTaskIdListEmpty) {
                             if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
                                 Log.i("update recent task id: ", "no data change!");
                             }
                         }
                         else {
-                            if (dbHelper.createTaskId(retainRecentTaskId) == -1) {
+                            if (dbHelper.createTaskId(retainRecentTaskId, -1) == -1) {
                                 Log.i("create recent task id: ", "fail !");
                             }
                         }
                     }
                 }
-                taskIdMainActivity = getTaskId();
+                if (!isDbTaskIdListEmpty) {
+                    if (dbHelper.updateMainActivityTaskId(index, getTaskId()) == 0) {
+                        Log.i("mainActivityTaskId: ", "update result, no data change!");
+                    }
+                }
+                else {
+                    if (dbHelper.createTaskId(-1, getTaskId()) == -1) {
+                        Log.i("mainActivityTaskId: ", "create result, fail !");
+                    }
+                }
                 taskIdOrderActivity = -1;
                 MainActivity.this.finish();
             }

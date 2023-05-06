@@ -187,7 +187,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 intentItem.setClass(PromotionActivity.this, com.example.user.store3c.OrderFormActivity.class);
                 break;
             default:
-                Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 if (recentTaskPromotion) {
                     intentItem = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
                     intentItem.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
