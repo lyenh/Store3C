@@ -28,6 +28,7 @@ import androidx.core.content.IntentCompat;
 
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -648,6 +649,17 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     public PromotionFirebaseMessagingService() {
         super();
+        FirebaseMessaging.getInstance().subscribeToTopic("store3c").addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                String msg = "Subscribe success";
+                if (!task.isSuccessful()) {
+                    msg = "Subscribe Topic failed";
+                    Toast.makeText(PromotionFirebaseMessagingService.this, msg, Toast.LENGTH_SHORT).show();
+                }
+                Log.i("Subscribe Topic: ", msg);
+            }
+        });
     }
 
 }

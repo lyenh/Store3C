@@ -942,7 +942,6 @@ public class CameraActivity extends Activity
         } else {
             intent = new Intent();
             intent.setClass(CameraActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             CameraActivity.this.finish();
         }

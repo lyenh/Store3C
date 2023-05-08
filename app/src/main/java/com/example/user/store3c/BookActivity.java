@@ -691,7 +691,6 @@ public class BookActivity extends AppCompatActivity
         } else {
             intent = new Intent();
             intent.setClass(BookActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             BookActivity.this.finish();
         }

@@ -157,7 +157,6 @@ public class MainActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         RecyclerView dishRecyclerView;
         GridLayoutManager layoutManager;
         Toolbar toolbar;
@@ -183,6 +182,9 @@ public class MainActivity extends AppCompatActivity
             messageType = "NotFirebaseMessage";
         }
 
+        if (dbHelper == null) {
+            dbHelper = new AccountDbAdapter(this);
+        }
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> tasks;
         ActivityManager.AppTask eachTask;
@@ -259,9 +261,6 @@ public class MainActivity extends AppCompatActivity
 
             case "NotFirebaseMessage":
                 try {
-                    if (dbHelper == null) {
-                        dbHelper = new AccountDbAdapter(this);
-                    }
                     boolean isDbTaskIdListEmpty = dbHelper.IsDbTaskIdEmpty();
                     if (!isDbTaskIdListEmpty) {
                         try {
@@ -345,9 +344,6 @@ public class MainActivity extends AppCompatActivity
                         View header = navigationView.getHeaderView(0);
                         logoImage = header.findViewById(R.id.logoImage_id);
                         try {
-                            if (dbHelper == null) {
-                                dbHelper = new AccountDbAdapter(this);
-                            }
                             if (!dbHelper.IsDbUserEmpty()) {
                                 try {
                                     if (userImg == null) {
@@ -433,9 +429,6 @@ public class MainActivity extends AppCompatActivity
                                             }
                                         });
                             } else {
-                                if (dbHelper == null) {
-                                    dbHelper = new AccountDbAdapter(this);
-                                }
                                 if (!dbHelper.IsDbUserEmpty()) {
                                     try {
                                         Cursor cursor = dbHelper.getSimpleUserData();
@@ -768,17 +761,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        FirebaseApp.initializeApp(getApplicationContext());
-        FirebaseMessaging.getInstance().subscribeToTopic("store3c");
-        if (dbHelper == null) {
-            dbHelper = new AccountDbAdapter(this);
-        }
     }
 
     @Override
@@ -1480,9 +1467,6 @@ public class MainActivity extends AppCompatActivity
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
                         retainRecentTaskId = getTaskId();
-                        if (dbHelper == null) {
-                            dbHelper = new AccountDbAdapter(this);
-                        }
                         if (!isDbTaskIdListEmpty) {
                             if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
                                 Log.i("update recent task id: ", "no data change!");

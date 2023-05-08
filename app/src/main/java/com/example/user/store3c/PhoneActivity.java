@@ -935,7 +935,6 @@ public class PhoneActivity extends AppCompatActivity
         } else {
             intent = new Intent();
             intent.setClass(PhoneActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             PhoneActivity.this.finish();
         }

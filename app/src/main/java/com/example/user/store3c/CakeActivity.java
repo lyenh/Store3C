@@ -963,7 +963,6 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         } else {
             intent = new Intent();
             intent.setClass(CakeActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             CakeActivity.this.finish();
         }
