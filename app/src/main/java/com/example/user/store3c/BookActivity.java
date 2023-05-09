@@ -1,7 +1,6 @@
 package com.example.user.store3c;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -77,7 +76,7 @@ public class BookActivity extends AppCompatActivity
     private static int bookProductAmount = 0;
     private static int bookProductImgCount = 0, bookProductPriceCount = 0;
     private static int bookProductNameCount = 0, bookProductIntroCount = 0;
-    private static ProgressDialog dialog;
+    private static AlertDialog dialog;
     private static int threadComplete = 0;
     private static int Reload = 0;
     private ImageView logoImage;
@@ -261,16 +260,10 @@ public class BookActivity extends AppCompatActivity
         mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
         handlerDownload4  = new handler4(bookAdapter);
         new Thread(runnable1).start();
-        dialog = new ProgressDialog(BookActivity.this);
-        dialog.setMessage("正在載入...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                // DO SOME STUFF HERE
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(BookActivity.this);
+        builder.setCancelable(false);   // user to wait for some process to finish,
+        builder.setView(R.layout.loading_dialog);
+        dialog = builder.create();
         dialog.show();
     }
 

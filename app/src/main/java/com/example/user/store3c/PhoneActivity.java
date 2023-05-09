@@ -1,10 +1,8 @@
 package com.example.user.store3c;
 
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,10 +20,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.Lifecycle;
-import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.view.View;
 import com.google.android.material.navigation.NavigationView;
@@ -65,10 +60,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
-import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.mAuth;
-import static com.example.user.store3c.MainActivity.rotationScreenWidth;
-import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 import static com.example.user.store3c.MainActivity.userImg;
 
 public class PhoneActivity extends AppCompatActivity
@@ -97,7 +89,7 @@ public class PhoneActivity extends AppCompatActivity
     private static int phoneProductAmount = 0;
     private static int phoneProductImgCount = 0, phoneProductPriceCount = 0;
     private static int phoneProductNameCount = 0, phoneProductIntroCount = 0;
-    private static ProgressDialog dialog;
+    private static AlertDialog dialog;
     private static int threadComplete = 0;
     private static int Reload = 0;
     private static int download = 0;
@@ -367,15 +359,10 @@ public class PhoneActivity extends AppCompatActivity
         };
         handlerDownload4 = new handler4(PhoneActivity.this, pager, tabs, pageChangeCallback);
         new Thread(runnable1).start();
-        dialog = new ProgressDialog(PhoneActivity.this);
-        dialog.setMessage("正在載入...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                // DO SOME STUFF HERE
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(PhoneActivity.this);
+        builder.setCancelable(false);   // user to wait for some process to finish,
+        builder.setView(R.layout.loading_dialog);
+        dialog = builder.create();
         dialog.show();
     }
 

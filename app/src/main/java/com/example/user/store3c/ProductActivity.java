@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.List;
 
 import static com.example.user.store3c.MainActivity.isTab;
-import static com.example.user.store3c.MainActivity.retainRecentTaskId;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
@@ -157,7 +156,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             case R.id.buyBtn_id:
                 Intent intent = new Intent();
                 Bundle bundle = new Bundle();
-                int recentTaskId;
                 if (search_list.equals("SEARCH")) {
                     bundle.putString("Search", "SEARCH");
                 }
@@ -215,13 +213,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                         intent.putExtras(retainRecentTaskBundle);
                         try {
-                            if (retainRecentTaskId == -1) {
-                                recentTaskId = DbRecentTaskId;
-                            }
-                            else {
-                                recentTaskId = retainRecentTaskId;
-                            }
-                            if (preTask.getTaskInfo().persistentId == recentTaskId) {
+                            if (preTask.getTaskInfo().persistentId == DbRecentTaskId) {
                                 preTask.moveToFront();
                             }
                             preTask.startActivity(this, intent, bundle);

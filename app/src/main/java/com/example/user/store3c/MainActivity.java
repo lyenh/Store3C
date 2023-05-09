@@ -3,13 +3,10 @@ package com.example.user.store3c;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -23,7 +20,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 
 import androidx.annotation.Keep;
@@ -54,7 +50,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -67,7 +62,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.provider.FirebaseInitProvider;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -78,6 +72,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
@@ -114,7 +109,6 @@ public class MainActivity extends AppCompatActivity
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
 
-    public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
     public static volatile int adapterLayout = 0;
@@ -124,8 +118,7 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdOrderActivity = -1;
-    public static int retainRecentTaskId = -1;
-    public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
+    public static AlertDialog dialog;
 
     private DishAdapter dishAdapter;
     private ImageView logoImage;
@@ -141,6 +134,7 @@ public class MainActivity extends AppCompatActivity
     private List<Fragment> fragments;
     private String retainRecentTask = null;
 
+    public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
     public boolean combinedActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
@@ -148,7 +142,6 @@ public class MainActivity extends AppCompatActivity
     public UserHandler userAdHandler;
 
     // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
-    // TODO: ProgressDialog deprecated: Main, Cake, Phone, Camara, Book activity
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
     @Override
@@ -164,7 +157,7 @@ public class MainActivity extends AppCompatActivity
         ActionBarDrawerToggle toggle;
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
-        int index = 0, DbRecentTaskId = -1, recentTaskId, DbMainActivityTaskId = -1;
+        int index = 0, DbMainActivityTaskId = -1;
 
         if (bundle != null) {       // firebase notification load App from system tray.
             messageType = bundle.getString("messageType");
@@ -220,14 +213,12 @@ public class MainActivity extends AppCompatActivity
             case "FCM-console":
                 toolbar = findViewById(R.id.toolbarMain);
                 setSupportActionBar(toolbar);
-                dialog = new ProgressDialog(MainActivity.this);
-                dialog.setMessage("正在載入...");
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {}
-                });
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setCancelable(false);   // user to wait for some process to finish,
+                builder.setView(R.layout.loading_dialog);
+                dialog = builder.create();
                 dialog.show();
+
                 if (bundle != null) {
                     messageName = bundle.getString("messageText");
                     messagePrice = bundle.getString("messagePrice");
@@ -266,7 +257,6 @@ public class MainActivity extends AppCompatActivity
                         try {
                             Cursor cursor = dbHelper.getTaskIdList();
                             index = cursor.getInt(0);
-                            DbRecentTaskId = cursor.getInt(1);
                             DbMainActivityTaskId = cursor.getInt(2);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -274,22 +264,18 @@ public class MainActivity extends AppCompatActivity
                     }
                     synchronized(tasks = am.getAppTasks()) {
                         if (tasks.size() > 1) {
-                            if (retainRecentTaskId == -1) {
-                                recentTaskId = DbRecentTaskId;
-                            }
-                            else {
-                                recentTaskId = retainRecentTaskId;
-                            }
                             //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
                             try {
                                 for (int i = 0; i < tasks.size(); i++) {
                                     eachTask = tasks.get(i);
-                                    if (eachTask != null && (eachTask.getTaskInfo().persistentId == recentTaskId) &&
+                                    if (eachTask != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
                                             (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                                        retainRecentTaskId = -1;
                                         if (!isDbTaskIdListEmpty) {
-                                            if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
+                                            if (dbHelper.updateRecentTaskId(index, -1) == 0) {
                                                 Log.i("update recent task id: ", "no data change!");
+                                            }
+                                            if (dbHelper.updateMainActivityTaskId(index, -1) == 0) {
+                                                Log.i("mainActivityTaskId: ", "update result, no data change!");
                                             }
                                         }
                                         eachTask.finishAndRemoveTask();
@@ -566,11 +552,6 @@ public class MainActivity extends AppCompatActivity
                 } catch (Throwable e) {
                     Toast.makeText(MainActivity.this, "NotFirebaseMessage error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
                 }
-                if (retainRecentTask != null) {
-                    if (retainRecentTask.equals("RECENT_TASK")) {
-                        retainRecentTaskId = getTaskId();
-                    }
-                }
                 break;
         }
 
@@ -722,16 +703,10 @@ public class MainActivity extends AppCompatActivity
         dishRef.keepSynced(true);
         handlerDownload4 = new Handler4(MainActivity.this, dishAdapter, getLifecycle());
         new Thread(runnable1).start();
-        dialog = new ProgressDialog(MainActivity.this);
-        dialog.setMessage("正在載入...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                // DO SOME STUFF HERE
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setCancelable(false);   // user to wait for some process to finish,
+        builder.setView(R.layout.loading_dialog);
+        dialog = builder.create();
         dialog.show();
     }
 
@@ -766,6 +741,17 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        FirebaseMessaging.getInstance().subscribeToTopic("store3c").addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                String msg = "Subscribe success";
+                if (!task.isSuccessful()) {
+                    msg = "Subscribe Topic failed";
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                }
+                Log.i("Subscribe Topic: ", msg);
+            }
+        });
     }
 
     @Override
@@ -1466,14 +1452,13 @@ public class MainActivity extends AppCompatActivity
                 }
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
-                        retainRecentTaskId = getTaskId();
                         if (!isDbTaskIdListEmpty) {
-                            if (dbHelper.updateRecentTaskId(index, retainRecentTaskId) == 0) {
+                            if (dbHelper.updateRecentTaskId(index, getTaskId()) == 0) {
                                 Log.i("update recent task id: ", "no data change!");
                             }
                         }
                         else {
-                            if (dbHelper.createTaskId(retainRecentTaskId, -1) == -1) {
+                            if (dbHelper.createTaskId(getTaskId(), -1) == -1) {
                                 Log.i("create recent task id: ", "fail !");
                             }
                         }

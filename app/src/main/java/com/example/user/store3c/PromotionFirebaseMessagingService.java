@@ -649,17 +649,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     public PromotionFirebaseMessagingService() {
         super();
-        FirebaseMessaging.getInstance().subscribeToTopic("store3c").addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                String msg = "Subscribe success";
-                if (!task.isSuccessful()) {
-                    msg = "Subscribe Topic failed";
-                    Toast.makeText(PromotionFirebaseMessagingService.this, msg, Toast.LENGTH_SHORT).show();
-                }
-                Log.i("Subscribe Topic: ", msg);
-            }
-        });
     }
 
 }
