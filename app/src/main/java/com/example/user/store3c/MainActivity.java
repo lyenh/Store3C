@@ -16,10 +16,10 @@ import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import androidx.annotation.Keep;
@@ -72,8 +72,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
     public static int taskIdOrderActivity = -1;
-    public static AlertDialog dialog;
+    public AlertDialog dialog;
 
     private DishAdapter dishAdapter;
     private ImageView logoImage;
@@ -133,6 +134,9 @@ public class MainActivity extends AppCompatActivity
     private ImageView dot1, dot2, dot3, dot4, dot5;
     private List<Fragment> fragments;
     private String retainRecentTask = null;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Bitmap productImage;
 
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
@@ -141,7 +145,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: AsyncTask deprecated: MainActivity, PromotionActivity, UserActivity
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
     @Override
@@ -230,7 +233,56 @@ public class MainActivity extends AppCompatActivity
                     messageIntro = "香噴噴的雞肉飯，吃了以後讓人再三的回味!";
                     messageImageUrl = "http://apptech.website/store3c/image/dish/d13.jpg";
                 }
-                new ImageDownloadTask(messageName, messagePrice, messageIntro, MainActivity.this).execute(messageImageUrl);
+
+                executor.execute(() -> {
+                    try {
+                        String imageUrl = messageImageUrl;
+                        URL url = new URL(imageUrl);
+                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                        connection.setDoInput(true);
+                        connection.connect();
+                        InputStream input = connection.getInputStream();
+                        productImage = BitmapFactory.decodeStream(input);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        productImage = null;
+                    }
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (productImage == null) {
+                                productImage = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                            }
+                            Bundle bundleProduct = new Bundle();
+                            Intent intentProduct = new Intent(MainActivity.this , ProductActivity.class);
+                            if (productImage != null) {
+                                bundleProduct.putByteArray("Pic", Bitmap2Bytes(productImage));
+                            }
+                            bundleProduct.putString("Name", messageName);
+                            bundleProduct.putString("Price", messagePrice);
+                            bundleProduct.putString("Intro", messageIntro);
+                            bundleProduct.putString("Menu", "DISH");
+                            bundleProduct.putString("Notification", "UPPER_APP");
+                            bundleProduct.putString("Firebase", "DATA_PAYLOAD");
+                            intentProduct.setClass(MainActivity.this , ProductActivity.class);
+                            if (combinedActivity) {
+                                bundleProduct.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                intentProduct.putExtras(bundleProduct);
+                                intentProduct.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                dialog.dismiss();
+                                startActivity(intentProduct);
+                                currentTask.finishAndRemoveTask();
+                            }
+                            else {
+                                intentProduct.putExtras(bundleProduct);
+                                dialog.dismiss();
+                                startActivity(intentProduct);
+                                MainActivity.this.finish();
+                            }
+                        }
+                    });
+                });
                 break;
 
             case "No-data-payload":
@@ -769,6 +821,7 @@ public class MainActivity extends AppCompatActivity
         if (dbHelper != null) {
             dbHelper.close();
         }
+        executor.shutdown();
         super.onDestroy();
     }
 
@@ -997,7 +1050,9 @@ public class MainActivity extends AppCompatActivity
                 if (hmDishAdapter != null) {
                     hmDishAdapter.notifyDataSetChanged();
                 }
-                dialog.dismiss();
+                if (hmActivity != null) {
+                    hmActivity.dialog.dismiss();
+                }
             }
         }
 
@@ -1652,70 +1707,6 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-}
-
-class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
-    private final String MessageName, MessagePrice, MessageIntro;
-    private final WeakReference<MainActivity> weakRefMainActivity;
-
-    ImageDownloadTask(String name, String price, String intro, MainActivity activity) {
-        MessageName = name; MessagePrice = price; MessageIntro = intro;
-        weakRefMainActivity = new WeakReference<>(activity);
-    }
-
-    protected Bitmap doInBackground(String... params) {
-        try {
-            String imageUrl = params[0];
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            return BitmapFactory.decodeStream(input);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-    @Override
-    protected void onPostExecute(Bitmap result) {
-        Bitmap picture = result;
-        MainActivity activity = weakRefMainActivity.get();
-        if (picture == null) {
-            picture = BitmapFactory.decodeResource(activity.getResources(), R.drawable.store_icon);
-        }
-        Bundle bundleProduct = new Bundle();
-        Intent intentProduct = new Intent(activity, ProductActivity.class);
-        if (picture != null) {
-            bundleProduct.putByteArray("Pic", MainActivity.Bitmap2Bytes(picture));
-        }
-        bundleProduct.putString("Name", MessageName);
-        bundleProduct.putString("Price", MessagePrice);
-        bundleProduct.putString("Intro", MessageIntro);
-        bundleProduct.putString("Menu", "DISH");
-        bundleProduct.putString("Notification", "UPPER_APP");
-        bundleProduct.putString("Firebase", "DATA_PAYLOAD");
-        intentProduct.setClass(activity, ProductActivity.class);
-        if (activity.combinedActivity) {
-            bundleProduct.putString("RetainRecentTask", "RECENT_ACTIVITY");
-            intentProduct.putExtras(bundleProduct);
-            intentProduct.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            MainActivity.dialog.dismiss();
-            activity.startActivity(intentProduct);
-            activity.currentTask.finishAndRemoveTask();
-            this.cancel(true);
-        }
-        else {
-            intentProduct.putExtras(bundleProduct);
-            MainActivity.dialog.dismiss();
-            activity.startActivity(intentProduct);
-            activity.finish();
-            this.cancel(true);
-        }
     }
 
 }

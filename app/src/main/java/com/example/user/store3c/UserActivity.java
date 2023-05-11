@@ -3,7 +3,6 @@ package com.example.user.store3c;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -17,7 +16,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 
 import androidx.activity.result.ActivityResult;
@@ -25,11 +23,11 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.Menu;
@@ -65,10 +63,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -77,11 +72,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static androidx.core.content.FileProvider.getUriForFile;
 import static com.example.user.store3c.MainActivity.mAuth;
 import static com.example.user.store3c.MainActivity.userImg;
-
 
 public class UserActivity extends AppCompatActivity implements View.OnClickListener {
     private AccountDbAdapter dbHelper = null;
@@ -110,6 +106,8 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
     private Uri imageUri = null, fileUri = null;
     private File filePath, file;
     private ActivityResultLauncher<Intent> loadImgResultLauncher, cropImgResultLauncher;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     private final ActivityResultLauncher<CropImageContractOptions> cropImage =
             registerForActivityResult(new CropImageContract(),
@@ -534,7 +532,63 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                                 try {
                                     ParcelFileDescriptor parcelFileDescriptor =
                                             getContentResolver().openFileDescriptor(fileUri, "r");
-                                    new FileResizeTask(UserActivity.this, file).execute(parcelFileDescriptor);
+
+                                    executor.execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Bitmap image;
+                                            try {
+                                                int targetW = 200;
+                                                int targetH = 200;
+
+                                                // Get the dimensions of the bitmap
+                                                BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                                                bmOptions.inJustDecodeBounds = true;
+
+                                                if (parcelFileDescriptor != null) {
+                                                    FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+                                                    BitmapFactory.decodeFileDescriptor(fileDescriptor, null, bmOptions);
+
+                                                    int photoW = bmOptions.outWidth;
+                                                    int photoH = bmOptions.outHeight;
+
+                                                    // Determine how much to scale down the image
+                                                    int scaleFactor = 1;
+
+                                                    if (photoH > targetH || photoW > targetW) {
+                                                        final int halfHeight = photoH / 2;
+                                                        final int halfWidth = photoW / 2;
+
+                                                        // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+                                                        // height and width larger than the requested height and width.
+                                                        while ((halfHeight / scaleFactor) >= targetH
+                                                                && (halfWidth / scaleFactor) >= targetW) {
+                                                            scaleFactor *= 2;
+                                                        }
+                                                    }
+
+                                                    // Decode the image file into a Bitmap sized to fill the View
+                                                    bmOptions.inJustDecodeBounds = false;
+                                                    bmOptions.inSampleSize = scaleFactor;
+                                                    image = BitmapFactory.decodeFileDescriptor(fileDescriptor,null, bmOptions);
+
+                                                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                                    image.compress(Bitmap.CompressFormat.JPEG, 100 , bos);  //ignored for PNG
+                                                    byte[] bitmapdata = bos.toByteArray();
+                                                    FileOutputStream fos = new FileOutputStream(file);
+                                                    fos.write(bitmapdata);
+                                                    fos.flush();
+                                                    fos.close();
+                                                    parcelFileDescriptor.close();
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                                Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                            }
+
+                                            handler.post(() -> ResizeCropImgSave(file));
+                                        }
+                                    });
                                     Log.i("Resize ==>", "file resize !");
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -1284,7 +1338,64 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 ParcelFileDescriptor parcelFileDescriptor =
                         getContentResolver().openFileDescriptor(fileUri, "r");
-                new FileResizeTask(UserActivity.this, file).execute(parcelFileDescriptor);
+
+                executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        Bitmap image;
+                        try {
+                            int targetW = 200;
+                            int targetH = 200;
+
+                            // Get the dimensions of the bitmap
+                            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                            bmOptions.inJustDecodeBounds = true;
+
+                            if (parcelFileDescriptor != null) {
+                                FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+                                BitmapFactory.decodeFileDescriptor(fileDescriptor, null, bmOptions);
+
+                                int photoW = bmOptions.outWidth;
+                                int photoH = bmOptions.outHeight;
+
+                                // Determine how much to scale down the image
+                                int scaleFactor = 1;
+
+                                if (photoH > targetH || photoW > targetW) {
+                                    final int halfHeight = photoH / 2;
+                                    final int halfWidth = photoW / 2;
+
+                                    // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+                                    // height and width larger than the requested height and width.
+                                    while ((halfHeight / scaleFactor) >= targetH
+                                            && (halfWidth / scaleFactor) >= targetW) {
+                                        scaleFactor *= 2;
+                                    }
+                                }
+
+                                // Decode the image file into a Bitmap sized to fill the View
+                                bmOptions.inJustDecodeBounds = false;
+                                bmOptions.inSampleSize = scaleFactor;
+                                image = BitmapFactory.decodeFileDescriptor(fileDescriptor,null, bmOptions);
+
+                                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                                image.compress(Bitmap.CompressFormat.JPEG, 100 , bos);  //ignored for PNG
+                                byte[] bitmapdata = bos.toByteArray();
+                                FileOutputStream fos = new FileOutputStream(file);
+                                fos.write(bitmapdata);
+                                fos.flush();
+                                fos.close();
+                                parcelFileDescriptor.close();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(UserActivity.this, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+
+                        handler.post(() -> ResizeCropImgSave(file));
+                    }
+                });
+
                 Log.i("Resize ==>", "file resize !");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -2001,6 +2112,7 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         dbHelper.close();
+        executor.shutdown();
         super.onDestroy();
     }
 
@@ -2105,83 +2217,4 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 }
-
-class FileResizeTask extends AsyncTask<ParcelFileDescriptor, Void, File> {
-    private final WeakReference<UserActivity> weakRefActivity;
-    private final WeakReference<File> weakRefFile;
-
-    FileResizeTask(UserActivity activity, File file) {
-        weakRefActivity = new WeakReference<>(activity);
-        weakRefFile = new WeakReference<>(file);
-    }
-
-    @Override
-    protected File doInBackground(ParcelFileDescriptor... params) {
-
-        ParcelFileDescriptor imgPFD = params[0];
-        Bitmap image;
-        UserActivity activity = weakRefActivity.get();
-        File imageFile = weakRefFile.get();
-
-        try {
-            int targetW = 200;
-            int targetH = 200;
-
-            // Get the dimensions of the bitmap
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inJustDecodeBounds = true;
-
-
-            if (imgPFD != null) {
-                FileDescriptor fileDescriptor = imgPFD.getFileDescriptor();
-                BitmapFactory.decodeFileDescriptor(fileDescriptor, null, bmOptions);
-
-                int photoW = bmOptions.outWidth;
-                int photoH = bmOptions.outHeight;
-
-                // Determine how much to scale down the image
-                int scaleFactor = 1;
-
-                if (photoH > targetH || photoW > targetW) {
-                    final int halfHeight = photoH / 2;
-                    final int halfWidth = photoW / 2;
-
-                    // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-                    // height and width larger than the requested height and width.
-                    while ((halfHeight / scaleFactor) >= targetH
-                            && (halfWidth / scaleFactor) >= targetW) {
-                        scaleFactor *= 2;
-                    }
-                }
-
-                // Decode the image file into a Bitmap sized to fill the View
-                bmOptions.inJustDecodeBounds = false;
-                bmOptions.inSampleSize = scaleFactor;
-                image = BitmapFactory.decodeFileDescriptor(fileDescriptor,null, bmOptions);
-
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                image.compress(Bitmap.CompressFormat.JPEG, 100 , bos);  //ignored for PNG
-                byte[] bitmapdata = bos.toByteArray();
-                FileOutputStream fos = new FileOutputStream(imageFile);
-                fos.write(bitmapdata);
-                fos.flush();
-                fos.close();
-                imgPFD.close();
-                return imageFile;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(activity, "decodeFile error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(File resizeFile) {
-        UserActivity activity = weakRefActivity.get();
-        activity.ResizeCropImgSave(resizeFile);
-    }
-
-}
-
 
