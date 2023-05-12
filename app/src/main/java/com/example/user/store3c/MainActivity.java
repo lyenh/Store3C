@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity
     public UserHandler userAdHandler;
 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
+    // TODO: Enter ProductActivity from OrderActivity and come back to OrderActivity, it have some issue
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -314,29 +315,33 @@ public class MainActivity extends AppCompatActivity
                             e.printStackTrace();
                         }
                     }
-                    synchronized(tasks = am.getAppTasks()) {
-                        if (tasks.size() > 1) {
-                            //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
-                            try {
-                                for (int i = 0; i < tasks.size(); i++) {
-                                    eachTask = tasks.get(i);
-                                    if (eachTask != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
-                                            (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                                        if (!isDbTaskIdListEmpty) {
-                                            if (dbHelper.updateRecentTaskId(index, -1) == 0) {
-                                                Log.i("update recent task id: ", "no data change!");
+                    try {
+                        synchronized (tasks = am.getAppTasks()) {
+                            if (tasks.size() > 1) {
+                                //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
+                                try {
+                                    for (int i = 0; i < tasks.size(); i++) {
+                                        eachTask = tasks.get(i);
+                                        if (eachTask != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
+                                                (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                                            if (!isDbTaskIdListEmpty) {
+                                                if (dbHelper.updateRecentTaskId(index, -1) == 0) {
+                                                    Log.i("update recent task id: ", "no data change!");
+                                                }
+                                                if (dbHelper.updateMainActivityTaskId(index, -1) == 0) {
+                                                    Log.i("mainActivityTaskId: ", "update result, no data change!");
+                                                }
                                             }
-                                            if (dbHelper.updateMainActivityTaskId(index, -1) == 0) {
-                                                Log.i("mainActivityTaskId: ", "update result, no data change!");
-                                            }
+                                            eachTask.finishAndRemoveTask();
                                         }
-                                        eachTask.finishAndRemoveTask();
                                     }
+                                } catch (Exception e) {
+                                    Log.i("Get Task Id error: ", "recent task id ==>" + e.getMessage());       // the previous task removed
                                 }
-                            } catch (Exception e) {
-                                Log.i("Get task Id error: ", "==>" + e.getMessage());       // the previous task removed
                             }
                         }
+                    } catch (Exception e) {
+                        Log.i("Get preTask Id error: ", "==>" + e.getMessage());
                     }
                     if (!isDbTaskIdListEmpty) {
                         if (dbHelper.updateMainActivityTaskId(index, getTaskId()) == 0) {

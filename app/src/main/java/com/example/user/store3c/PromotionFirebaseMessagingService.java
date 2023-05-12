@@ -77,6 +77,22 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         String title, messageType, messageText, subText, message, imageUrl; // "http://appserver.000webhostapp.com/store3c/image/dish/d16.jpg"
         String messagePrice = "", messageIntro = "";
         Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+        Bitmap bitmap;
+        PendingIntent pendingIntent, resultPendingIntent;
+        Bundle bundle;
+        Intent intent, resultIntent;
+        TaskStackBuilder stackBuilder;
+        NotificationManager notificationManager;
+        ActivityManager am;
+        String channelId;
+        Uri defaultSoundUri;
+        NotificationCompat.Builder notificationBuilder;
+        int smallIconId;
+        Notification notification;
+        PowerManager pm;
+        PowerManager.WakeLock wl;
+        int notificationId;
+
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.i("Messaging===> ", "Message data payload:  "+remoteMessage.getData());
@@ -87,10 +103,10 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 if (messageType.equals("promotion")) {          //Message from cloud function server; orderFormActivity
                     messageText = data.get("messageText");
                     subText = data.get("subText");
-                    Bundle bundle = new Bundle();
-                    Intent resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
+                    bundle = new Bundle();
+                    resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
 
-                    ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+                    am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
                     List<ActivityManager.AppTask> tasks = am.getAppTasks();
                     //Log.i("Notification===> ", "size:  " +  tasks.size());
                     if (tasks.size() != 0) {
@@ -119,16 +135,16 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         bundle.putString("Notification", "UPPER_APP");
                     }
                     resultIntent.putExtras(bundle);
-                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+                    stackBuilder = TaskStackBuilder.create(this);
                     stackBuilder.addNextIntent(resultIntent);
-                    PendingIntent resultPendingIntent =
-                            stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-
+                    synchronized(pendingIntentIndex++) {
+                        resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                    }
                     orderMessageText = "    " + messageText;
-                    String channelId = getString(R.string.default_notification_channel_id);
-                    Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-                    NotificationCompat.Builder notificationBuilder =
+                    channelId = getString(R.string.default_notification_channel_id);
+                    defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                    notificationBuilder =
                             new NotificationCompat.Builder(PromotionFirebaseMessagingService.this, channelId)
                                     .setSmallIcon(R.drawable.store_icon)
                                     .setLargeIcon(bitmap)
@@ -140,8 +156,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setSound(defaultSoundUri)
                                     .setContentIntent(resultPendingIntent);
 
-                    int smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
-                    Notification notification = notificationBuilder.build();
+                    smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+                    notification = notificationBuilder.build();
                     if (smallIconId != 0) {
                         if (notification.contentView != null)
                             notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
@@ -149,7 +165,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
                     }
 
-                    NotificationManager notificationManager =
+                    notificationManager =
                             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                     // Since android Oreo notification channel is needed.
@@ -164,16 +180,16 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
 
                     try {
-                        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+                        pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
                         if (pm != null) {
-                            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
                             wl.acquire(30000);
                             wl.release();
                         }
                     } catch (Exception e) {
                         Log.i("Exception ==> ",  e.getClass().toString());
                     }
-                    int notificationId = new Random().nextInt(60000);
+                    notificationId = new Random().nextInt(60000);
                     if (notificationManager != null) {
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
@@ -187,11 +203,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
                     messagePrice = data.get("messagePrice");
                     messageIntro = data.get("messageIntro");
-                    PendingIntent pendingIntent;
-                    Bundle bundle = new Bundle();
-                    Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+                   // PendingIntent pendingIntent;
+                    bundle = new Bundle();
+                    intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
-                    final ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+                    am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
                     List<ActivityManager.AppTask> tasks = am.getAppTasks();
                     Log.i("Notification===> ", "size:  " +  tasks.size());
 
@@ -235,7 +251,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     bundle.putString("Intro", messageIntro);
 
                     intent.putExtras(bundle);
-                    TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                    stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
                     stackBuilder.addNextIntent(intent);
 
                     synchronized(pendingIntentIndex++) {
@@ -243,10 +259,10 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
                     }
 
-                    String channelId = getString(R.string.default_notification_channel_id);
-                    Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-                    Notification notification =
+                    channelId = getString(R.string.default_notification_channel_id);
+                    defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                    notification =
                             new NotificationCompat.Builder(this, channelId)
                                     .setSmallIcon(R.drawable.store_icon)
                                     .setLargeIcon(bitmap)
@@ -262,7 +278,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setSound(defaultSoundUri)
                                     .setContentIntent(pendingIntent).build();
 
-                    int smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+                    smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
 
                     if (smallIconId != 0) {
                         if (notification.contentView != null)
@@ -271,7 +287,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
                     }
 
-                    NotificationManager notificationManager =
+                    notificationManager =
                             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                     //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
@@ -294,16 +310,16 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
 
                     try {
-                        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+                         pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
                         if (pm != null) {
-                            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
                             wl.acquire(30000);
                             wl.release();
                         }
                     } catch (Exception e) {
                         Log.i("Exception ==> ",  e.getClass().toString());
                     }
-                    int notificationId = new Random().nextInt(60000);
+                    notificationId = new Random().nextInt(60000);
                     if (notificationManager != null) {
                         notificationManager.notify(notificationId /* ID of notification */, notification);
                     }
@@ -324,11 +340,10 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 picture = getBitmapfromUrl(pic.toString());
             }
 
-            PendingIntent pendingIntent;
-            Bundle bundle = new Bundle();
-            Intent intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+            bundle = new Bundle();
+            intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
-            ActivityManager am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+            am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks = am.getAppTasks();
 
             if (tasks.size() != 0) {
@@ -371,17 +386,17 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             bundle.putString("Intro", messageIntro);
 
             intent.putExtras(bundle);
-            TaskStackBuilder stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+            stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
             stackBuilder.addNextIntent(intent);
 
             synchronized(pendingIntentIndex++) {
                 pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
             }
 
-            String channelId = getString(R.string.default_notification_channel_id);
-            Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-            Notification notification =
+            channelId = getString(R.string.default_notification_channel_id);
+            defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+            notification =
                     new NotificationCompat.Builder(this, channelId)
                             .setSmallIcon(R.drawable.store_icon)
                             .setLargeIcon(bitmap)
@@ -397,7 +412,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             .setSound(defaultSoundUri)
                             .setContentIntent(pendingIntent).build();
 
-            int smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+            smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
 
             if (smallIconId != 0) {
                 if (notification.contentView!=null)
@@ -406,7 +421,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
             }
 
-            NotificationManager notificationManager =
+            notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
             //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
@@ -429,15 +444,15 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 //notification.defaults |= Notification.DEFAULT_LIGHTS;
             }
 
-            int notificationId = new Random().nextInt(60000);
+            notificationId = new Random().nextInt(60000);
             if (notificationManager != null) {
                 notificationManager.notify(notificationId /* ID of notification */, notification);
             }
 
             try {
-                PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+                pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
                 if (pm != null) {
-                    PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                    wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
                     wl.acquire(30000);
                     wl.release();
                 }

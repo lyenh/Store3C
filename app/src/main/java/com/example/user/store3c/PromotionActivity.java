@@ -359,12 +359,16 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         if (recentTaskPromotion) {
             ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks;
-            synchronized(tasks = am.getAppTasks()) {
-                for (int i = 0; i < tasks.size(); i++) {
-                    if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
-                        currentTask = tasks.get(i);
+            try {
+                synchronized (tasks = am.getAppTasks()) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                            currentTask = tasks.get(i);
+                        }
                     }
                 }
+            } catch (Exception e) {
+                Log.i("Get Task Id error: ", "current Task id ==>" + e.getMessage());
             }
         }
         startActivity(intentItem);
