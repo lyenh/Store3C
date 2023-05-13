@@ -38,6 +38,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String KEY_TASK_ID = "taskId";
     private static final String KEY_RECENT_TASK_ID = "recentTaskId";
     private static final String KEY_MAIN_ACTIVITY_TASK_ID = "mainActivityTaskId";
+    private static final String KEY_ORDER_ACTIVITY_TASK_ID = "orderActivityTaskId";
 
     DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -75,7 +76,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 "CREATE TABLE IF NOT EXISTS " + TABLE_NAME_TASK_ID + " (" +
                         KEY_TASK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         KEY_RECENT_TASK_ID + " INTEGER, " +
-                        KEY_MAIN_ACTIVITY_TASK_ID + " INTEGER);";
+                        KEY_MAIN_ACTIVITY_TASK_ID + " INTEGER, " +
+                        KEY_ORDER_ACTIVITY_TASK_ID + " INTEGER);";
 
         try {
             db.execSQL(DATABASE_CREATE);

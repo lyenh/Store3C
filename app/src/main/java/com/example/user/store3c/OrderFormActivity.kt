@@ -34,7 +34,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
     private var notification_list = ""
     private var preTask: AppTask? = null
     private var dbHelper: AccountDbAdapter? = null
-    private var DbMainActivityTaskId = -1
+    private var DbMainActivityTaskId = -1; private var DbOrderActivityTaskId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -156,6 +156,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                 if (!dbHelper!!.IsDbTaskIdEmpty()) {
                     val cursor = dbHelper!!.getTaskIdList()
                     DbMainActivityTaskId = cursor.getInt(2)
+                    DbOrderActivityTaskId = cursor.getInt(3)
                 }
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
@@ -187,9 +188,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     }
                 }
                 if (preTask == null) {
-                    if (MainActivity.taskIdOrderActivity != -1) {
+                    if (DbOrderActivityTaskId != -1) {
                         for (i in tasks.indices) {
-                            if (tasks[i] != null && tasks[i].taskInfo.persistentId == MainActivity.taskIdOrderActivity) {
+                            if (tasks[i] != null && tasks[i].taskInfo.persistentId == DbOrderActivityTaskId) {
                                 if (tasks[i] != null && tasks[i].taskInfo.persistentId != taskId) {
                                     preTask = tasks[i]
                                     //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show()

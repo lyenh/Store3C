@@ -14,6 +14,8 @@
 -keepattributes *Annotation*
 -keep class androidx.appcompat.widget.** { *; }
 
+-keepattributes *Exception*
+-keepattributes *Throwable*
 -keepdirectories com.example.user.store3c
 -keepdirectories com.example.user.store3c/**
 -keepdirectories com.google.android.youtube.player
@@ -50,6 +52,9 @@
 -keep class com.google.android.youtube.** { *; }
 -keep class com.google.android.youtube.player.** { *; }
 -keep class com.google.android.youtube.player.internal.** { *; }
+-keep class com.android.tools.** { *; }
+-keep class org.jetbrains.kotlin.** { *; }
+
 
 -libraryjars libs/YouTubeAndroidPlayerApi.jar
 

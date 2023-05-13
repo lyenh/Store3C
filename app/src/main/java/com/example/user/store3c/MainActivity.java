@@ -118,7 +118,6 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
-    public static int taskIdOrderActivity = -1;
     public AlertDialog dialog;
 
     private DishAdapter dishAdapter;
@@ -147,6 +146,7 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: Enter ProductActivity from OrderActivity and come back to OrderActivity, it have some issue
+    // TODO: Exception keep in proguard-rules
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -302,6 +302,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     break;
                 }
+                retainRecentTask = "RECENT_TASK";
 
             case "NotFirebaseMessage":
                 try {
@@ -349,7 +350,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                     else {
-                        if (dbHelper.createTaskId(-1, getTaskId()) == -1) {
+                        if (dbHelper.createTaskId(-1, getTaskId(), -1) == -1) {
                             Log.i("mainActivityTaskId: ", "create result, fail !");
                         }
                     }
@@ -1518,7 +1519,7 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                         else {
-                            if (dbHelper.createTaskId(getTaskId(), -1) == -1) {
+                            if (dbHelper.createTaskId(getTaskId(), -1, -1) == -1) {
                                 Log.i("create recent task id: ", "fail !");
                             }
                         }
@@ -1528,13 +1529,15 @@ public class MainActivity extends AppCompatActivity
                     if (dbHelper.updateMainActivityTaskId(index, getTaskId()) == 0) {
                         Log.i("mainActivityTaskId: ", "update result, no data change!");
                     }
+                    if (dbHelper.updateOrderActivityTaskId(index, -1) == 0) {
+                        Log.i("orderActivityTaskId: ", "update result, no data change!");
+                    }
                 }
                 else {
-                    if (dbHelper.createTaskId(-1, getTaskId()) == -1) {
+                    if (dbHelper.createTaskId(-1, getTaskId(), -1) == -1) {
                         Log.i("mainActivityTaskId: ", "create result, fail !");
                     }
                 }
-                taskIdOrderActivity = -1;
                 MainActivity.this.finish();
             }
         }

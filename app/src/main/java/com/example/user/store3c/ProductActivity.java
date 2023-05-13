@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -21,20 +22,16 @@ import androidx.annotation.Keep;
 import androidx.appcompat.app.AppCompatActivity;
 import java.util.List;
 
-import static com.example.user.store3c.MainActivity.isTab;
-import static com.example.user.store3c.MainActivity.rotationScreenWidth;
-import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
-
 @Keep
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
     private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
-    private String notification_list = "", firebaseNotification = "";
+    private String notification_list = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
     private boolean recentTaskProduct = false, firebaseDataPayload = false;
     private AccountDbAdapter dbHelper = null;
-    private int DbRecentTaskId = -1, DbMainActivityTaskId = -1;
+    private int DbRecentTaskId = -1, DbMainActivityTaskId = -1, DbOrderActivityTaskId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +43,10 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         Button ret_b;
         ScrollView introView;
         Bitmap product_img;
+        final int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
+        final int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
+        String firebaseNotification = "";
+        boolean isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setLogo(R.drawable.store_logo);
@@ -126,6 +127,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 Cursor cursor = dbHelper.getTaskIdList();
                 DbRecentTaskId = cursor.getInt(1);
                 DbMainActivityTaskId = cursor.getInt(2);
+                DbOrderActivityTaskId = cursor.getInt(3);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -192,9 +194,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                     }
                                 }
                                 if (preTask == null) {
-                                    if (MainActivity.taskIdOrderActivity != -1) {
+                                    if (DbOrderActivityTaskId != -1) {
                                         for (int i = 0; i < tasks.size(); i++) {
-                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == MainActivity.taskIdOrderActivity) {
+                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
                                                 if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                                     preTask = tasks.get(i);
                                                     //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
@@ -223,12 +225,19 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             preTask.startActivity(this, intent, bundle);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
-                            //Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             Log.i("preTask ===>", "no startActivity: " + e.getMessage());
+                            intent = new Intent();
+                            bundle = new Bundle();
+                            bundle.putByteArray("Pic", product_pic);
+                            bundle.putString("Name", product_name);
+                            bundle.putString("Price", product_price);
+                            bundle.putString("Intro", product_intro);
+                            bundle.putString("OrderTask", "ORDER_ACTIVITY");
+                            bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            intent.putExtras(bundle);
+                            intent.setClass(ProductActivity.this, OrderActivity.class);
                             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            retainRecentTaskBundle = new Bundle();
-                            retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
-                            intent.putExtras(retainRecentTaskBundle);
                             startActivity(intent);
                             preTask.finishAndRemoveTask();
                         }
@@ -332,9 +341,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
                         }
                         if (preTask == null) {
-                            if (MainActivity.taskIdOrderActivity != -1) {
+                            if (DbOrderActivityTaskId != -1) {
                                 for (int i = 0; i < tasks.size(); i++) {
-                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == MainActivity.taskIdOrderActivity) {
+                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
                                         if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                             preTask = tasks.get(i);
                                             //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
@@ -380,9 +389,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                     }
                                 }
                                 if (preTask == null) {
-                                    if (MainActivity.taskIdOrderActivity != -1) {
+                                    if (DbOrderActivityTaskId != -1) {
                                         for (int i = 0; i < tasks.size(); i++) {
-                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == MainActivity.taskIdOrderActivity) {
+                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
                                                 if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                                     preTask = tasks.get(i);
                                                     //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
