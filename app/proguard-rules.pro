@@ -9,13 +9,18 @@
 
 # Add any project specific keep options here:
 
+-dontshrink
+-dontoptimize
+-dontobfuscate
+
+-keepattributes Exceptions
+-keepattributes Throwable
 
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class androidx.appcompat.widget.** { *; }
 
--keepattributes *Exception*
--keepattributes *Throwable*
+
 -keepdirectories com.example.user.store3c
 -keepdirectories com.example.user.store3c/**
 -keepdirectories com.google.android.youtube.player
@@ -25,6 +30,22 @@
 
 -keep class com.example.user.store3c.** { *; }
 -keep class com.example.user.store3c.MainActivity.** { *; }
+
+-keepnames class com.example.user.store3c.ProductActivity { *; }
+-keepclassmembers class com.example.user.store3c.ProductActivity.** { *; }
+-keepclassmembernames class com.example.user.store3c.ProductActivity.** { *; }
+-keepclasseswithmembers class com.example.user.store3c.ProductActivity.** { *; }
+-keepclasseswithmembernames class com.example.user.store3c.ProductActivity.** { *; }
+-keep class com.example.user.store3c.ProductActivity {
+    protected void onCreate(android.os.Bundle);
+    public void onClick(android.view.View);
+    public void onBackPressed();
+    protected void onDestroy();
+}
+
+-keepclasseswithmembers class com.example.user.store3c.OrdertActivity.** { *; }
+-keepclasseswithmembernames class com.example.user.store3c.OrdertActivity.** { *; }
+
 -keep class com.google.android.youtube.player.YouTubePlayerSupportFragmentX.**{ *; }
 
 -keep class com.example.user.store3c.OrderFormActivity$Companion
@@ -52,9 +73,10 @@
 -keep class com.google.android.youtube.** { *; }
 -keep class com.google.android.youtube.player.** { *; }
 -keep class com.google.android.youtube.player.internal.** { *; }
+
 -keep class com.android.tools.** { *; }
 -keep class org.jetbrains.kotlin.** { *; }
-
+-keep class com.google.code.findbugs.** { *; }
 
 -libraryjars libs/YouTubeAndroidPlayerApi.jar
 

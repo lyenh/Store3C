@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     break;
                 }
-                retainRecentTask = "RECENT_TASK";
+       //         retainRecentTask = "RECENT_TASK";
 
             case "NotFirebaseMessage":
                 try {

@@ -222,24 +222,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             if (preTask.getTaskInfo().persistentId == DbRecentTaskId) {
                                 preTask.moveToFront();
                             }
-                            preTask.startActivity(this, intent, bundle);
+                            preTask.startActivity(getApplicationContext(), intent, bundle);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
-                            Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            Log.i("preTask ===>", "no startActivity: " + e.getMessage());
-                            intent = new Intent();
-                            bundle = new Bundle();
-                            bundle.putByteArray("Pic", product_pic);
-                            bundle.putString("Name", product_name);
-                            bundle.putString("Price", product_price);
-                            bundle.putString("Intro", product_intro);
-                            bundle.putString("OrderTask", "ORDER_ACTIVITY");
-                            bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
-                            intent.putExtras(bundle);
-                            intent.setClass(ProductActivity.this, OrderActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                            startActivity(intent);
-                            preTask.finishAndRemoveTask();
+              //              Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                   //         Log.i("preTask ===>", "no startActivity: " + e.getMessage());
+                            Intent intentCatch = new Intent();
+                            Bundle bundleCatch = new Bundle();
+                            bundleCatch.putByteArray("Pic", product_pic);
+                            bundleCatch.putString("Name", product_name);
+                            bundleCatch.putString("Price", product_price);
+                            bundleCatch.putString("Intro", product_intro);
+                            bundleCatch.putString("OrderTask", "ORDER_ACTIVITY");
+                            bundleCatch.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                            intentCatch.putExtras(bundleCatch);
+                            intentCatch.setClass(ProductActivity.this, OrderActivity.class);
+                            intentCatch.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            startActivity(intentCatch);
+                      //      preTask.finishAndRemoveTask();
                         }
                         if (currentTask != null) {
                             currentTask.finishAndRemoveTask();
