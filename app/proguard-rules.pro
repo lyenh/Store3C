@@ -9,84 +9,19 @@
 
 # Add any project specific keep options here:
 
--dontshrink
--dontoptimize
--dontobfuscate
+#-dontshrink
+#-dontoptimize
+#-dontobfuscate
 
--keepattributes Exceptions
--keepattributes Throwable
+#-ignorewarnings
+
+#-keepattributes Exceptions, SourceFile, LineNumberTable, EnclosingMethod, InnerClasses
 
 -keepattributes Signature
 -keepattributes *Annotation*
 -keep class androidx.appcompat.widget.** { *; }
 
 
--keepdirectories com.example.user.store3c
--keepdirectories com.example.user.store3c/**
--keepdirectories com.google.android.youtube.player
--keepdirectories com.google.android.youtube.player/**
--keeppackagenames com.example.user.store3c.**
--keeppackagenames com.google.android.youtube.player.**
-
--keep class com.example.user.store3c.** { *; }
--keep class com.example.user.store3c.MainActivity.** { *; }
-
--keepnames class com.example.user.store3c.ProductActivity { *; }
--keepclassmembers class com.example.user.store3c.ProductActivity.** { *; }
--keepclassmembernames class com.example.user.store3c.ProductActivity.** { *; }
--keepclasseswithmembers class com.example.user.store3c.ProductActivity.** { *; }
--keepclasseswithmembernames class com.example.user.store3c.ProductActivity.** { *; }
--keep class com.example.user.store3c.ProductActivity {
-    protected void onCreate(android.os.Bundle);
-    public void onClick(android.view.View);
-    public void onBackPressed();
-    protected void onDestroy();
-}
-
--keepclasseswithmembers class com.example.user.store3c.OrdertActivity.** { *; }
--keepclasseswithmembernames class com.example.user.store3c.OrdertActivity.** { *; }
-
--keep class com.google.android.youtube.player.YouTubePlayerSupportFragmentX.**{ *; }
-
--keep class com.example.user.store3c.OrderFormActivity$Companion
--keep class com.example.user.store3c.OrderFormActivity {
-    private java.lang.String menuItem;
-    private java.lang.String upMenuItem;
-    private java.lang.String searchItem;
-    private java.lang.String orderFromFullData;
-    private java.lang.String notification_list;
-    private android.widget.TextView orderText;
-    private com.google.firebase.database.DatabaseReference userRef;
-    private android.app.ActivityManager$AppTask preTask;
-    void onCreate(android.os.Bundle);
-    void onClick(android.view.View);
-    void onBackPressed();
-}
--keep class kotlin.Metadata { *; }
--assumenosideeffects class kotlin.jvm.internal.Intrinsics {
-    static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
-}
-
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
--keep class com.google.android.YouTube.** { *; }
--keep class com.google.android.youtube.** { *; }
--keep class com.google.android.youtube.player.** { *; }
--keep class com.google.android.youtube.player.internal.** { *; }
-
--keep class com.android.tools.** { *; }
--keep class org.jetbrains.kotlin.** { *; }
--keep class com.google.code.findbugs.** { *; }
-
--libraryjars libs/YouTubeAndroidPlayerApi.jar
-
-
--verbose
--printmapping build/outputs/mapping/debug/mapping.txt
--printmapping build/outputs/mapping/release/mapping.txt
--printconfiguration build/outputs/mapping/release/config.txt
--printusage  build/outputs/mapping/release/usage.txt
--printseeds  build/outputs/mapping/release/seeds.txt
 
 # If your project uses WebView with JS, uncomment the following
 # and specify the fully qualified class name to the JavaScript interface
