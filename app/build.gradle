@@ -33,8 +33,6 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            shrinkResources false
-     //       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     productFlavors {
@@ -42,8 +40,8 @@ android {
     ndkVersion '22.1.7171670'
     compileOptions {
         coreLibraryDesugaringEnabled true
-        targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
@@ -64,7 +62,7 @@ android {
 proguard {
     configurations {
         release {
-            defaultConfiguration 'proguard-android-optimize.txt'
+            defaultConfiguration 'proguard-android.txt'
             configuration 'proguard-project.txt'
         }
     }
@@ -120,10 +118,9 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:20.5.0'
     implementation 'com.google.android.gms:play-services-cronet:18.0.0'
     implementation 'com.github.CanHub:Android-Image-Cropper:3.3.5'
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.8'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.0'
     implementation files('libs/YouTubeAndroidPlayerApi.jar')
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10'
 
 }
 

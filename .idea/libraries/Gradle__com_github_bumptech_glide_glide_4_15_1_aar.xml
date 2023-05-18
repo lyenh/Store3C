@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: com.github.bumptech.glide:glide:4.15.1@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/9c5dfdea3411930c5e9e4e5112dc67f4/transformed/jetified-glide-4.15.1/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9c5dfdea3411930c5e9e4e5112dc67f4/transformed/jetified-glide-4.15.1/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9c5dfdea3411930c5e9e4e5112dc67f4/transformed/jetified-glide-4.15.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/ae12bd336e1afd1662af5bafb4c96557/transformed/jetified-glide-4.15.1/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/ae12bd336e1afd1662af5bafb4c96557/transformed/jetified-glide-4.15.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/ae12bd336e1afd1662af5bafb4c96557/transformed/jetified-glide-4.15.1/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.bumptech.glide/glide/4.15.1/c101f14d17712b35bc090b9b2d3c3ed0fda56514/glide-4.15.1-javadoc.jar!/" />
