@@ -27,14 +27,33 @@
 #-dontoptimize
 #-dontobfuscate
 
-
--keepattributes Exceptions, SourceFile, LineNumberTable, EnclosingMethod, InnerClasses
+-keep class androidx.annotation.Keep
+-keep @androidx.annotation.Keep class * {*;}
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <methods>;
+}
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <fields>;
+}
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <init>(...);
+}
 
 -keepattributes Signature
 -keepattributes *Annotation*
+-keepattributes Exceptions, Throwable, Exception, *Exception*
+
+-keepattributes LineNumberTable, SourceFile, EnclosingMethod, InnerClasses
+-renamesourcefileattribute SourceFile
+
 -keep class androidx.appcompat.widget.** { *; }
 
 -ignorewarnings
+
+-keep public class * extends java.lang.Exception
+-keep class java.lang.Exception.** { *; }
+-keep class java.lang.RuntimeException.** { *; }
+-keep class java.lang.Throwable.** { *; }
 
 -keepdirectories com.example.user.store3c
 -keepdirectories com.example.user.store3c/**
@@ -45,7 +64,7 @@
 
 -keep class com.example.user.store3c.** { *; }
 -keep class com.example.user.store3c.MainActivity.** { *; }
-
+-keep class com.example.user.store3c.ProductActivity.** { *; }
 -keepnames class com.example.user.store3c.ProductActivity { *; }
 -keepclassmembers class com.example.user.store3c.ProductActivity.** { *; }
 -keepclassmembernames class com.example.user.store3c.ProductActivity.** { *; }
@@ -87,11 +106,22 @@
 -keep class com.google.android.youtube.player.** { *; }
 -keep class com.google.android.youtube.player.internal.** { *; }
 
+-keep class com.canhub.cropper.** { *; }
 -keep class com.android.volley.** { *; }
 -dontwarn com.android.volley.**
 
 -keep class kotlinx.coroutines.** { *; }
  -dontwarn kotlinx.coroutines.**
+
+-keep class com.crashlytics.** { *; }
+-dontwarn com.crashlytics.**
+
+-keep class androidx.** { *; }
+-keep class android.** { *; }
+-keep class android.os.** { *; }
+-keep class com.android.** { *; }
+-keep class com.google.android.** { *; }
+-keep class java.lang.** { *; }
 
 -libraryjars libs/YouTubeAndroidPlayerApi.jar
 

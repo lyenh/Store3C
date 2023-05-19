@@ -186,6 +186,13 @@ public class MainActivity extends AppCompatActivity
         List<ActivityManager.AppTask> tasks;
         ActivityManager.AppTask eachTask;
 
+        try{
+       //     throw new IllegalArgumentException("illegal arg");
+            throw new NullPointerException("null pointer");
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Catch: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
         try {
             synchronized (tasks = am.getAppTasks()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

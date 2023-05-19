@@ -104,6 +104,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             product_intro = bundle.getString("Intro");
         }
 
+        try{
+            //     throw new IllegalArgumentException("illegal arg");
+            throw new NullPointerException("null pointer");
+        } catch (Exception e) {
+            Toast.makeText(ProductActivity.this, "Catch: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
         if (isTab) {
@@ -181,7 +188,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     List<ActivityManager.AppTask> tasks;
                     ActivityManager.AppTask currentTask = null;
                     try {
-                        synchronized (tasks = am.getAppTasks()) {
+          //              synchronized (tasks = am.getAppTasks()) {
+                            tasks = am.getAppTasks();
                             preTask = null;
                             if (tasks.size() > 1) {
                                 for (int i = 0; i < tasks.size(); i++) {
@@ -206,7 +214,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                     }
                                 }
                             }
-                        }
+              //          }
                     } catch (Exception e) {
                         Log.i("Get preTask Id error: ", "==>" + e.getMessage());
                     }
@@ -225,7 +233,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             preTask.startActivity(getApplicationContext(), intent, bundle);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
-              //              Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                    //         Log.i("preTask ===>", "no startActivity: " + e.getMessage());
                             Intent intentCatch = new Intent();
                             Bundle bundleCatch = new Bundle();
@@ -329,7 +337,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks;
             try {
-                synchronized (tasks = am.getAppTasks()) {
+        //        synchronized (tasks = am.getAppTasks()) {
+                    tasks = am.getAppTasks();
                     preTask = null;
                     if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
@@ -357,7 +366,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                         }
                     }
-                }
+         //       }
             } catch (Exception e) {
                 Log.i("Get preTask Id error: ", "==>" + e.getMessage());
             }
@@ -376,7 +385,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }catch (Exception e) {      // prevent the system drop the preTask
                     try {
-                        synchronized (tasks = am.getAppTasks()) {
+              //          synchronized (tasks = am.getAppTasks()) {
+                            tasks = am.getAppTasks();
                             preTask = null;
                             currentTask = null;
                             if (tasks.size() > 1) {
@@ -440,7 +450,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                     ProductActivity.this.finish();
                                 }
                             }
-                        }
+              //          }
                     } catch (Exception ex) {
                         Log.i("Get Task Id error: ", "in try catch ==>" + e.getMessage());
                     }
