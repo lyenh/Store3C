@@ -13,13 +13,139 @@
 #-dontoptimize
 #-dontobfuscate
 
-#-ignorewarnings
-
-#-keepattributes Exceptions, SourceFile, LineNumberTable, EnclosingMethod, InnerClasses
+-keep class androidx.annotation.Keep
+-keep @androidx.annotation.Keep class * {*;}
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <methods>;
+}
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <fields>;
+}
+-keepclasseswithmembers class * {
+    @androidx.annotation.Keep <init>(...);
+}
 
 -keepattributes Signature
 -keepattributes *Annotation*
+-keepattributes Exceptions
+-keepattributes Throwable
+-keepattributes  *Exception*, *Throwable*
+
+-keepattributes LineNumberTable, SourceFile, EnclosingMethod, InnerClasses
+-renamesourcefileattribute SourceFile
+
 -keep class androidx.appcompat.widget.** { *; }
+
+#-ignorewarnings
+
+-keep public class * extends java.lang.Exception
+-keep class java.lang.Exception.** { *; }
+-keep class java.lang.RuntimeException.** { *; }
+-keep class java.lang.Throwable.** { *; }
+
+-keepdirectories com.example.user.store3c
+-keepdirectories com.example.user.store3c/**
+-keepdirectories com.google.android.youtube.player
+-keepdirectories com.google.android.youtube.player/**
+-keeppackagenames com.example.user.store3c.**
+-keeppackagenames com.google.android.youtube.player.**
+
+-keep class com.example.user.store3c.** { *; }
+-keep class com.example.user.store3c.MainActivity.** { *; }
+-keep class com.example.user.store3c.ProductActivity.** { *; }
+-keepnames class com.example.user.store3c.ProductActivity { *; }
+-keepclassmembers class com.example.user.store3c.ProductActivity.** { *; }
+-keepclassmembernames class com.example.user.store3c.ProductActivity.** { *; }
+-keepclasseswithmembers class com.example.user.store3c.ProductActivity.** { *; }
+-keepclasseswithmembernames class com.example.user.store3c.ProductActivity.** { *; }
+-keep class com.example.user.store3c.ProductActivity {
+    protected void onCreate(android.os.Bundle);
+    public void onClick(android.view.View);
+    public void onBackPressed();
+    protected void onDestroy();
+}
+
+-keepclasseswithmembers class com.example.user.store3c.OrdertActivity.** { *; }
+-keepclasseswithmembernames class com.example.user.store3c.OrdertActivity.** { *; }
+
+-keep class com.google.android.youtube.player.YouTubePlayerSupportFragmentX.**{ *; }
+
+-keep class com.example.user.store3c.OrderFormActivity$Companion
+-keep class com.example.user.store3c.OrderFormActivity {
+    private java.lang.String menuItem;
+    private java.lang.String upMenuItem;
+    private java.lang.String searchItem;
+    private java.lang.String orderFromFullData;
+    private java.lang.String notification_list;
+    private android.widget.TextView orderText;
+    private com.google.firebase.database.DatabaseReference userRef;
+    private android.app.ActivityManager$AppTask preTask;
+    void onCreate(android.os.Bundle);
+    void onClick(android.view.View);
+    void onBackPressed();
+}
+
+-keep class kotlin.Metadata { *; }
+
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-keep class com.google.android.YouTube.** { *; }
+-keep class com.google.android.youtube.** { *; }
+-keep class com.google.android.youtube.player.** { *; }
+-keep class com.google.android.youtube.player.internal.** { *; }
+
+-keep class com.canhub.cropper.** { *; }
+-keep class com.android.volley.** { *; }
+-dontwarn com.android.volley.**
+
+-keep class kotlinx.coroutines.** { *; }
+ -dontwarn kotlinx.coroutines.**
+
+-keep class com.crashlytics.** { *; }
+-dontwarn com.crashlytics.**
+
+-keep class android.** { *; }
+-keep class android.content.** { *; }
+-keep class android.content.Intent.** { *; }
+-keep class android.content.ComponentName.** { *; }
+-keep class android.content.ContextWrapper.** { *; }
+-keep class android.app.** { *; }
+-keep class android.app.Instrumentation.** { *; }
+-keep class android.app.ContextImpl.** { *; }
+-keep class android.app.LoadedApk.** { *; }
+-keep class android.app.ActivityManager.** { *; }
+-keep class android.app.ActivityThread.** { *; }
+-keep class android.app.AppOpsManager.** { *; }
+-keep class android.util.** { *; }
+-keep class android.util.ContainerHelpers.** { *; }
+-keep class android.util.ArrayMap.** { *; }
+-keep class android.util.AndroidException.** { *; }
+-keep class android.util.ExceptionUtils.** { *; }
+-keep class android.net.** { *; }
+-keep class android.net.Uri.** { *; }
+-keep class android.os.** { *; }
+-keep class android.os.Binder.** { *; }
+-keep class android.os.Bundle.** { *; }
+-keep class android.os.BaseBundle.** { *; }
+-keep class android.os.BinderProxy.** { *; }
+-keep class android.os.Parcel.** { *; }
+-keep class android.os.RemoteException.** { *; }
+-keep class com.android.internal.app.MessageSamplingConfig.** { *; }
+-keep class com.android.server.wm.** { *; }
+
+-keep class com.android.** { *; }
+-keep class com.google.android.** { *; }
+-keep class java.lang.** { *; }
+
+-libraryjars libs/YouTubeAndroidPlayerApi.jar
+
+
+-verbose
+-printmapping build/outputs/proguard/debug/mapping/mapping.txt
+-printmapping build/outputs/proguard/release/mapping/mapping.txt
+-printconfiguration build/outputs/proguard/release/mapping/config.txt
+-printusage  build/outputs/proguard/release/mapping/usage.txt
+-printseeds  build/outputs/proguard/release/mapping/seeds.txt
 
 
 

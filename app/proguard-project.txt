@@ -41,7 +41,9 @@
 
 -keepattributes Signature
 -keepattributes *Annotation*
--keepattributes Exceptions, Throwable, Exception, *Exception*
+-keepattributes Exceptions
+-keepattributes Throwable
+-keepattributes  *Exception*, *Throwable*
 
 -keepattributes LineNumberTable, SourceFile, EnclosingMethod, InnerClasses
 -renamesourcefileattribute SourceFile
@@ -116,9 +118,35 @@
 -keep class com.crashlytics.** { *; }
 -dontwarn com.crashlytics.**
 
--keep class androidx.** { *; }
 -keep class android.** { *; }
+-keep class android.content.** { *; }
+-keep class android.content.Intent.** { *; }
+-keep class android.content.ComponentName.** { *; }
+-keep class android.content.ContextWrapper.** { *; }
+-keep class android.app.** { *; }
+-keep class android.app.Instrumentation.** { *; }
+-keep class android.app.ContextImpl.** { *; }
+-keep class android.app.LoadedApk.** { *; }
+-keep class android.app.ActivityManager.** { *; }
+-keep class android.app.ActivityThread.** { *; }
+-keep class android.app.AppOpsManager.** { *; }
+-keep class android.util.** { *; }
+-keep class android.util.ContainerHelpers.** { *; }
+-keep class android.util.ArrayMap.** { *; }
+-keep class android.util.AndroidException.** { *; }
+-keep class android.util.ExceptionUtils.** { *; }
+-keep class android.net.** { *; }
+-keep class android.net.Uri.** { *; }
 -keep class android.os.** { *; }
+-keep class android.os.Binder.** { *; }
+-keep class android.os.Bundle.** { *; }
+-keep class android.os.BaseBundle.** { *; }
+-keep class android.os.BinderProxy.** { *; }
+-keep class android.os.Parcel.** { *; }
+-keep class android.os.RemoteException.** { *; }
+-keep class com.android.internal.app.MessageSamplingConfig.** { *; }
+-keep class com.android.server.wm.** { *; }
+
 -keep class com.android.** { *; }
 -keep class com.google.android.** { *; }
 -keep class java.lang.** { *; }

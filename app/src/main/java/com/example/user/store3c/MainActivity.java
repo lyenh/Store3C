@@ -217,6 +217,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             Log.i("Get task Id error: ", "==>" + e.getMessage());       // the previous task removed
         }
 
@@ -327,28 +328,25 @@ public class MainActivity extends AppCompatActivity
                         synchronized (tasks = am.getAppTasks()) {
                             if (tasks.size() > 1) {
                                 //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
-                                try {
-                                    for (int i = 0; i < tasks.size(); i++) {
-                                        eachTask = tasks.get(i);
-                                        if (eachTask != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
-                                                (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                                            if (!isDbTaskIdListEmpty) {
-                                                if (dbHelper.updateRecentTaskId(index, -1) == 0) {
-                                                    Log.i("update recent task id: ", "no data change!");
-                                                }
-                                                if (dbHelper.updateMainActivityTaskId(index, -1) == 0) {
-                                                    Log.i("mainActivityTaskId: ", "update result, no data change!");
-                                                }
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    if (eachTask != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
+                                            (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                                        if (!isDbTaskIdListEmpty) {
+                                            if (dbHelper.updateRecentTaskId(index, -1) == 0) {
+                                                Log.i("update recent task id: ", "no data change!");
                                             }
-                                            eachTask.finishAndRemoveTask();
+                                            if (dbHelper.updateMainActivityTaskId(index, -1) == 0) {
+                                                Log.i("mainActivityTaskId: ", "update result, no data change!");
+                                            }
                                         }
+                                        eachTask.finishAndRemoveTask();
                                     }
-                                } catch (Exception e) {
-                                    Log.i("Get Task Id error: ", "recent task id ==>" + e.getMessage());       // the previous task removed
                                 }
                             }
                         }
                     } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.i("Get preTask Id error: ", "==>" + e.getMessage());
                     }
                     if (!isDbTaskIdListEmpty) {

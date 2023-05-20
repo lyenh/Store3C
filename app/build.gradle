@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'com.guardsquare.proguard'
 
 repositories {
     google()
@@ -27,17 +26,17 @@ android {
         versionCode 333
         versionName "Store3C_v3.3.3"
         signingConfig signingConfigs.release
-  //      ndkVersion '22.1.7171670'
         multiDexEnabled true
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     productFlavors {
     }
- //   ndkVersion '22.1.7171670'
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
@@ -57,15 +56,6 @@ android {
     }
     namespace 'com.example.user.store3c'
 
-}
-
-proguard {
-    configurations {
-        release {
-            defaultConfiguration 'proguard-android-optimize.txt'
-            configuration 'proguard-project.txt'
-        }
-    }
 }
 
 dependencies {

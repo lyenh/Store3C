@@ -216,6 +216,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
               //          }
                     } catch (Exception e) {
+                        Toast.makeText(ProductActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.i("Get preTask Id error: ", "==>" + e.getMessage());
                     }
                     Bundle orderTaskBundle = new Bundle();
@@ -232,7 +233,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
                             preTask.startActivity(getApplicationContext(), intent, bundle);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
-                        } catch (Exception e) {
+                        } catch (Throwable e) {
                             Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                    //         Log.i("preTask ===>", "no startActivity: " + e.getMessage());
                             Intent intentCatch = new Intent();
@@ -368,6 +369,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
          //       }
             } catch (Exception e) {
+                Toast.makeText(ProductActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.i("Get preTask Id error: ", "==>" + e.getMessage());
             }
             if (preTask != null) {
@@ -452,6 +454,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             }
               //          }
                     } catch (Exception ex) {
+                        Toast.makeText(ProductActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.i("Get Task Id error: ", "in try catch ==>" + e.getMessage());
                     }
                 }

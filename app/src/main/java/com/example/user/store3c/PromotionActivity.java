@@ -368,6 +368,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                     }
                 }
             } catch (Exception e) {
+                Toast.makeText(PromotionActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.i("Get Task Id error: ", "current Task id ==>" + e.getMessage());
             }
         }

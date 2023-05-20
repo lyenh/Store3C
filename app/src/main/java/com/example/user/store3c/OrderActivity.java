@@ -514,6 +514,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     }
                 }
             } catch (Exception e) {
+                Toast.makeText(OrderActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.i("Get Task Id error: ", "current Task id ==>" + e.getMessage());
             }
         }
