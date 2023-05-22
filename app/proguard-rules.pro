@@ -9,9 +9,9 @@
 
 # Add any project specific keep options here:
 
-#-dontshrink
-#-dontoptimize
-#-dontobfuscate
+-dontshrink
+-dontoptimize
+-dontobfuscate
 
 -keep class androidx.annotation.Keep
 -keep @androidx.annotation.Keep class * {*;}
@@ -105,37 +105,41 @@
 -dontwarn com.crashlytics.**
 
 -keep class android.** { *; }
--keep class android.content.** { *; }
--keep class android.content.Intent.** { *; }
--keep class android.content.ComponentName.** { *; }
--keep class android.content.ContextWrapper.** { *; }
--keep class android.app.** { *; }
--keep class android.app.Instrumentation.** { *; }
--keep class android.app.ContextImpl.** { *; }
--keep class android.app.LoadedApk.** { *; }
--keep class android.app.ActivityManager.** { *; }
--keep class android.app.ActivityThread.** { *; }
--keep class android.app.AppOpsManager.** { *; }
--keep class android.util.** { *; }
--keep class android.util.ContainerHelpers.** { *; }
--keep class android.util.ArrayMap.** { *; }
--keep class android.util.AndroidException.** { *; }
--keep class android.util.ExceptionUtils.** { *; }
--keep class android.net.** { *; }
--keep class android.net.Uri.** { *; }
--keep class android.os.** { *; }
--keep class android.os.Binder.** { *; }
--keep class android.os.Bundle.** { *; }
--keep class android.os.BaseBundle.** { *; }
--keep class android.os.BinderProxy.** { *; }
--keep class android.os.Parcel.** { *; }
--keep class android.os.RemoteException.** { *; }
--keep class com.android.internal.app.MessageSamplingConfig.** { *; }
--keep class com.android.server.wm.** { *; }
+-keepnames class android.content.** { *; }
+-keepnames class android.content.Intent.** { *; }
+-keepnames class android.content.ComponentName.** { *; }
+-keepnames class android.content.ContextWrapper.** { *; }
+-keepnames class android.app.** { *; }
+-keepnames class android.app.Instrumentation.** { *; }
+-keepnames class android.app.ContextImpl.** { *; }
+-keepnames class android.app.LoadedApk.** { *; }
+-keepnames class android.app.ActivityManager.** { *; }
+-keepnames class android.app.ActivityThread.** { *; }
+-keepnames class android.app.AppOpsManager.** { *; }
+-keepnames class android.util.** { *; }
+-keepnames class android.util.ContainerHelpers.** { *; }
+-keepnames class android.util.ArrayMap.** { *; }
+-keepnames class android.util.AndroidException.** { *; }
+-keepnames class android.util.ExceptionUtils.** { *; }
+-keepnames class android.net.** { *; }
+-keepnames class android.net.Uri.** { *; }
+-keepnames class android.os.** { *; }
+-keepnames class android.os.Binder.** { *; }
+-keepnames class android.os.Bundle.** { *; }
+-keepnames class android.os.BaseBundle.** { *; }
+-keepnames class android.os.BinderProxy.** { *; }
+-keepnames class android.os.Parcel.** { *; }
+-keepnames class android.os.RemoteException.** { *; }
 
+-keep class androidx.** { *; }
 -keep class com.android.** { *; }
+-keepnames class com.android.internal.app.MessageSamplingConfig.** { *; }
+-keepnames class com.android.server.wm.** { *; }
+
 -keep class com.google.android.** { *; }
--keep class java.lang.** { *; }
+-keep class java.** { *; }
+-keepnames class java.lang.** { *; }
+-keep class org.jetbrains.kotlin.** { *; }
 
 -libraryjars libs/YouTubeAndroidPlayerApi.jar
 

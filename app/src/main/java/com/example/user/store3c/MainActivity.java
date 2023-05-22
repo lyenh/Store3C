@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity
 
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: Enter ProductActivity from OrderActivity and come back to OrderActivity, it have some issue
-    // TODO: Exception keep in proguard-rules
+    // TODO: Exception keep in proguard-rules, can catch the task id empty case(debug testing)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,18 +186,11 @@ public class MainActivity extends AppCompatActivity
         List<ActivityManager.AppTask> tasks;
         ActivityManager.AppTask eachTask;
 
-        try{
-       //     throw new IllegalArgumentException("illegal arg");
-            throw new NullPointerException("null pointer");
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Catch: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
         try {
             synchronized (tasks = am.getAppTasks()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     for (ActivityManager.AppTask task : tasks) {
-                        if (task != null && task.getTaskInfo().persistentId == getTaskId()) {
+                        if (task.getTaskInfo() != null && task.getTaskInfo().persistentId == getTaskId()) {
                             currentTask = task;
                             if (currentTask.getTaskInfo().numActivities > 1) {
                                 combinedActivity = true;            // MainActivity is not the root activity so to create a new task
@@ -208,7 +201,7 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
                         for (ActivityManager.AppTask task : tasks) {
-                            if (task != null && task.getTaskInfo().persistentId == getTaskId()) {
+                            if (task.getTaskInfo() != null && task.getTaskInfo().persistentId == getTaskId()) {
                                 currentTask = task;
                                 combinedActivity = true;        // always to create a new task
                             }
@@ -310,7 +303,7 @@ public class MainActivity extends AppCompatActivity
                     }
                     break;
                 }
-       //         retainRecentTask = "RECENT_TASK";
+                retainRecentTask = "RECENT_TASK";
 
             case "NotFirebaseMessage":
                 try {
@@ -330,7 +323,7 @@ public class MainActivity extends AppCompatActivity
                                 //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
                                 for (int i = 0; i < tasks.size(); i++) {
                                     eachTask = tasks.get(i);
-                                    if (eachTask != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
+                                    if (eachTask.getTaskInfo() != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
                                             (eachTask.getTaskInfo().persistentId != getTaskId())) {
                                         if (!isDbTaskIdListEmpty) {
                                             if (dbHelper.updateRecentTaskId(index, -1) == 0) {

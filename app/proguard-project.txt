@@ -23,9 +23,9 @@
 #   public *;
 #}
 
-#-dontshrink
-#-dontoptimize
-#-dontobfuscate
+-dontshrink
+-dontoptimize
+-dontobfuscate
 
 -keep class androidx.annotation.Keep
 -keep @androidx.annotation.Keep class * {*;}

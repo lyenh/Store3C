@@ -362,7 +362,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
             try {
                 synchronized (tasks = am.getAppTasks()) {
                     for (int i = 0; i < tasks.size(); i++) {
-                        if (tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                        if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
                             currentTask = tasks.get(i);
                         }
                     }

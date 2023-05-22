@@ -104,13 +104,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             product_intro = bundle.getString("Intro");
         }
 
-        try{
-            //     throw new IllegalArgumentException("illegal arg");
-            throw new NullPointerException("null pointer");
-        } catch (Exception e) {
-            Toast.makeText(ProductActivity.this, "Catch: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
         if (isTab) {
@@ -188,24 +181,23 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     List<ActivityManager.AppTask> tasks;
                     ActivityManager.AppTask currentTask = null;
                     try {
-          //              synchronized (tasks = am.getAppTasks()) {
-                            tasks = am.getAppTasks();
+                        synchronized (tasks = am.getAppTasks()) {
                             preTask = null;
                             if (tasks.size() > 1) {
                                 for (int i = 0; i < tasks.size(); i++) {
-                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
                                         preTask = tasks.get(i);     // Should be the main task
                                         //Toast.makeText(this, "Got main preTask! ", Toast.LENGTH_LONG).show();
                                     }
-                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
                                         currentTask = tasks.get(i);
                                     }
                                 }
                                 if (preTask == null) {
                                     if (DbOrderActivityTaskId != -1) {
                                         for (int i = 0; i < tasks.size(); i++) {
-                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
-                                                if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
+                                            if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
+                                                if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                                     preTask = tasks.get(i);
                                                     //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
                                                 }
@@ -214,7 +206,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                     }
                                 }
                             }
-              //          }
+                        }
                     } catch (Exception e) {
                         Toast.makeText(ProductActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.i("Get preTask Id error: ", "==>" + e.getMessage());
@@ -234,8 +226,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             preTask.startActivity(getApplicationContext(), intent, bundle);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
                         } catch (Throwable e) {
-                            Toast.makeText(this, "preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                   //         Log.i("preTask ===>", "no startActivity: " + e.getMessage());
+                            Toast.makeText(this, "catch preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.i("preTask ===>", "no startActivity: " + e.getMessage());
                             Intent intentCatch = new Intent();
                             Bundle bundleCatch = new Bundle();
                             bundleCatch.putByteArray("Pic", product_pic);
@@ -248,7 +240,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intentCatch.setClass(ProductActivity.this, OrderActivity.class);
                             intentCatch.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             startActivity(intentCatch);
-                      //      preTask.finishAndRemoveTask();
+                            preTask.finishAndRemoveTask();
                         }
                         if (currentTask != null) {
                             currentTask.finishAndRemoveTask();
@@ -338,23 +330,22 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.AppTask> tasks;
             try {
-        //        synchronized (tasks = am.getAppTasks()) {
-                    tasks = am.getAppTasks();
+                synchronized (tasks = am.getAppTasks()) {
                     preTask = null;
                     if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
-                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
+                            if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
                                 preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
                             }
-                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                            if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
                                 currentTask = tasks.get(i);
                             }
                         }
                         if (preTask == null) {
                             if (DbOrderActivityTaskId != -1) {
                                 for (int i = 0; i < tasks.size(); i++) {
-                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
-                                        if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
+                                        if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                             preTask = tasks.get(i);
                                             //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
                                         }
@@ -367,7 +358,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             Log.i("Task Id ===>", "MainActivity is not loaded  then go to another loaded activity.");
                         }
                     }
-         //       }
+                }
             } catch (Exception e) {
                 Toast.makeText(ProductActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.i("Get preTask Id error: ", "==>" + e.getMessage());
@@ -387,24 +378,23 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }catch (Exception e) {      // prevent the system drop the preTask
                     try {
-              //          synchronized (tasks = am.getAppTasks()) {
-                            tasks = am.getAppTasks();
+                        synchronized (tasks = am.getAppTasks()) {
                             preTask = null;
                             currentTask = null;
                             if (tasks.size() > 1) {
                                 for (int i = 0; i < tasks.size(); i++) {
-                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
                                         preTask = tasks.get(i);     // Should be the main task
                                     }
-                                    if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
                                         currentTask = tasks.get(i);
                                     }
                                 }
                                 if (preTask == null) {
                                     if (DbOrderActivityTaskId != -1) {
                                         for (int i = 0; i < tasks.size(); i++) {
-                                            if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
-                                                if (tasks.get(i) != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
+                                            if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
+                                                if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
                                                     preTask = tasks.get(i);
                                                     //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
                                                 }
@@ -452,7 +442,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                     ProductActivity.this.finish();
                                 }
                             }
-              //          }
+                        }
                     } catch (Exception ex) {
                         Toast.makeText(ProductActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         Log.i("Get Task Id error: ", "in try catch ==>" + e.getMessage());

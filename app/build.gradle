@@ -18,7 +18,7 @@ android {
         }
     }
     compileSdkVersion 33
-    buildToolsVersion '30.0.3'
+    buildToolsVersion '33.0.2'
     defaultConfig {
         applicationId "com.example.user.store3c"
         minSdkVersion 22
@@ -30,13 +30,19 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     productFlavors {
     }
+    externalNativeBuild {
+        cmake {
+            version "3.18.1"
+        }
+    }
+    ndkVersion "23.1.7779620"
     compileOptions {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
