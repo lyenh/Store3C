@@ -149,6 +149,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public void onClick(View view) {
+        int preTaskId, totalTaskSize;
 
         switch (view.getId()) {
             case R.id.productReturnBtn_id:
@@ -204,6 +205,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                             }
                                         }
                                     }
+                 //                   preTask = tasks.get(tasks.size() - 1);
                                 }
                             }
                         }
@@ -219,13 +221,15 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         retainRecentTaskBundle.putString("Menu", "DISH");
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
                         intent.putExtras(retainRecentTaskBundle);
+                        preTaskId = preTask.getTaskInfo().persistentId;
+                        totalTaskSize = am.getAppTasks().size();
                         try {
-                            if (preTask.getTaskInfo().persistentId == DbRecentTaskId) {
+                            if (preTaskId == DbRecentTaskId) {
                                 preTask.moveToFront();
                             }
                             preTask.startActivity(getApplicationContext(), intent, bundle);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             Toast.makeText(this, "catch preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             Log.i("preTask ===>", "no startActivity: " + e.getMessage());
                             Intent intentCatch = new Intent();
@@ -240,13 +244,63 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intentCatch.setClass(ProductActivity.this, OrderActivity.class);
                             intentCatch.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             startActivity(intentCatch);
+                            tasks = am.getAppTasks();
+                            for (int i = 0; i < tasks.size(); i++) {
+                                if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == preTaskId) {
+                                    preTask = tasks.get(i);
+                                }
+                            }
                             preTask.finishAndRemoveTask();
+                        } finally {
+                            try {
+                                if (preTask.getTaskInfo() != null && ((totalTaskSize + 1) == am.getAppTasks().size())) {
+                                    Toast.makeText(this, "finally preTask! ", Toast.LENGTH_SHORT).show();
+                                    Log.i("preTask ===>", "PreTask no startActivity: " + "system create a new task!");
+                                    tasks = am.getAppTasks();
+                                    for (int i = 0; i < tasks.size(); i++) {
+                                        if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == preTaskId) {
+                                            preTask = tasks.get(i);
+                                        }
+                                    }
+                                    ActivityManager.AppTask newTask = tasks.get(0);
+                                    Intent intentCatch = new Intent();
+                                    Bundle bundleCatch = new Bundle();
+                                    bundleCatch.putByteArray("Pic", product_pic);
+                                    bundleCatch.putString("Name", product_name);
+                                    bundleCatch.putString("Price", product_price);
+                                    bundleCatch.putString("Intro", product_intro);
+                                    bundleCatch.putString("OrderTask", "ORDER_ACTIVITY");
+                                    bundleCatch.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                    intentCatch.putExtras(bundleCatch);
+                                    intentCatch.setClass(ProductActivity.this, OrderActivity.class);
+                                    intentCatch.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                    startActivity(intentCatch);
+                                    preTask.finishAndRemoveTask();
+                                    newTask.finishAndRemoveTask();
+                                }
+                            } catch (Exception e) {
+                                Toast.makeText(this, "finally preTask is null ! ", Toast.LENGTH_SHORT).show();
+                                Log.i("preTask ===>", "is null: " + e.getMessage());
+                            }
                         }
-                        if (currentTask != null) {
-                            currentTask.finishAndRemoveTask();
-                        }
-                        else {
-                            this.finishAndRemoveTask();
+                        try {
+                            if (preTask != null && preTask.getTaskInfo().id == -1) {
+                                preTask.finishAndRemoveTask();
+                            } else {
+                                if (currentTask != null) {
+                                    currentTask.finishAndRemoveTask();
+                                } else {
+                                    this.finishAndRemoveTask();
+                                }
+                            }
+                        } catch (Exception e) {
+                            Toast.makeText(this, "id preTask is null ! ", Toast.LENGTH_SHORT).show();
+                            Log.i("preTask ===>", "is null: " + e.getMessage());
+                            if (currentTask != null) {
+                                currentTask.finishAndRemoveTask();
+                            } else {
+                                this.finishAndRemoveTask();
+                            }
                         }
                     }
                     else {

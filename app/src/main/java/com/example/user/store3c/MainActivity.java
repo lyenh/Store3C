@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
+    // TODO: image transaction missing when network block it too long
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
     // TODO: Enter ProductActivity from OrderActivity and come back to OrderActivity, it have some issue
     // TODO: Exception keep in proguard-rules, can catch the task id empty case(debug testing)
