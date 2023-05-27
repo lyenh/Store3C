@@ -22,16 +22,13 @@ import com.google.firebase.ktx.Firebase
 @Keep
 class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
-    companion object {
-        private var orderFormList: String = "購買資料: "
-    }
-
     private var menuItem = "DISH"
     private var upMenuItem = ""; private var searchItem = ""
     private lateinit var orderText:TextView
     private lateinit var userRef: DatabaseReference
+    private var orderFormList: String = "購買資料: "
     private var orderFromFullData: String = "購買明細資料: "
-    private var notification_list = ""
+    private var notification_list = ""; private  var orderMessageText = ""
     private var preTask: AppTask? = null
     private var dbHelper: AccountDbAdapter? = null
     private var DbMainActivityTaskId = -1; private var DbOrderActivityTaskId = -1
@@ -43,8 +40,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         val bundle = intent.extras
         if (bundle != null) {
             notification_list = bundle.getString("Notification").toString()
+            orderMessageText = bundle.getString("OrderMessageText").toString()
             if (notification_list != "") {   // notification promotion product
-                orderFormList = orderFormList + "\n\n" + PromotionFirebaseMessagingService.orderMessageText
+                orderFormList = orderFormList + "\n\n" + orderMessageText
                 menuItem = "DISH"
             }
             else {
@@ -66,59 +64,82 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         orderText = findViewById(R.id.orderFormItem_id)
         val retButton:Button = findViewById(R.id.orderFormReturnBtn_id)
 
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            if (!currentUser.isAnonymous) {
-                userRef = Firebase.database.reference.child("user")
-                userRef.child("Uid").get().addOnSuccessListener {
-                    val key:String = currentUser.uid
-                    var findOrderData = false
-                    var orderFormEmail:String ; var orderFormName:String ; var orderFromDate:String ; var orderFormPrice:String
-                    var orderFormData:String ; var orderFormProductData:String
-                    val divideLine = "        ------------------------------------------"
+        if (InternetConnection.checkConnection(this@OrderFormActivity)) {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser != null) {
+                if (!currentUser.isAnonymous) {
+                    userRef = Firebase.database.reference.child("user")
+                    userRef.child("Uid").get().addOnSuccessListener {
+                        val key: String = currentUser.uid
+                        var findOrderData = false
+                        var orderFormEmail: String;
+                        var orderFormName: String;
+                        var orderFromDate: String;
+                        var orderFormPrice: String
+                        var orderFormData: String;
+                        var orderFormProductData: String
+                        val divideLine = "        ------------------------------------------"
 
-                    for (uid in it.children) {
-                        val fbUid: String? = uid.key
-                        //Log.i("Firebase ==>", "Firebase Uid is: " + fbUid);
-                        if (fbUid != null) {
-                            if (fbUid == key) {
-                                if (uid.child("orderList").exists()) {
-                                    //Log.i("firebase", "Got value ${uid.child("orderList").value}")
-                                    findOrderData = true
-                                    for (dataItem in uid.child("orderList").children) {
-                                        orderFormName = "姓名: " + dataItem.child("userName").value
-                                        orderFormEmail = "帳號: " + dataItem.child("emailAccount").value
-                                        orderFromDate = "日期: " + dataItem.child("listDate").value
-                                        orderFormPrice = "        總金額: " + dataItem.child("totalPrice").value + "元"
-                                        orderFormData = orderFormName + "\n" + orderFormEmail + "\n" + orderFromDate
-                                        orderFormProductData = "產品項目: "
-                                        for (listItem in dataItem.child("listItem").children) {
-                                            val item:ListItem? = listItem.getValue<ListItem>()
-                                            orderFormProductData = orderFormProductData + "\n" + "        " + item!!.getName() + " :  " + item.getPrice()
+                        for (uid in it.children) {
+                            val fbUid: String? = uid.key
+                            //Log.i("Firebase ==>", "Firebase Uid is: " + fbUid);
+                            if (fbUid != null) {
+                                if (fbUid == key) {
+                                    if (uid.child("orderList").exists()) {
+                                        //Log.i("firebase", "Got value ${uid.child("orderList").value}")
+                                        findOrderData = true
+                                        for (dataItem in uid.child("orderList").children) {
+                                            orderFormName =
+                                                "姓名: " + dataItem.child("userName").value
+                                            orderFormEmail =
+                                                "帳號: " + dataItem.child("emailAccount").value
+                                            orderFromDate =
+                                                "日期: " + dataItem.child("listDate").value
+                                            orderFormPrice =
+                                                "        總金額: " + dataItem.child("totalPrice").value + "元"
+                                            orderFormData =
+                                                orderFormName + "\n" + orderFormEmail + "\n" + orderFromDate
+                                            orderFormProductData = "產品項目: "
+                                            for (listItem in dataItem.child("listItem").children) {
+                                                val item: ListItem? = listItem.getValue<ListItem>()
+                                                orderFormProductData =
+                                                    orderFormProductData + "\n" + "        " + item!!.getName() + " :  " + item.getPrice()
+                                            }
+                                            orderFromFullData =
+                                                orderFromFullData + "\n\n" + orderFormData + "\n" + orderFormProductData + "\n" + divideLine + "\n" + orderFormPrice
                                         }
-                                        orderFromFullData = orderFromFullData + "\n\n" + orderFormData + "\n" + orderFormProductData + "\n" + divideLine + "\n" + orderFormPrice
+                                        orderText.setTextIsSelectable(true)
+                                        orderText.text = orderFromFullData
                                     }
-                                    orderText.setTextIsSelectable(true)
-                                    orderText.text = orderFromFullData
                                 }
                             }
                         }
+                        if (!findOrderData) {
+                            orderFromFullData = "尚未購買產品喔 !"
+                            orderText.text = orderFromFullData
+                        }
+                    }.addOnFailureListener {
+                        orderText.text = orderFormList
+                        Log.e("firebase", "Error getting data", it)
                     }
-                    if (!findOrderData) {
-                        orderFromFullData = "尚未購買產品喔 !"
-                        orderText.text = orderFromFullData
-                    }
-                }.addOnFailureListener{
+                } else {
                     orderText.text = orderFormList
-                    Log.e("firebase", "Error getting data", it)
+                    Toast.makeText(
+                        this@OrderFormActivity,
+                        "請先登入, 再查詢完整的訂購單 !",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } else {
                 orderText.text = orderFormList
-                Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@OrderFormActivity,
+                    "請先登入, 再查詢完整的訂購單 !",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         } else {
-            orderText.text = orderFormList
-            Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
+            Toast.makeText(this@OrderFormActivity, "網路未連線! ", Toast.LENGTH_SHORT).show()
         }
         retButton.setOnClickListener(this)
 

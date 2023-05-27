@@ -205,7 +205,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                                             }
                                         }
                                     }
-                 //                   preTask = tasks.get(tasks.size() - 1);
                                 }
                             }
                         }

@@ -58,7 +58,6 @@ import static com.example.user.store3c.MainActivity.setFirebaseDbPersistence;
 public class PromotionFirebaseMessagingService extends FirebaseMessagingService {
     private static Integer totalUserAmount = 0;
     private static Integer pendingIntentIndex = 0;
-    public static String orderMessageText = "";
 
     private DatabaseReference userTokenRef;
     private AccountDbAdapter dbhelper = null;
@@ -72,7 +71,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     }
 
     @Override
-    public void onMessageReceived(RemoteMessage remoteMessage) {
+    synchronized public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.i("Messaging===> ", "from: "+remoteMessage.getFrom());
         String title, messageType, messageText, subText, message, imageUrl; // "http://appserver.000webhostapp.com/store3c/image/dish/d16.jpg"
         String messagePrice = "", messageIntro = "";
@@ -134,13 +133,13 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     else {          // user clear all app in recent screen
                         bundle.putString("Notification", "UPPER_APP");
                     }
+                    bundle.putString("OrderMessageText", "    " + messageText);
                     resultIntent.putExtras(bundle);
                     stackBuilder = TaskStackBuilder.create(this);
                     stackBuilder.addNextIntent(resultIntent);
                     synchronized(pendingIntentIndex++) {
                         resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
                     }
-                    orderMessageText = "    " + messageText;
                     channelId = getString(R.string.default_notification_channel_id);
                     defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
@@ -473,7 +472,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     }
 
     @Override
-    public void onNewToken(@NonNull String s) {
+    synchronized public void onNewToken(@NonNull String s) {
         super.onNewToken(s);
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
@@ -644,14 +643,21 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     }
 
     public Bitmap getBitmapfromUrl(String imageUrl) {
-        try {
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true); connection.connect();
-            InputStream input = connection.getInputStream();
-            return BitmapFactory.decodeStream(input);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (InternetConnection.checkConnection(PromotionFirebaseMessagingService.this)) {
+            try {
+                URL url = new URL(imageUrl);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.setConnectTimeout(60000);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                return BitmapFactory.decodeStream(input);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            Toast.makeText(PromotionFirebaseMessagingService.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
             return null;
         }
     }

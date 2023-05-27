@@ -144,10 +144,7 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: image transaction missing when network block it too long
     // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
-    // TODO: Enter ProductActivity from OrderActivity and come back to OrderActivity, it have some issue
-    // TODO: Exception keep in proguard-rules, can catch the task id empty case(debug testing)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -238,16 +235,22 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 executor.execute(() -> {
-                    try {
-                        String imageUrl = messageImageUrl;
-                        URL url = new URL(imageUrl);
-                        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                        connection.setDoInput(true);
-                        connection.connect();
-                        InputStream input = connection.getInputStream();
-                        productImage = BitmapFactory.decodeStream(input);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (InternetConnection.checkConnection(MainActivity.this)) {
+                        try {
+                            String imageUrl = messageImageUrl;
+                            URL url = new URL(imageUrl);
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setDoInput(true);
+                            connection.setConnectTimeout(60000);
+                            connection.connect();
+                            InputStream input = connection.getInputStream();
+                            productImage = BitmapFactory.decodeStream(input);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            productImage = null;
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
                         productImage = null;
                     }
 
