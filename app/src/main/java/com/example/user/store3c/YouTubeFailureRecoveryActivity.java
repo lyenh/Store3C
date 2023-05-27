@@ -7,12 +7,15 @@ import com.google.android.youtube.player.YouTubePlayer;
 import android.content.Intent;
 import android.widget.Toast;
 
+import androidx.annotation.Keep;
+
 import static com.example.user.store3c.DeveloperKey.YOUTUBE_API_KEY;
 
 /**
  * An abstract activity which deals with recovering from errors which may occur during API
  * initialization, but can be corrected through user action.
  */
+@Keep
 public abstract class YouTubeFailureRecoveryActivity extends YouTubeBaseActivity implements
         YouTubePlayer.OnInitializedListener {
 

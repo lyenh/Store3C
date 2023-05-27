@@ -1,8 +1,7 @@
 package com.example.user.store3c;
 
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -88,12 +87,12 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
     private static int cakeProductAmount = 0;
     private static int cakeProductImgCount = 0, cakeProductPriceCount = 0;
     private static int cakeProductNameCount = 0, cakeProductIntroCount = 0;
-    private static ProgressDialog dialog;
+    private static AlertDialog dialog;
     private static int threadComplete = 0;
     private static int Reload = 0;
     private ImageView logoImage;
     private byte[] dbUserPicture;
-    private YouTubePlayerSupportFragmentX YouTubeF;
+ //   private YouTubePlayerSupportFragmentX YouTubeF;
     private NavigationView navigationView;
     private handler1 handlerDownload1 = new handler1();
     private static handler2 handlerDownload2 = new handler2();
@@ -535,16 +534,10 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
         handlerDownload4  = new handler4(cakeAdapter);
         new Thread(runnable1).start();
-        dialog = new ProgressDialog(CakeActivity.this);
-        dialog.setMessage("正在載入...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                // DO SOME STUFF HERE
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(CakeActivity.this);
+        builder.setCancelable(false);   // user to wait for some process to finish,
+        builder.setView(R.layout.loading_dialog);
+        dialog = builder.create();
         dialog.show();
     }
 
@@ -963,7 +956,6 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         } else {
             intent = new Intent();
             intent.setClass(CakeActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intent);
             CakeActivity.this.finish();
         }
@@ -1133,7 +1125,7 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(CakeActivity.this, MainActivity.class);
-            intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intentItem);
             CakeActivity.this.finish();
         } else if (id == R.id.nav_cake) {

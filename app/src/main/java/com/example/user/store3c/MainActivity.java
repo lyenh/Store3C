@@ -3,7 +3,7 @@ package com.example.user.store3c;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,11 +16,13 @@ import android.database.SQLException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
@@ -71,9 +73,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 
+@Keep
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, Slide1Fragment.OnFragmentInteractionListener,
         Slide2Fragment.OnFragmentInteractionListener, Slide3Fragment.OnFragmentInteractionListener,
@@ -105,8 +110,6 @@ public class MainActivity extends AppCompatActivity
     private static final Handler6 handlerDownload6 = new Handler6();
     private static final Handler7 handlerDownload7 = new Handler7();
 
-    public static int retainRecentTaskId = -1;
-    public static ProgressDialog dialog;
     public static FirebaseAuth mAuth = null;
     public static ArrayList<Bitmap> picShowImg = new ArrayList<> ();
     public static volatile int adapterLayout = 0;
@@ -115,7 +118,7 @@ public class MainActivity extends AppCompatActivity
     public static boolean isTab;
     public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
     public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
-    public static int taskIdMainActivity;
+    public AlertDialog dialog;
 
     private DishAdapter dishAdapter;
     private ImageView logoImage;
@@ -129,42 +132,44 @@ public class MainActivity extends AppCompatActivity
     private ViewPager2 pager;
     private ImageView dot1, dot2, dot3, dot4, dot5;
     private List<Fragment> fragments;
-    private String retainRecentTask;
+    private String retainRecentTask = null;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Bitmap productImage;
 
+    public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
+    public ActivityManager.AppTask currentTask = null;
+    public boolean combinedActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: how to decision the task is created by multitask or system
-    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity
-    // TODO: retainRecentTaskId is only one, need to save in recentTaskList data(service)
-    // TODO: YPlayer initialize in Emulator, install app on api 21
+    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         byte[] dbUserPicture;
-        String messageType, messageName,  messagePrice, messageIntro, imageUrl;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         RecyclerView dishRecyclerView;
         GridLayoutManager layoutManager;
         Toolbar toolbar;
         DrawerLayout drawer;
         ActionBarDrawerToggle toggle;
-
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+        int index = 0, DbMainActivityTaskId = -1;
 
         if (bundle != null) {       // firebase notification load App from system tray.
-            messageType = bundle.getString("messageType");      //have data payload
+            messageType = bundle.getString("messageType");
             retainRecentTask = bundle.getString("RetainRecentTask");
-            if (messageType == null) {      //No data payload.
-                messageType = "No-data-payload";
-            }
             if (retainRecentTask != null) {
-                if (retainRecentTask.equals("RECENT_TASK")) {
-                    retainRecentTaskId = getTaskId();
+                messageType = "NotFirebaseMessage";
+            }
+            else {
+                if (messageType == null) {      //No data payload.
+                    messageType = "No-data-payload";
                 }
             }
         }
@@ -172,51 +177,185 @@ public class MainActivity extends AppCompatActivity
             messageType = "NotFirebaseMessage";
         }
 
+        if (dbHelper == null) {
+            dbHelper = new AccountDbAdapter(this);
+        }
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+        List<ActivityManager.AppTask> tasks;
         ActivityManager.AppTask eachTask;
 
-        if (tasks.size() > 1) {
-            for (int i = 0; i < tasks.size(); i++) {
-                eachTask = tasks.get(i);
-                if ((eachTask.getTaskInfo().persistentId == retainRecentTaskId) &&
-                        (eachTask.getTaskInfo().persistentId != getTaskId())) {
-                    retainRecentTaskId  = -1;
-                    eachTask.finishAndRemoveTask();
+        try {
+            synchronized (tasks = am.getAppTasks()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    for (ActivityManager.AppTask task : tasks) {
+                        if (task.getTaskInfo() != null && task.getTaskInfo().persistentId == getTaskId()) {
+                            currentTask = task;
+                            if (currentTask.getTaskInfo().numActivities > 1) {
+                                combinedActivity = true;            // MainActivity is not the root activity so to create a new task
+                                Log.i("Number of activity: ", "===> " + currentTask.getTaskInfo().numActivities);
+                            }
+                        }
+                    }
+                } else {
+                    if (messageType.equals("FCM-console") || messageType.equals("No-data-payload")) {
+                        for (ActivityManager.AppTask task : tasks) {
+                            if (task.getTaskInfo() != null && task.getTaskInfo().persistentId == getTaskId()) {
+                                currentTask = task;
+                                combinedActivity = true;        // always to create a new task
+                            }
+                        }
+                    }
                 }
             }
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.i("Get task Id error: ", "==>" + e.getMessage());       // the previous task removed
         }
 
         switch (messageType) {
             case "FCM-console":
                 toolbar = findViewById(R.id.toolbarMain);
                 setSupportActionBar(toolbar);
-                dialog = new ProgressDialog(MainActivity.this);
-                dialog.setMessage("正在載入...");
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        // DO SOME STUFF HERE
-                    }
-                });
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setCancelable(false);   // user to wait for some process to finish,
+                builder.setView(R.layout.loading_dialog);
+                dialog = builder.create();
                 dialog.show();
-                messageName = bundle.getString("messageText");
-                messagePrice = bundle.getString("messagePrice");
-                messageIntro = bundle.getString("messageIntro");
-                imageUrl = bundle.getString("imagePath");
-                bundle.clear();
-                intent.putExtras(bundle);
-                new ImageDownloadTask(messageName, messagePrice, messageIntro, MainActivity.this).execute(imageUrl);
+
+                if (bundle != null) {
+                    messageName = bundle.getString("messageText");
+                    messagePrice = bundle.getString("messagePrice");
+                    messageIntro = bundle.getString("messageIntro");
+                    messageImageUrl = bundle.getString("imagePath");
+                } else {
+                    messageName = "雞肉飯";
+                    messagePrice = "80元";
+                    messageIntro = "香噴噴的雞肉飯，吃了以後讓人再三的回味!";
+                    messageImageUrl = "http://apptech.website/store3c/image/dish/d13.jpg";
+                }
+
+                executor.execute(() -> {
+                    if (InternetConnection.checkConnection(MainActivity.this)) {
+                        try {
+                            String imageUrl = messageImageUrl;
+                            URL url = new URL(imageUrl);
+                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            connection.setDoInput(true);
+                            connection.setConnectTimeout(60000);
+                            connection.connect();
+                            InputStream input = connection.getInputStream();
+                            productImage = BitmapFactory.decodeStream(input);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            productImage = null;
+                        }
+                    } else {
+                        Toast.makeText(MainActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
+                        productImage = null;
+                    }
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (productImage == null) {
+                                productImage = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                            }
+                            Bundle bundleProduct = new Bundle();
+                            Intent intentProduct = new Intent(MainActivity.this , ProductActivity.class);
+                            if (productImage != null) {
+                                bundleProduct.putByteArray("Pic", Bitmap2Bytes(productImage));
+                            }
+                            bundleProduct.putString("Name", messageName);
+                            bundleProduct.putString("Price", messagePrice);
+                            bundleProduct.putString("Intro", messageIntro);
+                            bundleProduct.putString("Menu", "DISH");
+                            bundleProduct.putString("Notification", "UPPER_APP");
+                            bundleProduct.putString("Firebase", "DATA_PAYLOAD");
+                            intentProduct.setClass(MainActivity.this , ProductActivity.class);
+                            if (combinedActivity) {
+                                bundleProduct.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                intentProduct.putExtras(bundleProduct);
+                                intentProduct.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                dialog.dismiss();
+                                startActivity(intentProduct);
+                                currentTask.finishAndRemoveTask();
+                            }
+                            else {
+                                intentProduct.putExtras(bundleProduct);
+                                dialog.dismiss();
+                                startActivity(intentProduct);
+                                MainActivity.this.finish();
+                            }
+                        }
+                    });
+                });
                 break;
 
             case "No-data-payload":
-                bundle.clear();     // can't really clear System tray activity with bundle value
-                intent.putExtras(bundle);
+                if (combinedActivity) {
+                    Intent reloadIntent = Intent.makeMainActivity (new ComponentName(getApplicationContext(), MainActivity.class));
+                    Bundle reloadBundle = new Bundle();
+                    reloadBundle.putString("RetainRecentTask", "RECENT_TASK");
+                    reloadIntent.putExtras(reloadBundle);
+                    reloadIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
+                    startActivity(reloadIntent);
+                    if (currentTask != null) {
+                        currentTask.finishAndRemoveTask();
+                    }
+                    else {
+                        this.finishAndRemoveTask();
+                    }
+                    break;
+                }
+                retainRecentTask = "RECENT_TASK";
 
             case "NotFirebaseMessage":
                 try {
-                    taskIdMainActivity = getTaskId();
+                    boolean isDbTaskIdListEmpty = dbHelper.IsDbTaskIdEmpty();
+                    if (!isDbTaskIdListEmpty) {
+                        try {
+                            Cursor cursor = dbHelper.getTaskIdList();
+                            index = cursor.getInt(0);
+                            DbMainActivityTaskId = cursor.getInt(2);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    try {
+                        synchronized (tasks = am.getAppTasks()) {
+                            if (tasks.size() > 1) {
+                                //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    if (eachTask.getTaskInfo() != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
+                                            (eachTask.getTaskInfo().persistentId != getTaskId())) {
+                                        if (!isDbTaskIdListEmpty) {
+                                            if (dbHelper.updateRecentTaskId(index, -1) == 0) {
+                                                Log.i("update recent task id: ", "no data change!");
+                                            }
+                                            if (dbHelper.updateMainActivityTaskId(index, -1) == 0) {
+                                                Log.i("mainActivityTaskId: ", "update result, no data change!");
+                                            }
+                                        }
+                                        eachTask.finishAndRemoveTask();
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Log.i("Get preTask Id error: ", "==>" + e.getMessage());
+                    }
+                    if (!isDbTaskIdListEmpty) {
+                        if (dbHelper.updateMainActivityTaskId(index, getTaskId()) == 0) {
+                            Log.i("mainActivityTaskId: ", "update result, no data change!");
+                        }
+                    }
+                    else {
+                        if (dbHelper.createTaskId(-1, getTaskId(), -1) == -1) {
+                            Log.i("mainActivityTaskId: ", "create result, fail !");
+                        }
+                    }
                     toolbar = findViewById(R.id.toolbarMain);
                     setSupportActionBar(toolbar);
                     isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
@@ -250,7 +389,6 @@ public class MainActivity extends AppCompatActivity
                     if (navigationView.getHeaderCount() > 0) {
                         View header = navigationView.getHeaderView(0);
                         logoImage = header.findViewById(R.id.logoImage_id);
-                        dbHelper = new AccountDbAdapter(this);
                         try {
                             if (!dbHelper.IsDbUserEmpty()) {
                                 try {
@@ -272,7 +410,7 @@ public class MainActivity extends AppCompatActivity
                                             System.arraycopy(cursor.get(num).getBlob(0), 0, picture, length, cursor.get(num).getBlob(0).length);
                                             //picture[picture.length - 1] = '\0';
                                             if (totalLength == picture.length) {
-                                                Toast.makeText(MainActivity.this, "picture size: " + totalLength, Toast.LENGTH_LONG).show();
+                                                //Toast.makeText(MainActivity.this, "picture size: " + totalLength, Toast.LENGTH_LONG).show();
                                             }
                                             dbUserPicture = picture;
                                             //Toast.makeText(MainActivity.this, "picture size: " + dbUserPicture.length, Toast.LENGTH_LONG).show();
@@ -337,9 +475,6 @@ public class MainActivity extends AppCompatActivity
                                             }
                                         });
                             } else {
-                                if (dbHelper == null) {
-                                    dbHelper = new AccountDbAdapter(this);
-                                }
                                 if (!dbHelper.IsDbUserEmpty()) {
                                     try {
                                         Cursor cursor = dbHelper.getSimpleUserData();
@@ -475,7 +610,7 @@ public class MainActivity extends AppCompatActivity
 
                     logoImage.setOnClickListener(this);
                 } catch (Throwable e) {
-                    Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "NotFirebaseMessage error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
                 }
                 break;
         }
@@ -570,7 +705,7 @@ public class MainActivity extends AppCompatActivity
                                                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://apptech.website"));
                                                         startActivity(browserIntent);
                                                     } catch (Throwable e) {
-                                                        Toast.makeText(MainActivity.this, "Open webbrowser fail." + e.getClass().toString(), Toast.LENGTH_LONG).show();
+                                                        Toast.makeText(MainActivity.this, "Open web browser fail." + e.getClass().toString(), Toast.LENGTH_LONG).show();
                                                     }
                                                 }
                                             })
@@ -595,7 +730,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
                 } catch (Throwable e) {
-                    Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "CheckVersion error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -628,16 +763,10 @@ public class MainActivity extends AppCompatActivity
         dishRef.keepSynced(true);
         handlerDownload4 = new Handler4(MainActivity.this, dishAdapter, getLifecycle());
         new Thread(runnable1).start();
-        dialog = new ProgressDialog(MainActivity.this);
-        dialog.setMessage("正在載入...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                // DO SOME STUFF HERE
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setCancelable(false);   // user to wait for some process to finish,
+        builder.setView(R.layout.loading_dialog);
+        dialog = builder.create();
         dialog.show();
     }
 
@@ -665,22 +794,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        /*try {
-            if (InternetConnection.checkConnection(MainActivity.this)) {
-                // Check if user is signed in (non-null) and update UI accordingly.
-                FirebaseUser currentUser = mAuth.getCurrentUser();
-                if (currentUser != null) {
-            Toast.makeText(MainActivity.this, "currentUser: " +
-                            (currentUser.isAnonymous() ? "Anonymous" : currentUser.getEmail()),
-                            Toast.LENGTH_LONG).show();
+        FirebaseMessaging.getInstance().subscribeToTopic("store3c").addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                String msg = "Subscribe success";
+                if (!task.isSuccessful()) {
+                    msg = "Subscribe Topic failed";
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                 }
+                Log.i("Subscribe Topic: ", msg);
             }
-        } catch (Throwable e) {
-            Toast.makeText(MainActivity.this, "error message:  " + e.getClass().getName(), Toast.LENGTH_LONG).show();
-        }*/
-        FirebaseMessaging.getInstance().subscribeToTopic("store3c");
+        });
     }
 
     @Override
@@ -698,6 +829,7 @@ public class MainActivity extends AppCompatActivity
         if (dbHelper != null) {
             dbHelper.close();
         }
+        executor.shutdown();
         super.onDestroy();
     }
 
@@ -926,7 +1058,9 @@ public class MainActivity extends AppCompatActivity
                 if (hmDishAdapter != null) {
                     hmDishAdapter.notifyDataSetChanged();
                 }
-                dialog.dismiss();
+                if (hmActivity != null) {
+                    hmActivity.dialog.dismiss();
+                }
             }
         }
 
@@ -1336,6 +1470,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout_main);
+        int index = 0;
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -1350,12 +1486,7 @@ public class MainActivity extends AppCompatActivity
                 ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                 List<ActivityManager.AppTask> tasks = am.getAppTasks();
                 ActivityManager.AppTask eachTask;
-                Intent intentM = getIntent();
-                Bundle bundleB = intentM.getExtras();
-                if (bundleB != null) {
-                    bundleB.clear();
-                    intentM.putExtras(bundleB);
-                }
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (int i = 0; i < tasks.size(); i++) {
                         eachTask = tasks.get(i);
@@ -1373,9 +1504,40 @@ public class MainActivity extends AppCompatActivity
                         eachTask.finishAndRemoveTask();
                     }
                 }
+                boolean isDbTaskIdListEmpty = dbHelper.IsDbTaskIdEmpty();
+                if (!isDbTaskIdListEmpty) {
+                    try {
+                        Cursor cursor = dbHelper.getTaskIdList();
+                        index = cursor.getInt(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_TASK")) {
-                        retainRecentTaskId = getTaskId();
+                        if (!isDbTaskIdListEmpty) {
+                            if (dbHelper.updateRecentTaskId(index, getTaskId()) == 0) {
+                                Log.i("update recent task id: ", "no data change!");
+                            }
+                        }
+                        else {
+                            if (dbHelper.createTaskId(getTaskId(), -1, -1) == -1) {
+                                Log.i("create recent task id: ", "fail !");
+                            }
+                        }
+                    }
+                }
+                if (!isDbTaskIdListEmpty) {
+                    if (dbHelper.updateMainActivityTaskId(index, getTaskId()) == 0) {
+                        Log.i("mainActivityTaskId: ", "update result, no data change!");
+                    }
+                    if (dbHelper.updateOrderActivityTaskId(index, -1) == 0) {
+                        Log.i("orderActivityTaskId: ", "update result, no data change!");
+                    }
+                }
+                else {
+                    if (dbHelper.createTaskId(-1, getTaskId(), -1) == -1) {
+                        Log.i("mainActivityTaskId: ", "create result, fail !");
                     }
                 }
                 MainActivity.this.finish();
@@ -1559,54 +1721,3 @@ public class MainActivity extends AppCompatActivity
 
 }
 
-class  ImageDownloadTask extends AsyncTask<String, Void, Bitmap> {
-    private final String MessageName, MessagePrice, MessageIntro;
-    private final WeakReference<MainActivity> weakRefMainActivity;
-
-    ImageDownloadTask(String name, String price, String intro, MainActivity activity) {
-        MessageName = name; MessagePrice = price; MessageIntro = intro;
-        weakRefMainActivity = new WeakReference<>(activity);
-    }
-
-    protected Bitmap doInBackground(String... params) {
-        try {
-            String imageUrl = params[0];
-            URL url = new URL(imageUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            return BitmapFactory.decodeStream(input);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-    @Override
-    protected void onPostExecute(Bitmap result) {
-        Bitmap picture = result;
-        MainActivity activity = weakRefMainActivity.get();
-        if (picture == null) {
-            picture = BitmapFactory.decodeResource(activity.getResources(), R.drawable.store_icon);
-        }
-        Bundle bundleProduct = new Bundle();
-        Intent intentProduct = new Intent(activity, ProductActivity.class);
-        if (picture != null) {
-            bundleProduct.putByteArray("Pic", MainActivity.Bitmap2Bytes(picture));
-        }
-        bundleProduct.putString("Name", MessageName);
-        bundleProduct.putString("Price", MessagePrice);
-        bundleProduct.putString("Intro", MessageIntro);
-        bundleProduct.putString("Menu", "DISH");
-        bundleProduct.putString("Firebase", "MESSAGE");
-        intentProduct.putExtras(bundleProduct);
-        intentProduct.setClass(activity, ProductActivity.class);
-        MainActivity.dialog.dismiss();
-        activity.startActivity(intentProduct);
-        activity.finish();
-        this.cancel(true);
-    }
-
-}

@@ -2,6 +2,7 @@ package com.example.user.store3c;
 
 import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -9,6 +10,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.graphics.BitmapFactory;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -38,8 +40,9 @@ import java.util.TreeMap;
 
 import static com.example.user.store3c.MainActivity.mAuth;
 
+@Keep
 public class OrderActivity extends AppCompatActivity implements View.OnClickListener{
-    private AccountDbAdapter dbhelper = null;
+    private AccountDbAdapter dbHelper = null;
     TextView orderText;
     private String menu_item = "DISH", up_menu_item = "", search_list = "";
     String orderTextList = "";
@@ -64,7 +67,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             getSupportActionBar().setTitle(edit_Title);
         }
 
-        dbhelper = new AccountDbAdapter(this);
+        dbHelper = new AccountDbAdapter(this);
         RecyclerView OrderRecyclerView;
         Button ret_b, promotion_b, resetCheckBox_b;
         String product_name, product_price, product_intro;
@@ -73,7 +76,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         byte[] product_pic;
         float price = 0;
         //int imgHeight, screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int index;
+        int index, indexId = 1;
         ArrayList<String> checkBoxNameList, checkBoxPriceList;
 
         Bundle bundle = getIntent().getExtras();
@@ -84,8 +87,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         promotion_b = findViewById(R.id.promotionBtn_id);
         resetCheckBox_b = findViewById(R.id.orderCheckBoxClearBtn_id);
         OrderRecyclerView = findViewById(R.id.orderRecyclerView_id);
+        boolean isDbTaskIdListEmpty = dbHelper.IsDbTaskIdEmpty();
 
-        String retainRecentTask;
+        String retainRecentTask, orderActivityTaskId;
         if (bundle != null) {
             if (bundle.getString("Name") != null) {
                 if (bundle.getString("Search") != null) {
@@ -95,6 +99,29 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 if (retainRecentTask != null) {
                     if (retainRecentTask.equals("RECENT_ACTIVITY")) {       // productActivity task
                         recentTaskOrder = true;
+                    }
+                }
+                orderActivityTaskId = bundle.getString("OrderTask");
+                if (orderActivityTaskId != null) {
+                    if (orderActivityTaskId.equals("ORDER_ACTIVITY")) {
+                        if (!isDbTaskIdListEmpty) {
+                            try {
+                                Cursor cursor = dbHelper.getTaskIdList();
+                                indexId = cursor.getInt(0);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (!isDbTaskIdListEmpty) {
+                            if (dbHelper.updateOrderActivityTaskId(indexId, getTaskId()) == 0) {
+                                Log.i("orderActivityTaskId: ", "update result, no data change!");
+                            }
+                        }
+                        else {
+                            if (dbHelper.createTaskId(-1, -1, getTaskId()) == -1) {
+                                Log.i("orderActivityTaskId: ", "create result, fail !");
+                            }
+                        }
                     }
                 }
                 if (bundle.getString("Menu") != null) {
@@ -108,8 +135,8 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 product_price = bundle.getString("Price");
                 product_intro = bundle.getString("Intro");
                 if (product_pic != null && product_name != null && product_price != null && product_intro != null) {
-                    int size = dbhelper.DbOrderAmount();
-                    if (dbhelper.createOrder(size, product_pic, product_name, product_price, product_intro) == 0)
+                    int size = dbHelper.DbOrderAmount();
+                    if (dbHelper.createOrder(size, product_pic, product_name, product_price, product_intro) == 0)
                         Log.i("db", "Insert   fail" + product_name + product_price + product_intro);
                 }
                 else {
@@ -131,9 +158,9 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     product_name = checkBoxNameList.get(i);
                     product_price = Objects.requireNonNull(checkBoxPriceList).get(i);
                     if (product_pic != null && product_name != null && product_price != null && product_intro != null) {
-                        size = dbhelper.DbOrderAmount();
+                        size = dbHelper.DbOrderAmount();
                         product_price = product_price + "元";
-                        if (dbhelper.createOrder(size, product_pic, product_name, product_price, product_intro) == 0)
+                        if (dbHelper.createOrder(size, product_pic, product_name, product_price, product_intro) == 0)
                             Log.i("db", "Insert   fail" + product_name + product_price + product_intro);
                     }
                     else {
@@ -155,12 +182,35 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                         recentTaskOrder = true;
                     }
                 }
+                orderActivityTaskId = bundle.getString("OrderTask");
+                if (orderActivityTaskId != null) {
+                    if (orderActivityTaskId.equals("ORDER_ACTIVITY")) {
+                        if (!isDbTaskIdListEmpty) {
+                            try {
+                                Cursor cursor = dbHelper.getTaskIdList();
+                                indexId = cursor.getInt(0);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (!isDbTaskIdListEmpty) {
+                            if (dbHelper.updateOrderActivityTaskId(indexId, getTaskId()) == 0) {
+                                Log.i("orderActivityTaskId: ", "update result, no data change!");
+                            }
+                        }
+                        else {
+                            if (dbHelper.createTaskId(-1, -1, getTaskId()) == -1) {
+                                Log.i("orderActivityTaskId: ", "create result, fail !");
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        if(dbhelper.DbOrderAmount() > 0){
+        if(dbHelper.DbOrderAmount() > 0){
             try {
-                Cursor cursor = dbhelper.listAllOrder();
+                Cursor cursor = dbHelper.listAllOrder();
                 if (cursor.getCount() > 0) {
                     do {
                         index = Integer.parseInt(cursor.getString(1));
@@ -201,7 +251,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 final int fromPosition = viewHolder.getAbsoluteAdapterPosition();
                 final int toPosition = target.getAbsoluteAdapterPosition();
 
-                if (!dbhelper.moveOrder(fromPosition, toPosition)) {
+                if (!dbHelper.moveOrder(fromPosition, toPosition)) {
                     Log.i("move Order item: ", "no data change!");
                 }
 
@@ -217,7 +267,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int index = viewHolder.getAbsoluteAdapterPosition();
 
-                if (dbhelper.deleteOrder(index, orderTable.size()) == 0) {
+                if (dbHelper.deleteOrder(index, orderTable.size()) == 0) {
                     Log.i("delete Order: ", "no data change!");
                 }
 
@@ -274,7 +324,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     protected void onDestroy() {
-        dbhelper.close();
+        dbHelper.close();
         OrderRecyclerAdapter.checkBoxList.clear();
         adapter.ResetCheckBox();
         super.onDestroy();
@@ -355,7 +405,6 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         Intent intent = new Intent();
         Bundle bundle;
 
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         if (search_list.equals("SEARCH")) {
             bundle = new Bundle();
             bundle.putString("Menu", menu_item);
@@ -364,21 +413,18 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
             }
             intent.putExtras(bundle);
             intent.setClass(OrderActivity.this, SearchActivity.class);
-        }
-        else {
+        } else {
             switch (menu_item) {
                 case "DISH":
                     if (recentTaskOrder) {
-                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intent.setPackage(getApplicationContext().getPackageName());
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent = Intent.makeMainActivity(new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
-                    }
-                    else {
+                    } else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
                     break;
                 case "CAKE":
@@ -442,23 +488,42 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                     intent.setClass(OrderActivity.this, com.example.user.store3c.OrderFormActivity.class);
                     break;
                 default:
-                    Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                     if (recentTaskOrder) {
-                        intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
-                        intent.setPackage(getApplicationContext().getPackageName());
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent = Intent.makeMainActivity(new ComponentName(getApplicationContext(), MainActivity.class));
+                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                         Bundle retainRecentTaskBundle = new Bundle();
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
-                    }
-                    else {
+                    } else {
                         intent.setClass(OrderActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
             }
         }
+        ActivityManager.AppTask currentTask = null;
+        if (recentTaskOrder) {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.AppTask> tasks;
+            try {
+                synchronized (tasks = am.getAppTasks()) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                            currentTask = tasks.get(i);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Toast.makeText(OrderActivity.this, "Catch taskId: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.i("Get Task Id error: ", "current Task id ==>" + e.getMessage());
+            }
+        }
         startActivity(intent);
-        OrderActivity.this.finish();
+        if (recentTaskOrder && currentTask != null) {
+            currentTask.finishAndRemoveTask();
+        } else {
+            OrderActivity.this.finish();
+        }
 
     }
 

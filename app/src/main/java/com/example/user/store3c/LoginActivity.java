@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,7 +43,7 @@ import static com.example.user.store3c.MainActivity.mAuth;
 /**
  * Created by user on 2018/2/12.
  */
-
+@Keep
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
     private String menu_item;
@@ -93,7 +95,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (menu_item) {
             case "DISH":
                 intentItem.setClass(LoginActivity.this, MainActivity.class);
-                intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 break;
             case "CAKE":
                 intentItem.setClass(LoginActivity.this, CakeActivity.class);
@@ -110,7 +112,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intentItem.setClass(LoginActivity.this, MainActivity.class);
-                intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+                intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         }
         startActivity(intentItem);
         LoginActivity.this.finish();
@@ -128,7 +130,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStop() {
         super.onStop();
         mAuth.removeAuthStateListener(authListener);
-        dbhelper.close();
+        if (dbhelper != null) {
+            dbhelper.close();
+        }
     }
 
     @Override
@@ -332,7 +336,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (menu_item) {
             case "DISH":
                 intent.setClass(LoginActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
                 break;
             case "CAKE":
                 intent.setClass(LoginActivity.this, CakeActivity.class);
@@ -349,14 +352,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intent.setClass(LoginActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         }
 
         startActivity(intent);
         LoginActivity.this.finish();
 
     }
-
-
 
 }

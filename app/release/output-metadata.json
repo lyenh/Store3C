@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.example.user.store3c",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 333,
+      "versionName": "Store3C_v3.3.3",
+      "outputFile": "app-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

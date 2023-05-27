@@ -2,8 +2,7 @@ package com.example.user.store3c;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -59,7 +58,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
-import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.example.user.store3c.MainActivity.isTab;
 import static com.example.user.store3c.MainActivity.rotationScreenWidth;
 import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
@@ -88,7 +86,7 @@ public class CameraActivity extends Activity
     private static int cameraProductAmount = 0, camera1ProductAmount = 0, camera2ProductAmount = 0, camera3ProductAmount = 0;
     private static int cameraProductImgCount = 0, cameraProductPriceCount = 0;
     private static int cameraProductNameCount = 0, cameraProductIntroCount = 0;
-    private static ProgressDialog dialog = null;
+    private static AlertDialog dialog = null;
     private static int threadComplete = 0;
     private static int Reload = 0;
     private ImageView logoImage;
@@ -485,16 +483,10 @@ public class CameraActivity extends Activity
         mStorageRef = FirebaseStorage.getInstance().getReferenceFromUrl("gs://store3c-137123.appspot.com");
         handlerDownload4  = new handler4(camera1Adapter, camera2Adapter, camera3Adapter);
         new Thread(runnable1).start();
-        dialog = new ProgressDialog(CameraActivity.this);
-        dialog.setMessage("正在載入...");
-        dialog.setCanceledOnTouchOutside(false);
-        dialog.setOnCancelListener(new ProgressDialog.OnCancelListener() {
-
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                // DO SOME STUFF HERE
-            }
-        });
+        AlertDialog.Builder builder = new AlertDialog.Builder(CameraActivity.this);
+        builder.setCancelable(false);   // user to wait for some process to finish,
+        builder.setView(R.layout.loading_dialog);
+        dialog = builder.create();
         dialog.show();
     }
 
@@ -943,7 +935,6 @@ public class CameraActivity extends Activity
         } else {
             intent = new Intent();
             intent.setClass(CameraActivity.this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(intent);
             CameraActivity.this.finish();
         }
@@ -1112,7 +1103,7 @@ public class CameraActivity extends Activity
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(CameraActivity.this, MainActivity.class);
-            intentItem.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intentItem);
             CameraActivity.this.finish();
         } else if (id == R.id.nav_cake) {

@@ -13,6 +13,7 @@
     <string name="title_activity_cake">3C生活百貨</string>
     <string name="action_memo">採購小筆記</string>
     <string name="action_search">產品搜尋</string>
+    <string name="action_loading">正在載入...</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

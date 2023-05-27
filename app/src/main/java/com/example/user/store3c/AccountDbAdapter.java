@@ -32,13 +32,19 @@ class AccountDbAdapter {
     private static final String KEY_MEMO_TEXT = "memoText";
     private static final String KEY_MEMO_PRICE = "memoPrice";
 
+    private static final String KEY_TASK_ID = "taskId";
+    private static final String KEY_RECENT_TASK_ID = "recentTaskId";
+    private static final String KEY_MAIN_ACTIVITY_TASK_ID = "mainActivityTaskId";
+    private static final String KEY_ORDER_ACTIVITY_TASK_ID = "orderActivityTaskId";
+
     private DBHelper mDbHelper;
     private SQLiteDatabase mDb;
-    private Context mCtx;
+    private final Context mCtx;
     private static final String TABLE_NAME_USER = "UserList";
     private static final String TABLE_NAME_ORDER = "BuyList";
     private static final String TABLE_NAME_MEMO = "MemoList";
-    private static final String Mlength = "1000000";
+    private static final String TABLE_NAME_TASK_ID = "TaskIdList";
+    private static final String Maxlength = "1000000";
 
     AccountDbAdapter(Context ctx) {
         this.mCtx = ctx;
@@ -50,7 +56,7 @@ class AccountDbAdapter {
         try {
             mDb = mDbHelper.getWritableDatabase();
             mDbHelper.onCreate(mDb);
-            //mDbHelper.onUpgrade(mDb,1,2);   // can delete table
+       //     mDbHelper.onUpgrade(mDb,1,2);   // can delete table
         }catch (SQLException e) {
             Log.i("db", "Open: " + e.getMessage());
         }
@@ -181,7 +187,7 @@ class AccountDbAdapter {
         Cursor largeImgCursor = null, indexCursor = null, dataCursor;
         int index = 0, start= 1, length = 1000000;
         int id;
-        String[] argMb = new String[]{Mlength};
+        String[] argMb = new String[]{Maxlength};
         try {
             largeImgCursor = mDb.rawQuery("SELECT _id FROM " + TABLE_NAME_USER + " WHERE " + "length(" + KEY_PICTURE + ") > CAST(? AS INT)", argMb);
             if (largeImgCursor != null) {
@@ -760,4 +766,95 @@ class AccountDbAdapter {
         }
         return move;
     }
+
+    long createTaskId(int recentTaskId, int mainActivityTaskId, int orderActivityTaskId) {
+        long createRes = 0;
+
+        ContentValues values = new ContentValues();
+        try {
+            values.put(KEY_RECENT_TASK_ID, recentTaskId);
+            values.put(KEY_MAIN_ACTIVITY_TASK_ID, mainActivityTaskId);
+            values.put(KEY_ORDER_ACTIVITY_TASK_ID, orderActivityTaskId);
+            createRes = mDb.insert(TABLE_NAME_TASK_ID, null, values);
+            //Toast.makeText(mCtx, "新增資料成功!", Toast.LENGTH_SHORT).show();
+        }catch (SQLException e) {
+            Log.i("db", "Create Task Id table: " + e.getMessage());
+        }
+        return  createRes;
+    }
+
+    boolean IsDbTaskIdEmpty () {
+
+        Cursor cursor;
+        int count=0;
+        try {
+            cursor = mDb.query(TABLE_NAME_TASK_ID, new String[]{KEY_TASK_ID, KEY_RECENT_TASK_ID, KEY_MAIN_ACTIVITY_TASK_ID, KEY_ORDER_ACTIVITY_TASK_ID},
+                    null, null, null, null, null);
+            if (cursor != null) {
+                count = cursor.getCount();
+                cursor.close();
+            }
+        }catch (SQLException e) {
+            Log.i("db", "IsDbTaskIdListEmpty: " + e.getMessage());
+        }
+        return (count == 0);
+    }
+
+    Cursor getTaskIdList() {
+        Cursor mCursor = null;
+
+        try {
+            mCursor = mDb.query(TABLE_NAME_TASK_ID, new String[]{KEY_TASK_ID, KEY_RECENT_TASK_ID, KEY_MAIN_ACTIVITY_TASK_ID, KEY_ORDER_ACTIVITY_TASK_ID},
+                    null, null, null, null, null);
+            if (mCursor != null) {
+                mCursor.moveToFirst();
+            }
+        }catch (SQLException e) {
+            Log.i("db", "Get Task Id List: " + e.getMessage());
+        }
+        return mCursor;
+    }
+
+    int updateRecentTaskId(int id, int recentTaskId){
+        int updateCon = 0;
+
+        ContentValues values = new ContentValues();
+        try {
+            values.put(KEY_RECENT_TASK_ID, recentTaskId);
+            updateCon = mDb.update(TABLE_NAME_TASK_ID, values, " taskId=" + id, null);
+            //Toast.makeText(mCtx, "更新資料成功!", Toast.LENGTH_SHORT).show();
+        }catch (SQLException e) {
+            Log.i("db", "Update Recent Task Id: " + e.getMessage());
+        }
+        return updateCon;
+    }
+
+    int updateMainActivityTaskId(int id, int mainActivityTaskId){
+        int updateCon = 0;
+
+        ContentValues values = new ContentValues();
+        try {
+            values.put(KEY_MAIN_ACTIVITY_TASK_ID, mainActivityTaskId);
+            updateCon = mDb.update(TABLE_NAME_TASK_ID, values, " taskId=" + id, null);
+            //Toast.makeText(mCtx, "更新資料成功!", Toast.LENGTH_SHORT).show();
+        }catch (SQLException e) {
+            Log.i("db", "Update MainActivity Task Id: " + e.getMessage());
+        }
+        return updateCon;
+    }
+
+    int updateOrderActivityTaskId(int id, int orderActivityTaskId){
+        int updateCon = 0;
+
+        ContentValues values = new ContentValues();
+        try {
+            values.put(KEY_ORDER_ACTIVITY_TASK_ID, orderActivityTaskId);
+            updateCon = mDb.update(TABLE_NAME_TASK_ID, values, " taskId=" + id, null);
+            //Toast.makeText(mCtx, "更新資料成功!", Toast.LENGTH_SHORT).show();
+        }catch (SQLException e) {
+            Log.i("db", "Update OrderActivity Task Id: " + e.getMessage());
+        }
+        return updateCon;
+    }
+
 }

@@ -10,6 +10,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.Keep
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.firebase.auth.FirebaseAuth
@@ -18,20 +19,19 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 
+@Keep
 class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
-
-    companion object {
-        private var orderFormList: String = "購買資料: "
-    }
 
     private var menuItem = "DISH"
     private var upMenuItem = ""; private var searchItem = ""
     private lateinit var orderText:TextView
     private lateinit var userRef: DatabaseReference
+    private var orderFormList: String = "購買資料: "
     private var orderFromFullData: String = "購買明細資料: "
-    private var notification_list = ""
+    private var notification_list = ""; private  var orderMessageText = ""
     private var preTask: AppTask? = null
-    private var upActivityName = ""
+    private var dbHelper: AccountDbAdapter? = null
+    private var DbMainActivityTaskId = -1; private var DbOrderActivityTaskId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,8 +40,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         val bundle = intent.extras
         if (bundle != null) {
             notification_list = bundle.getString("Notification").toString()
+            orderMessageText = bundle.getString("OrderMessageText").toString()
             if (notification_list != "") {   // notification promotion product
-                orderFormList = orderFormList + "\n\n" + PromotionFirebaseMessagingService.orderMessageText
+                orderFormList = orderFormList + "\n\n" + orderMessageText
                 menuItem = "DISH"
             }
             else {
@@ -63,63 +64,90 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         orderText = findViewById(R.id.orderFormItem_id)
         val retButton:Button = findViewById(R.id.orderFormReturnBtn_id)
 
-        userRef = Firebase.database.reference.child("user")
-        userRef.child("Uid").get().addOnSuccessListener {
+        if (InternetConnection.checkConnection(this@OrderFormActivity)) {
             val currentUser = FirebaseAuth.getInstance().currentUser
             if (currentUser != null) {
                 if (!currentUser.isAnonymous) {
-                    val key:String = currentUser.uid
-                    var findOrderData = false
-                    var orderFormEmail:String ; var orderFormName:String ; var orderFromDate:String ; var orderFormPrice:String
-                    var orderFormData:String ; var orderFormProductData:String
-                    val divideLine = "        ------------------------------------------"
+                    userRef = Firebase.database.reference.child("user")
+                    userRef.child("Uid").get().addOnSuccessListener {
+                        val key: String = currentUser.uid
+                        var findOrderData = false
+                        var orderFormEmail: String;
+                        var orderFormName: String;
+                        var orderFromDate: String;
+                        var orderFormPrice: String
+                        var orderFormData: String;
+                        var orderFormProductData: String
+                        val divideLine = "        ------------------------------------------"
 
-                    for (uid in it.children) {
-                        val fbUid: String? = uid.key
-                        //Log.i("Firebase ==>", "Firebase Uid is: " + fbUid);
-                        if (fbUid != null) {
-                            if (fbUid == key) {
-                                if (uid.child("orderList").exists()) {
-                                    //Log.i("firebase", "Got value ${uid.child("orderList").value}")
-                                    findOrderData = true
-                                    for (dataItem in uid.child("orderList").children) {
-                                        orderFormName = "姓名: " + dataItem.child("userName").value
-                                        orderFormEmail = "帳號: " + dataItem.child("emailAccount").value
-                                        orderFromDate = "日期: " + dataItem.child("listDate").value
-                                        orderFormPrice = "        總金額: " + dataItem.child("totalPrice").value + "元"
-                                        orderFormData = orderFormName + "\n" + orderFormEmail + "\n" + orderFromDate
-                                        orderFormProductData = "產品項目: "
-                                        for (listItem in dataItem.child("listItem").children) {
-                                            val item:ListItem? = listItem.getValue<ListItem>()
-                                            orderFormProductData = orderFormProductData + "\n" + "        " + item!!.getName() + " :  " + item.getPrice()
+                        for (uid in it.children) {
+                            val fbUid: String? = uid.key
+                            //Log.i("Firebase ==>", "Firebase Uid is: " + fbUid);
+                            if (fbUid != null) {
+                                if (fbUid == key) {
+                                    if (uid.child("orderList").exists()) {
+                                        //Log.i("firebase", "Got value ${uid.child("orderList").value}")
+                                        findOrderData = true
+                                        for (dataItem in uid.child("orderList").children) {
+                                            orderFormName =
+                                                "姓名: " + dataItem.child("userName").value
+                                            orderFormEmail =
+                                                "帳號: " + dataItem.child("emailAccount").value
+                                            orderFromDate =
+                                                "日期: " + dataItem.child("listDate").value
+                                            orderFormPrice =
+                                                "        總金額: " + dataItem.child("totalPrice").value + "元"
+                                            orderFormData =
+                                                orderFormName + "\n" + orderFormEmail + "\n" + orderFromDate
+                                            orderFormProductData = "產品項目: "
+                                            for (listItem in dataItem.child("listItem").children) {
+                                                val item: ListItem? = listItem.getValue<ListItem>()
+                                                orderFormProductData =
+                                                    orderFormProductData + "\n" + "        " + item!!.getName() + " :  " + item.getPrice()
+                                            }
+                                            orderFromFullData =
+                                                orderFromFullData + "\n\n" + orderFormData + "\n" + orderFormProductData + "\n" + divideLine + "\n" + orderFormPrice
                                         }
-                                        orderFromFullData = orderFromFullData + "\n\n" + orderFormData + "\n" + orderFormProductData + "\n" + divideLine + "\n" + orderFormPrice
+                                        orderText.setTextIsSelectable(true)
+                                        orderText.text = orderFromFullData
                                     }
-                                    orderText.setTextIsSelectable(true)
-                                    orderText.text = orderFromFullData
                                 }
                             }
                         }
-                    }
-                    if (!findOrderData) {
-                        orderFromFullData = "尚未購買產品喔 !"
-                        orderText.text = orderFromFullData
+                        if (!findOrderData) {
+                            orderFromFullData = "尚未購買產品喔 !"
+                            orderText.text = orderFromFullData
+                        }
+                    }.addOnFailureListener {
+                        orderText.text = orderFormList
+                        Log.e("firebase", "Error getting data", it)
                     }
                 } else {
                     orderText.text = orderFormList
-                    Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this@OrderFormActivity,
+                        "請先登入, 再查詢完整的訂購單 !",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } else {
                 orderText.text = orderFormList
-                Toast.makeText(this@OrderFormActivity, "請先登入, 再查詢完整的訂購單 !", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@OrderFormActivity,
+                    "請先登入, 再查詢完整的訂購單 !",
+                    Toast.LENGTH_LONG
+                ).show()
             }
-        }.addOnFailureListener{
-            orderText.text = orderFormList
-            Log.e("firebase", "Error getting data", it)
+        } else {
+            Toast.makeText(this@OrderFormActivity, "網路未連線! ", Toast.LENGTH_SHORT).show()
         }
-
         retButton.setOnClickListener(this)
 
+    }
+
+    override fun onDestroy() {
+        dbHelper?.close()
+        super.onDestroy()
     }
 
     override fun onBackPressed() {
@@ -139,28 +167,62 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         if (notification_list != "") {
             val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
             val tasks = am.appTasks
+            var currentTask: AppTask? = null
+            preTask = null
+
+            if (dbHelper == null) {
+                dbHelper = AccountDbAdapter(this)
+            }
+            try {
+                if (!dbHelper!!.IsDbTaskIdEmpty()) {
+                    val cursor = dbHelper!!.getTaskIdList()
+                    DbMainActivityTaskId = cursor.getInt(2)
+                    DbOrderActivityTaskId = cursor.getInt(3)
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+
             if (tasks.size > 1) {
-                preTask = null
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (i in tasks.indices) {
-                        if (tasks[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                        if (tasks[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                             preTask = tasks[i]      // Should be the main task
+                        }
+                        if (tasks[i].taskInfo.taskId == taskId) {
+                            currentTask = tasks[i]
                         }
                     }
                 } else {
-                    for (i in tasks.indices) {
-                        if (tasks[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
-                            preTask = tasks[i]      // Should be the main task
+                    try {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.persistentId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
+                                preTask = tasks[i]      // Should be the main task
+                            }
+                            if (tasks[i].taskInfo.persistentId == taskId) {
+                                currentTask = tasks[i]
+                            }
+                        }
+                    } catch (e: Exception) {
+                        preTask = null
+                        currentTask = null
+                    }
+                }
+                if (preTask == null) {
+                    if (DbOrderActivityTaskId != -1) {
+                        for (i in tasks.indices) {
+                            if (tasks[i] != null && tasks[i].taskInfo.persistentId == DbOrderActivityTaskId) {
+                                if (tasks[i] != null && tasks[i].taskInfo.persistentId != taskId) {
+                                    preTask = tasks[i]
+                                    //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show()
+                                }
+                            }
                         }
                     }
                 }
                 if (preTask == null) {
                     preTask = tasks[tasks.size - 1]
-                    Toast.makeText(
-                        this@OrderFormActivity,
-                        "MainActivity taskId is not found !",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    //Toast.makeText(this@OrderFormActivity,"MainActivity and OrderActivity(from notification product buy) taskId is not found !", Toast.LENGTH_SHORT).show()
                 }
             }
             if (preTask != null) {
@@ -170,34 +232,54 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     intent.setAction("")
                     intent.setData(null)
                     intent.setFlags(0)
-                    finishAndRemoveTask()
-                } catch (e: Exception) {      // user has removed the task from the recent screen (task)
+                    if (currentTask != null) {
+                        currentTask.finishAndRemoveTask()
+                    } else {
+                        finishAndRemoveTask()
+                    }
+                } catch (e: Exception) {      // prevent the system drop the preTask
                     val tasksRemain = am.appTasks
+                    preTask = null
+                    currentTask = null
                     if (tasksRemain.size > 1) {
-                        preTask = null
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                             for (i in tasksRemain.indices) {
-                                if (tasksRemain[i].taskInfo.taskId == MainActivity.taskIdMainActivity) {
+                                if (tasksRemain[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                                     preTask = tasksRemain[i]      // Should be the main task
+                                }
+                                if (tasksRemain[i].taskInfo.taskId == taskId) {
+                                    currentTask = tasksRemain[i]
                                 }
                             }
                         } else {
-                            for (i in tasksRemain.indices) {
-                                if (tasksRemain[i].taskInfo.persistentId == MainActivity.taskIdMainActivity) {
-                                    preTask = tasksRemain[i]      // Should be the main task
+                            try {
+                                for (i in tasksRemain.indices) {
+                                    if (tasksRemain[i].taskInfo.persistentId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
+                                        preTask = tasksRemain[i]      // Should be the main task
+                                    }
+                                    if (tasksRemain[i].taskInfo.persistentId == taskId) {
+                                        currentTask = tasksRemain[i]
+                                    }
                                 }
+                            } catch (e: Exception) {
+                                preTask = null
+                                currentTask = null
                             }
                         }
                         if (preTask == null) {
                             preTask = tasksRemain[tasksRemain.size - 1]
-                            Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
+                            //Toast.makeText(this@OrderFormActivity,"MainActivity taskId is not found !", Toast.LENGTH_SHORT).show()
                         }
                         preTask!!.moveToFront()
                         intent.replaceExtras(Bundle())
                         intent.setAction("")
                         intent.setData(null)
                         intent.setFlags(0)
-                        finishAndRemoveTask()
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask()
+                        } else {
+                            finishAndRemoveTask()
+                        }
                     } else {
                         intent.flags = 0
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP

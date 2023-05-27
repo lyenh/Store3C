@@ -1,18 +1,32 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BuildAttributionWarningsFilter">
+    <option name="noGCSettingWarning" value="true" />
+  </component>
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_maps.xml" value="0.13541666666666666" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_order_item.xml" value="0.13903985507246377" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_page.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_phone.xml" value="0.15806159420289856" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/activity_product.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/app_bar_main.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/app_bar_phone.xml" value="0.15806159420289856" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_ad_view.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_cake.xml" value="0.1125" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_main.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_phone.xml" value="0.15806159420289856" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/content_position.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/dish_item_view.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_map.xml" value="0.11458333333333333" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_page.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_slide1.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_slide3.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_slide5.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/fragment_tab.xml" value="0.132" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/memo_item_view.xml" value="0.1" />
+        <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/nav_header_main.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/phone_item_view.xml" value="0.1" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/layout/phone_type_item_view.xml" value="0.268" />
         <entry key="..\:/AndroidStudio/Store3C/app/src/main/res/menu/activity_main_drawer.xml" value="0.1" />
@@ -75,7 +89,7 @@
       </value>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="11" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="jbr-17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
