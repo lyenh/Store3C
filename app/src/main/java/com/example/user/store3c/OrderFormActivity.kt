@@ -185,38 +185,49 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
 
             if (tasks.size > 1) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    for (i in tasks.indices) {
-                        if (tasks[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
-                            preTask = tasks[i]      // Should be the main task
+                    try {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
+                                preTask = tasks[i]      // Should be the main task
+                            }
+                            if (tasks[i].taskInfo.taskId == taskId) {
+                                currentTask = tasks[i]
+                            }
                         }
-                        if (tasks[i].taskInfo.taskId == taskId) {
-                            currentTask = tasks[i]
-                        }
+                    } catch (e: Exception) {
+                        Log.i("Get preTask Id error: ", "main ==>" + e.message)
                     }
                 } else {
                     try {
                         for (i in tasks.indices) {
                             if (tasks[i].taskInfo.persistentId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
                                 preTask = tasks[i]      // Should be the main task
+                              //  Toast.makeText(this@OrderFormActivity, "Got mainTask persistentId", Toast.LENGTH_SHORT).show()
                             }
                             if (tasks[i].taskInfo.persistentId == taskId) {
                                 currentTask = tasks[i]
+                              //  Toast.makeText(this@OrderFormActivity, "Got currentTask persistentId", Toast.LENGTH_SHORT).show()
                             }
                         }
                     } catch (e: Exception) {
                         preTask = null
                         currentTask = null
+                      //  Toast.makeText(this@OrderFormActivity, "Get task persistentId error!", Toast.LENGTH_SHORT).show()
                     }
                 }
                 if (preTask == null) {
                     if (DbOrderActivityTaskId != -1) {
-                        for (i in tasks.indices) {
-                            if (tasks[i] != null && tasks[i].taskInfo.persistentId == DbOrderActivityTaskId) {
-                                if (tasks[i] != null && tasks[i].taskInfo.persistentId != taskId) {
-                                    preTask = tasks[i]
-                                    //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show()
+                        try {
+                            for (i in tasks.indices) {
+                                if (tasks[i].taskInfo.persistentId == DbOrderActivityTaskId) {
+                                    if (tasks[i].taskInfo.persistentId != taskId) {
+                                        preTask = tasks[i]
+                                        //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             }
+                        } catch (e: Exception) {
+                            Log.i("Get preTask Id error: ", "order ==>" + e.message)
                         }
                     }
                 }
@@ -243,13 +254,17 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
                     currentTask = null
                     if (tasksRemain.size > 1) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            for (i in tasksRemain.indices) {
-                                if (tasksRemain[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
-                                    preTask = tasksRemain[i]      // Should be the main task
+                            try {
+                                for (i in tasksRemain.indices) {
+                                    if (tasksRemain[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
+                                        preTask = tasksRemain[i]      // Should be the main task
+                                    }
+                                    if (tasksRemain[i].taskInfo.taskId == taskId) {
+                                        currentTask = tasksRemain[i]
+                                    }
                                 }
-                                if (tasksRemain[i].taskInfo.taskId == taskId) {
-                                    currentTask = tasksRemain[i]
-                                }
+                            } catch (e: Exception) {
+                                Log.i("Get preTask Id error: ", "main ==>" + e.message)
                             }
                         } else {
                             try {

@@ -35,6 +35,7 @@
 -keepclasseswithmembers class com.example.user.store3c.ProductActivity.** { *; }
 -keepclasseswithmembernames class com.example.user.store3c.ProductActivity.** { *; }
 -keep class com.example.user.store3c.ProductActivity {
+    private <fields>;
     protected void onCreate(android.os.Bundle);
     public void onClick(android.view.View);
     public void onBackPressed();
@@ -45,6 +46,8 @@
 -keepclasseswithmembernames class com.example.user.store3c.OrdertActivity.** { *; }
 -keep class com.google.android.youtube.player.YouTubePlayerSupportFragmentX.**{ *; }
 -keep class com.example.user.store3c.PromotionFirebaseMessagingService.** { *; }
+-keepclasseswithmembers class com.example.user.store3c.PromotionFirebaseMessagingService.** { *; }
+-keepclasseswithmembernames class com.example.user.store3c.PromotionFirebaseMessagingService.** { *; }
 -keep class com.example.user.store3c.OrderFormActivity {
     private java.lang.String menuItem;
     private java.lang.String upMenuItem;

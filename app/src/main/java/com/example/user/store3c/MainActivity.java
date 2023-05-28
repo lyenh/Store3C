@@ -144,8 +144,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
-    // TODO: Have multi tasks with message and notification task in productActivity and orderFormActivity with Api 22
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         byte[] dbUserPicture;

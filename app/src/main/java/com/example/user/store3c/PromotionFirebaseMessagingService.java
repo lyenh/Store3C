@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -77,6 +78,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         String messagePrice = "", messageIntro = "";
         Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
         Bitmap bitmap;
+        Map<String, String> data;
         PendingIntent pendingIntent, resultPendingIntent;
         Bundle bundle;
         Intent intent, resultIntent;
@@ -94,8 +96,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
-            Log.i("Messaging===> ", "Message data payload:  "+remoteMessage.getData());
-            Map<String, String> data = remoteMessage.getData();
+            data = remoteMessage.getData();
+            Log.i("Messaging===> ", "Message data payload:  "+ data);
+
             title = data.get("titleText");
             messageType = data.get("messageType");
             if (messageType != null) {
@@ -134,12 +137,14 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         bundle.putString("Notification", "UPPER_APP");
                     }
                     bundle.putString("OrderMessageText", "    " + messageText);
-                    resultIntent.putExtras(bundle);
-                    stackBuilder = TaskStackBuilder.create(this);
-                    stackBuilder.addNextIntent(resultIntent);
+
                     synchronized(pendingIntentIndex++) {
-                        resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                        resultIntent.putExtras(bundle);
+                        stackBuilder = TaskStackBuilder.create(this);
+                        stackBuilder.addNextIntent(resultIntent);
+                        resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT, bundle);
                     }
+
                     channelId = getString(R.string.default_notification_channel_id);
                     defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
@@ -249,12 +254,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     bundle.putString("Price", messagePrice);
                     bundle.putString("Intro", messageIntro);
 
-                    intent.putExtras(bundle);
-                    stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                    stackBuilder.addNextIntent(intent);
-
                     synchronized(pendingIntentIndex++) {
-                        pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                        intent.putExtras(bundle);
+                        stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                        stackBuilder.addNextIntent(intent);
+                        pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT, bundle);
                         Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
                     }
 
@@ -384,12 +388,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             bundle.putString("Price", messagePrice);
             bundle.putString("Intro", messageIntro);
 
-            intent.putExtras(bundle);
-            stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-            stackBuilder.addNextIntent(intent);
-
             synchronized(pendingIntentIndex++) {
-                pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                intent.putExtras(bundle);
+                stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                stackBuilder.addNextIntent(intent);
+                pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT, bundle);
             }
 
             channelId = getString(R.string.default_notification_channel_id);
