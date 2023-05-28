@@ -34,10 +34,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private int DbRecentTaskId = -1, DbMainActivityTaskId = -1, DbOrderActivityTaskId = -1;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    synchronized protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product);
 
+        Intent Intent = this.getIntent();
+        Bundle bundle = Intent.getExtras();
         ImageView pic, buy_b;
         TextView name,price,intro;
         Button ret_b;
@@ -60,8 +62,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         ret_b = findViewById(R.id.productReturnBtn_id);
         buy_b = findViewById(R.id.buyBtn_id);
 
-        Intent Intent = getIntent();
-        Bundle bundle = Intent.getExtras();
         String retainRecentTask;
         if (bundle != null) {
             notification_list = bundle.getString("Notification");

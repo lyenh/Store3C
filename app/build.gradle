@@ -23,8 +23,8 @@ android {
         applicationId "com.example.user.store3c"
         minSdkVersion 22
         targetSdkVersion 33
-        versionCode 333
-        versionName "Store3C_v3.3.3"
+        versionCode 340
+        versionName "Store3C_v3.4.0"
         signingConfig signingConfigs.release
         multiDexEnabled true
     }
