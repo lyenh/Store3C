@@ -25,7 +25,7 @@ import java.util.List;
 @Keep
 public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
 
-    private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
+    private String menu_item = "DISH", up_menu_item = "", product_name = "", product_price = "", product_intro = "", order_list = "", search_list = "";
     private String notification_list = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
@@ -34,7 +34,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private int DbRecentTaskId = -1, DbMainActivityTaskId = -1, DbOrderActivityTaskId = -1;
 
     @Override
-    synchronized protected void onCreate(Bundle savedInstanceState) {
+    protected synchronized void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product);
 
@@ -106,16 +106,17 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
-        if (isTab) {
-            if (screenWidth > rotationTabScreenWidth) {
-                imgHeight = (product_intro.length() / 27 + 1) * 100;
-                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-            }
-        }
-        else {
-            if (screenWidth > rotationScreenWidth) {
-                imgHeight = (product_intro.length() / 27 + 1) * 60;
-                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+        if (product_intro != null && product_intro.length() != 0) {
+            if (isTab) {
+                if (screenWidth > rotationTabScreenWidth) {
+                    imgHeight = (product_intro.length() / 27 + 1) * 100;
+                    introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+                }
+            } else {
+                if (screenWidth > rotationScreenWidth) {
+                    imgHeight = (product_intro.length() / 27 + 1) * 60;
+                    introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+                }
             }
         }
 
@@ -226,7 +227,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             if (preTaskId == DbRecentTaskId) {
                                 preTask.moveToFront();
                             }
-                            preTask.startActivity(getApplicationContext(), intent, bundle);
+                            preTask.startActivity(getApplicationContext(), intent, null);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
                             Toast.makeText(this, "catch preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -244,12 +245,22 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intentCatch.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             startActivity(intentCatch);
                             tasks = am.getAppTasks();
-                            for (int i = 0; i < tasks.size(); i++) {
-                                if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == preTaskId) {
-                                    preTask = tasks.get(i);
+                            boolean gotPreTask = false;
+                            try {
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == preTaskId) {
+                                        preTask = tasks.get(i);
+                                        gotPreTask = true;
+                                        preTask.finishAndRemoveTask();
+                                    }
                                 }
+                            } catch (Exception ex) {
+                                if (!gotPreTask) {
+                                    preTask.finishAndRemoveTask();
+                                }
+                                Toast.makeText(this, "catch preTask is null ! ", Toast.LENGTH_SHORT).show();
+                                Log.i("preTask ===>", "is null: " + ex.getMessage());
                             }
-                            preTask.finishAndRemoveTask();
                         } finally {
                             try {
                                 if (preTask.getTaskInfo() != null && ((totalTaskSize + 1) == am.getAppTasks().size())) {

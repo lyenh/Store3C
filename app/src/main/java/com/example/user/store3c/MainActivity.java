@@ -1042,8 +1042,10 @@ public class MainActivity extends AppCompatActivity
                     for (int i = 0; i < dishProductAmount; i++) {
                         ProductData.add(new ProductItem(picListImg.get(i), picListName.get(i), picListPrice.get(i), picListIntro.get(i)));
                     }
-                    for (int j = 0; j < DISH_SHOW_COUNT; j++) {
-                        picShowImg.add(ProductData.get(picShowIndex.get(j)).getImg());
+                    if (ProductData.size() > DISH_SHOW_COUNT) {
+                        for (int j = 0; j < DISH_SHOW_COUNT; j++) {
+                            picShowImg.add(ProductData.get(picShowIndex.get(j)).getImg());
+                        }
                     }
                     Reload = 1;
                 }
