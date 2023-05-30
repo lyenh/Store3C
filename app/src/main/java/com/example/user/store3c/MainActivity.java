@@ -144,6 +144,8 @@ public class MainActivity extends AppCompatActivity
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
 
+    // TODO: ProductActivity not get the MainActivity to return
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         byte[] dbUserPicture;
@@ -325,7 +327,7 @@ public class MainActivity extends AppCompatActivity
                                 //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
                                 for (int i = 0; i < tasks.size(); i++) {
                                     eachTask = tasks.get(i);
-                                    if (eachTask.getTaskInfo() != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
+                                    if ((eachTask.getTaskInfo() != null) && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
                                             (eachTask.getTaskInfo().persistentId != getTaskId())) {
                                         if (!isDbTaskIdListEmpty) {
                                             if (dbHelper.updateRecentTaskId(index, -1) == 0) {

@@ -1063,7 +1063,6 @@ public class PhoneActivity extends AppCompatActivity
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(PhoneActivity.this, MainActivity.class);
-            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intentItem);
             PhoneActivity.this.finish();
         } else if (id == R.id.nav_cake) {

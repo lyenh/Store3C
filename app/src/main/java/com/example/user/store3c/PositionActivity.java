@@ -239,7 +239,6 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                     switch (menu_item) {
                         case "DISH":
                             intentItem.setClass(PositionActivity.this, MainActivity.class);
-                            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             break;
                         case "CAKE":
                             intentItem.setClass(PositionActivity.this, CakeActivity.class);
@@ -278,7 +277,6 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                         default:
                             Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                             intentItem.setClass(PositionActivity.this, MainActivity.class);
-                            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     }
                     startActivity(intentItem);
                     PositionActivity.this.finish();
@@ -290,7 +288,6 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                 switch (menu_item) {
                     case "DISH":
                         intentItem.setClass(PositionActivity.this, MainActivity.class);
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         break;
                     case "CAKE":
                         intentItem.setClass(PositionActivity.this, CakeActivity.class);
@@ -307,7 +304,6 @@ public class PositionActivity extends Activity implements View.OnClickListener, 
                     default:
                         Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                         intentItem.setClass(PositionActivity.this, MainActivity.class);
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }
                 startActivity(intentItem);
                 PositionActivity.this.finish();

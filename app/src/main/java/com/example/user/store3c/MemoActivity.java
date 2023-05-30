@@ -244,8 +244,7 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                 switch(menu_item) {
                     case "DISH":
                         intentItem.setClass(MemoActivity.this, MainActivity.class);
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        break;
+                       break;
                     case "CAKE":
                         intentItem.setClass(MemoActivity.this, CakeActivity.class);
                         break;
@@ -261,7 +260,6 @@ public class MemoActivity extends AppCompatActivity implements View.OnClickListe
                     default:
                         Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                         intentItem.setClass(MemoActivity.this, MainActivity.class);
-                        intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 }
 
                 startActivity(intentItem);
