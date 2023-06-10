@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Bitmap productImage;
+    private ViewPager2.OnPageChangeCallback pageChangeCallback;
 
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
@@ -143,8 +144,6 @@ public class MainActivity extends AppCompatActivity
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
     public UserHandler userAdHandler;
-
-    // TODO: ProductActivity not get the MainActivity to return
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -299,11 +298,14 @@ public class MainActivity extends AppCompatActivity
                     reloadIntent.putExtras(reloadBundle);
                     reloadIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     startActivity(reloadIntent);
-                    if (currentTask != null) {
-                        currentTask.finishAndRemoveTask();
-                    }
-                    else {
-                        this.finishAndRemoveTask();
+                    try {
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask();
+                        } else {
+                            this.finishAndRemoveTask();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 }
@@ -823,11 +825,14 @@ public class MainActivity extends AppCompatActivity
         if (userAdHandler != null) {
             userAdHandler.removeCallbacksAndMessages(null);
         }
-        if (fragments != null) {
+        if (fragments != null && fragments.size() != 0) {
             fragments.clear();
         }
         if (dbHelper != null) {
             dbHelper.close();
+        }
+        if (pager != null && pageChangeCallback != null) {
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
         }
         executor.shutdown();
         super.onDestroy();
@@ -1317,13 +1322,26 @@ public class MainActivity extends AppCompatActivity
     };
 
     public void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
+        if (fragments != null && fragments.size() != 0) {
+            fragments.clear();
+        }
         fragments = new Vector<>();
-        fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-        fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-        fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-        fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-        fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
-
+        if (picShowImg.size() == DISH_SHOW_COUNT) {
+            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+        }
+        else {
+            Toast.makeText(MainActivity.this, "No DishShow fragment ", Toast.LENGTH_SHORT).show();
+            Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picture), "frame1"));
+            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picture), "frame2"));
+            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picture), "frame3"));
+            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picture), "frame4"));
+            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picture), "frame5"));
+        }
         if (adapterLayout == 0) {
             pager = findViewById(R.id.viewPager_id);
             dot1 = findViewById(R.id.imgIcon1_id);
@@ -1347,7 +1365,7 @@ public class MainActivity extends AppCompatActivity
         TimerThread = 1;
         adTimerThread.start();
 
-        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 switch (position) {
@@ -1389,7 +1407,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 //Toast.makeText(MainActivity.this, "The top fragment "+ position, Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        pager.registerOnPageChangeCallback(pageChangeCallback);
 
     }
 
