@@ -229,6 +229,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 e.printStackTrace();
              }
 
+            orderTable.clear();
             for (int i=0;i<itemText.size();i++) {
                 orderTable.add(i,itemText.get(i));
             }

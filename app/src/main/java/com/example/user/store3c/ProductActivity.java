@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,7 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.List;
 
 @Keep
-public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
+public class ProductActivity extends AppCompatActivity implements View.OnClickListener, ComponentCallbacks2 {
 
     private String menu_item = "DISH", up_menu_item = "", product_name = "", product_price = "", product_intro = "", order_list = "", search_list = "";
     private String notification_list = "";
@@ -128,6 +130,56 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         ret_b.setOnClickListener(this);
         buy_b.setOnClickListener(this);
 
+    }
+
+    @Override
+    public void onTrimMemory(int level) {
+        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+        ActivityManager.AppTask currentTask, eachTask;
+        currentTask = tasks.get(0);
+
+        switch (level) {
+            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
+                //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
+                try{
+                    Thread.sleep(2000);
+                    currentTask.moveToFront();
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE ->
+                    Toast.makeText(this, "ProductActivity: RUNNING_MODERATE !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ->
+                    Toast.makeText(this, "ProductActivity: RUNNING_LOW !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL ->
+                    Toast.makeText(this, "ProductActivity: RUNNING_CRITICAL !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ->
+                    Toast.makeText(this, "ProductActivity: BACKGROUND !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_MODERATE ->
+                    Toast.makeText(this, "ProductActivity: MODERATE !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
+                Toast.makeText(this, "ProductActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        if (eachTask.getTaskInfo().taskId != getTaskId()) {
+                            eachTask.finishAndRemoveTask();
+                        }
+                    }
+                } else {
+                    for (int i = 1; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        eachTask.finishAndRemoveTask();
+                    }
+                }
+            }
+            //Toast.makeText(this, "ProductActivity: Memory is extremely low, free recent task !", Toast.LENGTH_SHORT).show();
+            default ->
+                    Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
+        }
+        super.onTrimMemory(level);
     }
 
     @Override

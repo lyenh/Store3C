@@ -3,6 +3,7 @@ package com.example.user.store3c;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, Slide1Fragment.OnFragmentInteractionListener,
         Slide2Fragment.OnFragmentInteractionListener, Slide3Fragment.OnFragmentInteractionListener,
         Slide4Fragment.OnFragmentInteractionListener, Slide5Fragment.OnFragmentInteractionListener,
-        View.OnClickListener{
+        View.OnClickListener, ComponentCallbacks2 {
 
     private static final ArrayList<ProductItem> ProductData = new ArrayList<>();
     private static FirebaseDatabase db = null;
@@ -131,12 +132,13 @@ public class MainActivity extends AppCompatActivity
     private PageAdapter mPagerAdapter;
     private ViewPager2 pager;
     private ImageView dot1, dot2, dot3, dot4, dot5;
-    private List<Fragment> fragments;
     private String retainRecentTask = null;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Bitmap productImage;
+    private List<Fragment> fragments;
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
+    private boolean systemCleanTask = false;
 
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
@@ -619,6 +621,67 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onTrimMemory(int level) {
+        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.AppTask> tasks = am.getAppTasks();
+        ActivityManager.AppTask currentTask, eachTask;
+        currentTask = tasks.get(0);
+
+        switch (level) {
+            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
+               // Toast.makeText(this, "MainActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
+                if (systemCleanTask) {
+                    try{
+                        Toast.makeText(this, "MainActivity: systemCleanTask !", Toast.LENGTH_SHORT).show();
+                        Thread.sleep(2000);
+                        currentTask.moveToFront();
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else {
+                    try{
+                        Thread.sleep(2000);
+                        currentTask.moveToFront();
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE ->
+                    Toast.makeText(this, "MainActivity: RUNNING_MODERATE !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ->
+                    Toast.makeText(this, "MainActivity: RUNNING_LOW !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL ->
+                    Toast.makeText(this, "MainActivity: RUNNING_CRITICAL !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ->
+                    Toast.makeText(this, "MainActivity: BACKGROUND !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_MODERATE ->
+                    Toast.makeText(this, "MainActivity: MODERATE !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
+                Toast.makeText(this, "MainActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        if (eachTask.getTaskInfo().taskId != getTaskId()) {
+                            eachTask.finishAndRemoveTask();
+                        }
+                    }
+                } else {
+                    for (int i = 1; i < tasks.size(); i++) {
+                        eachTask = tasks.get(i);
+                        eachTask.finishAndRemoveTask();
+                    }
+                }
+            }
+            //Toast.makeText(this, "MainActivity: Memory is extremely low, free recent task !", Toast.LENGTH_SHORT).show();
+            default -> Toast.makeText(this, "MainActivity: default !", Toast.LENGTH_SHORT).show();
+        }
+
+        super.onTrimMemory(level);
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig){
@@ -835,6 +898,9 @@ public class MainActivity extends AppCompatActivity
             pager.unregisterOnPageChangeCallback(pageChangeCallback);
         }
         executor.shutdown();
+        if (!isFinishing()) {
+            systemCleanTask = true;
+        }
         super.onDestroy();
     }
 
@@ -1322,7 +1388,7 @@ public class MainActivity extends AppCompatActivity
     };
 
     public void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
-        if (fragments != null && fragments.size() != 0) {
+        if (fragments != null && fragments.size() > 0) {
             fragments.clear();
         }
         fragments = new Vector<>();
@@ -1332,8 +1398,7 @@ public class MainActivity extends AppCompatActivity
             fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
             fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
             fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
-        }
-        else {
+        } else {
             Toast.makeText(MainActivity.this, "No DishShow fragment ", Toast.LENGTH_SHORT).show();
             Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
             fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picture), "frame1"));
@@ -1342,6 +1407,7 @@ public class MainActivity extends AppCompatActivity
             fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picture), "frame4"));
             fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picture), "frame5"));
         }
+
         if (adapterLayout == 0) {
             pager = findViewById(R.id.viewPager_id);
             dot1 = findViewById(R.id.imgIcon1_id);
@@ -1561,6 +1627,7 @@ public class MainActivity extends AppCompatActivity
                         Log.i("mainActivityTaskId: ", "create result, fail !");
                     }
                 }
+                systemCleanTask = false;
                 MainActivity.this.finish();
             }
         }
