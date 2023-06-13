@@ -34,6 +34,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private boolean recentTaskProduct = false, firebaseDataPayload = false;
     private AccountDbAdapter dbHelper = null;
     private int DbRecentTaskId = -1, DbMainActivityTaskId = -1, DbOrderActivityTaskId = -1;
+    private boolean systemClearTask = false;
 
     @Override
     protected synchronized void onCreate(Bundle savedInstanceState) {
@@ -142,11 +143,37 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         switch (level) {
             case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
                 //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
-                try{
-                    Thread.sleep(2000);
-                    currentTask.moveToFront();
-                }catch (Exception e) {
-                    e.printStackTrace();
+                ActivityManager.RunningAppProcessInfo appInfo = new ActivityManager.RunningAppProcessInfo();
+                ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
+
+                ActivityManager.getMyMemoryState(appInfo);
+         //       Toast.makeText(this, "MainActivity TrimLevel: " + appInfo.lastTrimLevel, Toast.LENGTH_SHORT).show();
+                am.getMemoryInfo(outInfo);
+                if (outInfo.lowMemory) {
+                    systemClearTask = true;
+                    Toast.makeText(this, "ProductActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    if (tasks.size() > 3 || systemClearTask) {
+                        try {
+                            //        Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(1000);
+                            currentTask.moveToFront();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else {
+                    if (systemClearTask) {
+                        try {
+                            //      Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(1000);
+                            currentTask.moveToFront();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
             case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE ->
@@ -157,9 +184,12 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     Toast.makeText(this, "ProductActivity: RUNNING_CRITICAL !", Toast.LENGTH_SHORT).show();
             case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ->
                     Toast.makeText(this, "ProductActivity: BACKGROUND !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_MODERATE ->
+            case ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
+                systemClearTask = true;
                     Toast.makeText(this, "ProductActivity: MODERATE !", Toast.LENGTH_SHORT).show();
+            }
             case ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
+                systemClearTask = true;
                 Toast.makeText(this, "ProductActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     for (int i = 0; i < tasks.size(); i++) {
@@ -180,6 +210,13 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
         }
         super.onTrimMemory(level);
+    }
+
+    @Override
+    public void onLowMemory() {
+        systemClearTask = true;
+        Toast.makeText(this, "ProductActivity: LowMemory !", Toast.LENGTH_SHORT).show();
+        super.onLowMemory();
     }
 
     @Override

@@ -2,6 +2,8 @@ package com.example.user.store3c
 
 import android.app.ActivityManager
 import android.app.ActivityManager.AppTask
+import android.app.ActivityManager.RunningAppProcessInfo
+import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -20,7 +22,7 @@ import com.google.firebase.database.ktx.getValue
 import com.google.firebase.ktx.Firebase
 
 @Keep
-class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
+class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentCallbacks2{
 
     private var menuItem = "DISH"
     private var upMenuItem = ""; private var searchItem = ""
@@ -32,6 +34,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
     private var preTask: AppTask? = null
     private var dbHelper: AccountDbAdapter? = null
     private var DbMainActivityTaskId = -1; private var DbOrderActivityTaskId = -1
+    private var systemClearTask = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,6 +146,106 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener{
         }
         retButton.setOnClickListener(this)
 
+    }
+
+    override fun onTrimMemory(level: Int) {
+        val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val tasks = am.appTasks
+        val currentTask: AppTask
+        var eachTask: AppTask
+        currentTask = tasks[0]
+        when (level) {
+            TRIM_MEMORY_UI_HIDDEN -> {
+                //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
+                val appInfo = RunningAppProcessInfo()
+                val outInfo = ActivityManager.MemoryInfo()
+                ActivityManager.getMyMemoryState(appInfo)
+                //       Toast.makeText(this, "MainActivity TrimLevel: " + appInfo.lastTrimLevel, Toast.LENGTH_SHORT).show();
+                am.getMemoryInfo(outInfo)
+                if (outInfo.lowMemory) {
+                    systemClearTask = true
+                    Toast.makeText(this@OrderFormActivity, "OrderFormActivity: in lowMemory ", Toast.LENGTH_SHORT)
+                        .show()
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    if (tasks.size > 3 || systemClearTask) {
+                        try {
+                            //        Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(1000)
+                            currentTask.moveToFront()
+                        } catch (e: java.lang.Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                } else {
+                    if (systemClearTask) {
+                        try {
+                            //      Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(1000)
+                            currentTask.moveToFront()
+                        } catch (e: java.lang.Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+
+            TRIM_MEMORY_RUNNING_MODERATE -> Toast.makeText(
+                this@OrderFormActivity,
+                "OrderFormActivity: RUNNING_MODERATE !",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            TRIM_MEMORY_RUNNING_LOW -> Toast.makeText(
+                this@OrderFormActivity,
+                "OrderFormActivity: RUNNING_LOW !",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            TRIM_MEMORY_RUNNING_CRITICAL -> Toast.makeText(
+                this@OrderFormActivity,
+                "OrderFormActivity: RUNNING_CRITICAL !",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            TRIM_MEMORY_BACKGROUND -> Toast.makeText(
+                this@OrderFormActivity,
+                "OrderFormActivity: BACKGROUND !",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            TRIM_MEMORY_MODERATE -> {
+                systemClearTask = true
+                Toast.makeText(this@OrderFormActivity, "OrderFormActivity: MODERATE !", Toast.LENGTH_SHORT).show()
+            }
+
+            TRIM_MEMORY_COMPLETE -> {
+                systemClearTask = true
+                Toast.makeText(this@OrderFormActivity, "OrderFormActivity: COMPLETE !", Toast.LENGTH_SHORT).show()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    for (i in tasks.indices) {
+                        eachTask = tasks[i]
+                        if (eachTask.taskInfo.taskId != taskId) {
+                            eachTask.finishAndRemoveTask()
+                        }
+                    }
+                } else {
+                    for (i in 1 until tasks.size) {
+                        eachTask = tasks[i]
+                        eachTask.finishAndRemoveTask()
+                    }
+                }
+            }
+
+            else -> Toast.makeText(this@OrderFormActivity, "OrderFormActivity: default !", Toast.LENGTH_SHORT).show()
+        }
+        super.onTrimMemory(level)
+    }
+
+    override fun onLowMemory() {
+        systemClearTask = true
+        Toast.makeText(this, "OrderFormActivity: LowMemory !", Toast.LENGTH_SHORT).show()
+        super.onLowMemory()
     }
 
     override fun onDestroy() {
