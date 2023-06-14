@@ -157,10 +157,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
         when (level) {
             TRIM_MEMORY_UI_HIDDEN -> {
                 //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
-                val appInfo = RunningAppProcessInfo()
                 val outInfo = ActivityManager.MemoryInfo()
-                ActivityManager.getMyMemoryState(appInfo)
-                //       Toast.makeText(this, "MainActivity TrimLevel: " + appInfo.lastTrimLevel, Toast.LENGTH_SHORT).show();
                 am.getMemoryInfo(outInfo)
                 if (outInfo.lowMemory) {
                     systemClearTask = true
@@ -170,7 +167,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     if (tasks.size > 3 || systemClearTask) {
                         try {
-                            //        Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
                             Thread.sleep(1000)
                             currentTask.moveToFront()
                         } catch (e: java.lang.Exception) {
@@ -180,8 +177,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                 } else {
                     if (systemClearTask) {
                         try {
-                            //      Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
-                            Thread.sleep(1000)
+                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(2000)
                             currentTask.moveToFront()
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
@@ -189,55 +186,47 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                     }
                 }
             }
-
-            TRIM_MEMORY_RUNNING_MODERATE -> Toast.makeText(
-                this@OrderFormActivity,
-                "OrderFormActivity: RUNNING_MODERATE !",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            TRIM_MEMORY_RUNNING_LOW -> Toast.makeText(
-                this@OrderFormActivity,
-                "OrderFormActivity: RUNNING_LOW !",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            TRIM_MEMORY_RUNNING_CRITICAL -> Toast.makeText(
-                this@OrderFormActivity,
-                "OrderFormActivity: RUNNING_CRITICAL !",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            TRIM_MEMORY_BACKGROUND -> Toast.makeText(
-                this@OrderFormActivity,
-                "OrderFormActivity: BACKGROUND !",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            TRIM_MEMORY_MODERATE -> {
-                systemClearTask = true
-                Toast.makeText(this@OrderFormActivity, "OrderFormActivity: MODERATE !", Toast.LENGTH_SHORT).show()
-            }
-
             TRIM_MEMORY_COMPLETE -> {
+                //Toast.makeText(this@OrderFormActivity, "OrderFormActivity: COMPLETE !", Toast.LENGTH_SHORT).show()
                 systemClearTask = true
-                Toast.makeText(this@OrderFormActivity, "OrderFormActivity: COMPLETE !", Toast.LENGTH_SHORT).show()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    for (i in tasks.indices) {
-                        eachTask = tasks[i]
-                        if (eachTask.taskInfo.taskId != taskId) {
-                            eachTask.finishAndRemoveTask()
+                var appRunningForeground = false
+                val procInfos = am.runningAppProcesses
+                if (procInfos != null) {
+                    val packageName = applicationContext.packageName
+                    for (processInfo in procInfos) {
+                        if (processInfo.processName == packageName) {
+                            Log.i("Notification===> ", "find app package.  ")
+                            if (processInfo.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                appRunningForeground = true
+                                break
+                            }
                         }
                     }
-                } else {
-                    for (i in 1 until tasks.size) {
-                        eachTask = tasks[i]
-                        eachTask.finishAndRemoveTask()
+                    if (appRunningForeground && tasks.size > 1) {
+                        currentTask.moveToFront()
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            for (i in tasks.indices) {
+                                eachTask = tasks[i]
+                                if (eachTask.taskInfo.taskId != taskId) {
+                                    eachTask.finishAndRemoveTask()
+                                }
+                            }
+                        } else {
+                            for (i in 1 until tasks.size) {
+                                eachTask = tasks[i]
+                                eachTask.finishAndRemoveTask()
+                            }
+                        }
+                        Toast.makeText(
+                            this,
+                            "Memory is extremely low, free recent task !",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                 }
             }
-
-            else -> Toast.makeText(this@OrderFormActivity, "OrderFormActivity: default !", Toast.LENGTH_SHORT).show()
+            else -> Log.i("ComponentCallbacks2 =>", "default event !")
+                //Toast.makeText(this@OrderFormActivity, "OrderFormActivity: default !", Toast.LENGTH_SHORT).show()
         }
         super.onTrimMemory(level)
     }

@@ -134,7 +134,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
-    public void onTrimMemory(int level) {
+    public synchronized void onTrimMemory(int level) {
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> tasks = am.getAppTasks();
         ActivityManager.AppTask currentTask, eachTask;
@@ -143,11 +143,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         switch (level) {
             case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
                 //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
-                ActivityManager.RunningAppProcessInfo appInfo = new ActivityManager.RunningAppProcessInfo();
                 ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
-
-                ActivityManager.getMyMemoryState(appInfo);
-         //       Toast.makeText(this, "MainActivity TrimLevel: " + appInfo.lastTrimLevel, Toast.LENGTH_SHORT).show();
                 am.getMemoryInfo(outInfo);
                 if (outInfo.lowMemory) {
                     systemClearTask = true;
@@ -156,7 +152,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     if (tasks.size() > 3 || systemClearTask) {
                         try {
-                            //        Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
                             Thread.sleep(1000);
                             currentTask.moveToFront();
                         } catch (Exception e) {
@@ -167,8 +163,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 else {
                     if (systemClearTask) {
                         try {
-                            //      Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
-                            Thread.sleep(1000);
+                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(2000);
                             currentTask.moveToFront();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -176,38 +172,46 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
             }
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE ->
-                    Toast.makeText(this, "ProductActivity: RUNNING_MODERATE !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ->
-                    Toast.makeText(this, "ProductActivity: RUNNING_LOW !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL ->
-                    Toast.makeText(this, "ProductActivity: RUNNING_CRITICAL !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ->
-                    Toast.makeText(this, "ProductActivity: BACKGROUND !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
-                systemClearTask = true;
-                    Toast.makeText(this, "ProductActivity: MODERATE !", Toast.LENGTH_SHORT).show();
-            }
             case ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
-                systemClearTask = true;
-                Toast.makeText(this, "ProductActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    for (int i = 0; i < tasks.size(); i++) {
-                        eachTask = tasks.get(i);
-                        if (eachTask.getTaskInfo().taskId != getTaskId()) {
-                            eachTask.finishAndRemoveTask();
+                //Toast.makeText(this, "ProductActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
+                    systemClearTask = true;
+                    boolean appRunningForeground = false;
+                    final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                    if (procInfos != null) {
+                        String packageName = getApplicationContext().getPackageName();
+                        for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                            if (processInfo.processName.equals(packageName)) {
+                                Log.i("Notification===> ", "find app package.  ");
+                                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                    appRunningForeground = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (appRunningForeground && tasks.size() >1) {
+                            currentTask.moveToFront();
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    if (eachTask.getTaskInfo().taskId != getTaskId()) {
+                                        eachTask.finishAndRemoveTask();
+                                    }
+                                }
+                            } else {
+                                for (int i = 1; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    eachTask.finishAndRemoveTask();
+                                }
+                            }
+                            Toast.makeText(this, "Memory is extremely low, free recent task !", Toast.LENGTH_LONG).show();
                         }
                     }
-                } else {
-                    for (int i = 1; i < tasks.size(); i++) {
-                        eachTask = tasks.get(i);
-                        eachTask.finishAndRemoveTask();
-                    }
-                }
             }
-            //Toast.makeText(this, "ProductActivity: Memory is extremely low, free recent task !", Toast.LENGTH_SHORT).show();
-            default ->
-                    Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND, ComponentCallbacks2.TRIM_MEMORY_MODERATE ->
+                    Log.i("ComponentCallbacks2 =>", "low memory event !");
+            default -> Log.i("ComponentCallbacks2 =>", "default event !");
+                    //Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
         }
         super.onTrimMemory(level);
     }

@@ -245,12 +245,13 @@ public class MainActivity extends AppCompatActivity
                             URL url = new URL(imageUrl);
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
-                            connection.setConnectTimeout(60000);
+                            connection.setConnectTimeout(100000);
                             connection.connect();
                             InputStream input = connection.getInputStream();
                             productImage = BitmapFactory.decodeStream(input);
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             productImage = null;
                         }
                     } else {
@@ -822,11 +823,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public void onTrimMemory(int level) {
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.AppTask> tasks = am.getAppTasks();
@@ -836,11 +832,7 @@ public class MainActivity extends AppCompatActivity
         switch (level) {
             case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
                 // Toast.makeText(this, "MainActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
-                ActivityManager.RunningAppProcessInfo appInfo = new ActivityManager.RunningAppProcessInfo();
                 ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
-
-                getMyMemoryState(appInfo);
-         //       Toast.makeText(this, "MainActivity TrimLevel: " + appInfo.lastTrimLevel, Toast.LENGTH_SHORT).show();
                 am.getMemoryInfo(outInfo);
                 if (outInfo.lowMemory) {
                     systemClearTask = true;
@@ -849,7 +841,7 @@ public class MainActivity extends AppCompatActivity
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     if (tasks.size() > 3 || systemClearTask) {      // Samsung Android 5.1 max task number is 3
                         try {
-                            //      Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
                             Thread.sleep(1000);
                             currentTask.moveToFront();
                         } catch (Exception e) {
@@ -860,8 +852,8 @@ public class MainActivity extends AppCompatActivity
                 else {
                     if (systemClearTask) {
                         try {
-                            //      Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
-                            Thread.sleep(1000);
+                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(2000);
                             currentTask.moveToFront();
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -869,39 +861,47 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE ->
-                    Toast.makeText(this, "MainActivity: RUNNING_MODERATE !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW ->
-                    Toast.makeText(this, "MainActivity: RUNNING_LOW !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL ->
-                    Toast.makeText(this, "MainActivity: RUNNING_CRITICAL !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_BACKGROUND ->
-                    Toast.makeText(this, "MainActivity: BACKGROUND !", Toast.LENGTH_SHORT).show();
-            case ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
-                systemClearTask = true;
-                    Toast.makeText(this, "MainActivity: MODERATE !", Toast.LENGTH_SHORT).show();
-            }
             case ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
-                systemClearTask = true;
-                Toast.makeText(this, "MainActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    for (int i = 0; i < tasks.size(); i++) {
-                        eachTask = tasks.get(i);
-                        if (eachTask.getTaskInfo().taskId != getTaskId()) {
-                            eachTask.finishAndRemoveTask();
+                //Toast.makeText(this, "MainActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
+                    systemClearTask = true;
+                    boolean appRunningForeground = false;
+                    final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                    if (procInfos != null) {
+                        String packageName = getApplicationContext().getPackageName();
+                        for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                            if (processInfo.processName.equals(packageName)) {
+                                Log.i("Notification===> ", "find app package.  ");
+                                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                    appRunningForeground = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (appRunningForeground && tasks.size() >1) {
+                            currentTask.moveToFront();
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    if (eachTask.getTaskInfo().taskId != getTaskId()) {
+                                        eachTask.finishAndRemoveTask();
+                                    }
+                                }
+                            } else {
+                                for (int i = 1; i < tasks.size(); i++) {
+                                    eachTask = tasks.get(i);
+                                    eachTask.finishAndRemoveTask();
+                                }
+                            }
+                            Toast.makeText(this, "Memory is extremely low, free recent task !", Toast.LENGTH_LONG).show();
                         }
                     }
-                } else {
-                    for (int i = 1; i < tasks.size(); i++) {
-                        eachTask = tasks.get(i);
-                        eachTask.finishAndRemoveTask();
-                    }
-                }
             }
-            //Toast.makeText(this, "MainActivity: Memory is extremely low, free recent task !", Toast.LENGTH_SHORT).show();
-            default -> Toast.makeText(this, "MainActivity: default !", Toast.LENGTH_SHORT).show();
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND, ComponentCallbacks2.TRIM_MEMORY_MODERATE ->
+                    Log.i("ComponentCallbacks2 =>", "low memory event !");
+            default -> Log.i("ComponentCallbacks2 =>", "default event !");
+                    //Toast.makeText(this, "MainActivity: default !", Toast.LENGTH_SHORT).show();
         }
-
         super.onTrimMemory(level);
     }
 

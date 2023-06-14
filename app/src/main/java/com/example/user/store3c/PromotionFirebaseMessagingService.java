@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -636,12 +637,13 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 URL url = new URL(imageUrl);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
-                connection.setConnectTimeout(60000);
+                connection.setConnectTimeout(100000);
                 connection.connect();
                 InputStream input = connection.getInputStream();
                 return BitmapFactory.decodeStream(input);
             } catch (Exception e) {
                 e.printStackTrace();
+                Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 return null;
             }
         } else {
