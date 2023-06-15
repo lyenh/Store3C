@@ -1,6 +1,7 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.content.ComponentCallbacks;
 import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,6 +36,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     private AccountDbAdapter dbHelper = null;
     private int DbRecentTaskId = -1, DbMainActivityTaskId = -1, DbOrderActivityTaskId = -1;
     private boolean systemClearTask = false;
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
 
     @Override
     protected synchronized void onCreate(Bundle savedInstanceState) {
@@ -135,9 +138,9 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
     @Override
     public synchronized void onTrimMemory(int level) {
-        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.AppTask> tasks = am.getAppTasks();
-        ActivityManager.AppTask currentTask, eachTask;
+        am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        tasks = am.getAppTasks();
+        ActivityManager.AppTask currentTask;
         currentTask = tasks.get(0);
 
         switch (level) {
@@ -163,7 +166,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 else {
                     if (systemClearTask) {
                         try {
-                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "ProductActivity: system clear recentTaskList: " + tasks.size(), Toast.LENGTH_SHORT).show();
                             Thread.sleep(2000);
                             currentTask.moveToFront();
                         } catch (Exception e) {
@@ -172,43 +175,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
             }
-            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE -> {
-                //Toast.makeText(this, "ProductActivity: COMPLETE !", Toast.LENGTH_SHORT).show();
-                    systemClearTask = true;
-                    boolean appRunningForeground = false;
-                    final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
-                    if (procInfos != null) {
-                        String packageName = getApplicationContext().getPackageName();
-                        for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
-                            if (processInfo.processName.equals(packageName)) {
-                                Log.i("Notification===> ", "find app package.  ");
-                                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                                    appRunningForeground = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (appRunningForeground && tasks.size() >1) {
-                            currentTask.moveToFront();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                for (int i = 0; i < tasks.size(); i++) {
-                                    eachTask = tasks.get(i);
-                                    if (eachTask.getTaskInfo().taskId != getTaskId()) {
-                                        eachTask.finishAndRemoveTask();
-                                    }
-                                }
-                            } else {
-                                for (int i = 1; i < tasks.size(); i++) {
-                                    eachTask = tasks.get(i);
-                                    eachTask.finishAndRemoveTask();
-                                }
-                            }
-                            Toast.makeText(this, "Memory is extremely low, free recent task !", Toast.LENGTH_LONG).show();
-                        }
-                    }
-            }
             case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
-                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND, ComponentCallbacks2.TRIM_MEMORY_MODERATE ->
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND, ComponentCallbacks2.TRIM_MEMORY_MODERATE, ComponentCallbacks2.TRIM_MEMORY_COMPLETE  ->
                     Log.i("ComponentCallbacks2 =>", "low memory event !");
             default -> Log.i("ComponentCallbacks2 =>", "default event !");
                     //Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
@@ -262,8 +230,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 intent.setClass(ProductActivity.this, OrderActivity.class);
 
                 if (notification_list != null) {
-                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks;
+                    am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                     ActivityManager.AppTask currentTask = null;
 
                     if (!dbHelper.IsDbTaskIdEmpty()) {
@@ -486,8 +453,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         }
         if (notification_list != null) {
             ActivityManager.AppTask currentTask = null;
-            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.AppTask> tasks;
+            am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 
             if (!dbHelper.IsDbTaskIdEmpty()) {
                 try {

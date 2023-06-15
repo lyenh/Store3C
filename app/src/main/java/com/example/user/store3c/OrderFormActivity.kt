@@ -2,7 +2,6 @@ package com.example.user.store3c
 
 import android.app.ActivityManager
 import android.app.ActivityManager.AppTask
-import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.os.Build
@@ -35,6 +34,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
     private var dbHelper: AccountDbAdapter? = null
     private var DbMainActivityTaskId = -1; private var DbOrderActivityTaskId = -1
     private var systemClearTask = false
+    @Volatile private lateinit var am: ActivityManager
+    @Volatile private lateinit var tasks: List<AppTask>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,11 +149,11 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
 
     }
 
+    @Synchronized
     override fun onTrimMemory(level: Int) {
-        val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        val tasks = am.appTasks
+        am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        tasks = am.appTasks
         val currentTask: AppTask
-        var eachTask: AppTask
         currentTask = tasks[0]
         when (level) {
             TRIM_MEMORY_UI_HIDDEN -> {
@@ -177,51 +178,12 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                 } else {
                     if (systemClearTask) {
                         try {
-                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(this, "OrderFormActivity: system clear recentTaskList: " + tasks.size, Toast.LENGTH_SHORT).show();
                             Thread.sleep(2000)
                             currentTask.moveToFront()
                         } catch (e: java.lang.Exception) {
                             e.printStackTrace()
                         }
-                    }
-                }
-            }
-            TRIM_MEMORY_COMPLETE -> {
-                //Toast.makeText(this@OrderFormActivity, "OrderFormActivity: COMPLETE !", Toast.LENGTH_SHORT).show()
-                systemClearTask = true
-                var appRunningForeground = false
-                val procInfos = am.runningAppProcesses
-                if (procInfos != null) {
-                    val packageName = applicationContext.packageName
-                    for (processInfo in procInfos) {
-                        if (processInfo.processName == packageName) {
-                            Log.i("Notification===> ", "find app package.  ")
-                            if (processInfo.importance == RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                                appRunningForeground = true
-                                break
-                            }
-                        }
-                    }
-                    if (appRunningForeground && tasks.size > 1) {
-                        currentTask.moveToFront()
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            for (i in tasks.indices) {
-                                eachTask = tasks[i]
-                                if (eachTask.taskInfo.taskId != taskId) {
-                                    eachTask.finishAndRemoveTask()
-                                }
-                            }
-                        } else {
-                            for (i in 1 until tasks.size) {
-                                eachTask = tasks[i]
-                                eachTask.finishAndRemoveTask()
-                            }
-                        }
-                        Toast.makeText(
-                            this,
-                            "Memory is extremely low, free recent task !",
-                            Toast.LENGTH_LONG
-                        ).show()
                     }
                 }
             }
@@ -257,8 +219,8 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
         intent.setClass(this@OrderFormActivity, OrderActivity::class.java)
 
         if (notification_list != "") {
-            val am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-            val tasks = am.appTasks
+            am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            tasks = am.appTasks
             var currentTask: AppTask? = null
             preTask = null
 

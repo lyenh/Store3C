@@ -56,6 +56,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     private DatabaseReference userTokenRef;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
 
     public String userId = "defaultId";
     public String refreshedToken;
@@ -76,7 +78,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         PendingIntent pendingIntent, resultPendingIntent;
         Intent intent, resultIntent;
         NotificationManager notificationManager;
-        ActivityManager am;
         String channelId;
         Uri defaultSoundUri;
         NotificationCompat.Builder notificationBuilder;
@@ -103,7 +104,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
 
                     am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    tasks = am.getAppTasks();
                     Log.i("Notification===> ", "size:  " +  tasks.size());
 
                     if (tasks.size() != 0) {
@@ -204,7 +205,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
                     am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    tasks = am.getAppTasks();
                     Log.i("Notification===> ", "size:  " +  tasks.size());
 
                     if (tasks.size() != 0) {
@@ -335,7 +336,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
             intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
             am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            tasks = am.getAppTasks();
 
             if (tasks.size() != 0) {
                 boolean appRunningForeground = false;
