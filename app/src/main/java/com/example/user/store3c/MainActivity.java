@@ -3,6 +3,8 @@ package com.example.user.store3c;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.ApplicationExitInfo;
+import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -76,6 +78,8 @@ import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static android.app.ActivityManager.getMyMemoryState;
+import static android.app.ActivityManager.isLowMemoryKillReportSupported;
 import static android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 
 @Keep
@@ -83,7 +87,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, Slide1Fragment.OnFragmentInteractionListener,
         Slide2Fragment.OnFragmentInteractionListener, Slide3Fragment.OnFragmentInteractionListener,
         Slide4Fragment.OnFragmentInteractionListener, Slide5Fragment.OnFragmentInteractionListener,
-        View.OnClickListener{
+        View.OnClickListener, ComponentCallbacks2 {
 
     private static final ArrayList<ProductItem> ProductData = new ArrayList<>();
     private static FirebaseDatabase db = null;
@@ -131,17 +135,21 @@ public class MainActivity extends AppCompatActivity
     private PageAdapter mPagerAdapter;
     private ViewPager2 pager;
     private ImageView dot1, dot2, dot3, dot4, dot5;
-    private List<Fragment> fragments;
     private String retainRecentTask = null;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Bitmap productImage;
+    private List<Fragment> fragments;
+    private ViewPager2.OnPageChangeCallback pageChangeCallback;
+    private boolean systemClearTask = false;
 
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
     public boolean combinedActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
     public UserHandler userAdHandler;
 
     @Override
@@ -178,8 +186,7 @@ public class MainActivity extends AppCompatActivity
         if (dbHelper == null) {
             dbHelper = new AccountDbAdapter(this);
         }
-        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.AppTask> tasks;
+        am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         ActivityManager.AppTask eachTask;
 
         try {
@@ -239,12 +246,13 @@ public class MainActivity extends AppCompatActivity
                             URL url = new URL(imageUrl);
                             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
-                            connection.setConnectTimeout(60000);
+                            connection.setConnectTimeout(100000);
                             connection.connect();
                             InputStream input = connection.getInputStream();
                             productImage = BitmapFactory.decodeStream(input);
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             productImage = null;
                         }
                     } else {
@@ -297,11 +305,14 @@ public class MainActivity extends AppCompatActivity
                     reloadIntent.putExtras(reloadBundle);
                     reloadIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
                     startActivity(reloadIntent);
-                    if (currentTask != null) {
-                        currentTask.finishAndRemoveTask();
-                    }
-                    else {
-                        this.finishAndRemoveTask();
+                    try {
+                        if (currentTask != null) {
+                            currentTask.finishAndRemoveTask();
+                        } else {
+                            this.finishAndRemoveTask();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 }
@@ -325,7 +336,7 @@ public class MainActivity extends AppCompatActivity
                                 //Toast.makeText(MainActivity.this, "recentTaskId: " + recentTaskId, Toast.LENGTH_LONG).show();
                                 for (int i = 0; i < tasks.size(); i++) {
                                     eachTask = tasks.get(i);
-                                    if (eachTask.getTaskInfo() != null && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
+                                    if ((eachTask.getTaskInfo() != null) && (eachTask.getTaskInfo().persistentId == DbMainActivityTaskId) &&
                                             (eachTask.getTaskInfo().persistentId != getTaskId())) {
                                         if (!isDbTaskIdListEmpty) {
                                             if (dbHelper.updateRecentTaskId(index, -1) == 0) {
@@ -813,6 +824,61 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public synchronized void onTrimMemory(int level) {
+        am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        tasks = am.getAppTasks();
+        ActivityManager.AppTask currentTask;
+        currentTask = tasks.get(0);
+
+        switch (level) {
+            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
+                // Toast.makeText(this, "MainActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
+                ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(outInfo);
+                if (outInfo.lowMemory) {
+                    systemClearTask = true;
+                    //Toast.makeText(this, "MainActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    if (tasks.size() > 3 || systemClearTask) {      // Samsung Android 5.1 max task number is 3
+                        try {
+                            //Toast.makeText(this, "MainActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(1000);
+                            currentTask.moveToFront();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else {
+                    if (systemClearTask) {
+                        try {
+                            //Toast.makeText(this, "MainActivity: system clear recentTaskList: " + tasks.size(), Toast.LENGTH_SHORT).show();
+                            Thread.sleep(2000);
+                            currentTask.moveToFront();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND, ComponentCallbacks2.TRIM_MEMORY_MODERATE, ComponentCallbacks2.TRIM_MEMORY_COMPLETE ->
+                    Log.i("ComponentCallbacks2 =>", "low memory event !");
+            default -> Log.i("ComponentCallbacks2 =>", "default event !");
+                    //Toast.makeText(this, "MainActivity: default !", Toast.LENGTH_SHORT).show();
+        }
+        super.onTrimMemory(level);
+    }
+
+    @Override
+    public void onLowMemory() {
+        systemClearTask = true;
+        //Toast.makeText(this, "MainActivity: LowMemory !", Toast.LENGTH_SHORT).show();
+        super.onLowMemory();
+    }
+
+    @Override
     protected void onDestroy() {
         TimerThread = 0;
         returnApp = 0;
@@ -821,11 +887,14 @@ public class MainActivity extends AppCompatActivity
         if (userAdHandler != null) {
             userAdHandler.removeCallbacksAndMessages(null);
         }
-        if (fragments != null) {
+        if (fragments != null && fragments.size() != 0) {
             fragments.clear();
         }
         if (dbHelper != null) {
             dbHelper.close();
+        }
+        if (pager != null && pageChangeCallback != null) {
+            pager.unregisterOnPageChangeCallback(pageChangeCallback);
         }
         executor.shutdown();
         super.onDestroy();
@@ -1042,8 +1111,10 @@ public class MainActivity extends AppCompatActivity
                     for (int i = 0; i < dishProductAmount; i++) {
                         ProductData.add(new ProductItem(picListImg.get(i), picListName.get(i), picListPrice.get(i), picListIntro.get(i)));
                     }
-                    for (int j = 0; j < DISH_SHOW_COUNT; j++) {
-                        picShowImg.add(ProductData.get(picShowIndex.get(j)).getImg());
+                    if (ProductData.size() > DISH_SHOW_COUNT) {
+                        for (int j = 0; j < DISH_SHOW_COUNT; j++) {
+                            picShowImg.add(ProductData.get(picShowIndex.get(j)).getImg());
+                        }
                     }
                     Reload = 1;
                 }
@@ -1313,12 +1384,25 @@ public class MainActivity extends AppCompatActivity
     };
 
     public void iniUpperPage(MainActivity activity, Lifecycle lifecycle, View view) {
+        if (fragments != null && fragments.size() > 0) {
+            fragments.clear();
+        }
         fragments = new Vector<>();
-        fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-        fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-        fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-        fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-        fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+        if (picShowImg.size() == DISH_SHOW_COUNT) {
+            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+        } else {
+            Toast.makeText(MainActivity.this, "No DishShow fragment ", Toast.LENGTH_SHORT).show();
+            Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picture), "frame1"));
+            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picture), "frame2"));
+            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picture), "frame3"));
+            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picture), "frame4"));
+            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picture), "frame5"));
+        }
 
         if (adapterLayout == 0) {
             pager = findViewById(R.id.viewPager_id);
@@ -1343,7 +1427,7 @@ public class MainActivity extends AppCompatActivity
         TimerThread = 1;
         adTimerThread.start();
 
-        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+        pageChangeCallback = new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 switch (position) {
@@ -1385,7 +1469,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 //Toast.makeText(MainActivity.this, "The top fragment "+ position, Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        pager.registerOnPageChangeCallback(pageChangeCallback);
 
     }
 
@@ -1481,8 +1566,8 @@ public class MainActivity extends AppCompatActivity
                 TimerThread = 0;
                 returnApp = 0;
                 appRntTimer = 0;
-                ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                tasks = am.getAppTasks();
                 ActivityManager.AppTask eachTask;
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

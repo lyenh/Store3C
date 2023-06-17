@@ -1125,7 +1125,6 @@ implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener
         if (id == R.id.nav_dish) {
             Intent intentItem = new Intent();
             intentItem.setClass(CakeActivity.this, MainActivity.class);
-            intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intentItem);
             CakeActivity.this.finish();
         } else if (id == R.id.nav_cake) {

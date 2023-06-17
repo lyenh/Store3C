@@ -59,6 +59,8 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
     private AccountDbAdapter dbhelper;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -357,8 +359,7 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
         }
         ActivityManager.AppTask currentTask = null;
         if (recentTaskPromotion) {
-            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.AppTask> tasks;
+            am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             try {
                 synchronized (tasks = am.getAppTasks()) {
                     for (int i = 0; i < tasks.size(); i++) {

@@ -1,6 +1,8 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
+import android.content.ComponentCallbacks;
+import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +11,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,18 +26,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.List;
 
 @Keep
-public class ProductActivity extends AppCompatActivity implements View.OnClickListener{
+public class ProductActivity extends AppCompatActivity implements View.OnClickListener, ComponentCallbacks2 {
 
-    private String menu_item = "DISH", up_menu_item = "", product_name, product_price, product_intro, order_list = "", search_list = "";
+    private String menu_item = "DISH", up_menu_item = "", product_name = "", product_price = "", product_intro = "", order_list = "", search_list = "";
     private String notification_list = "";
     private byte[] product_pic;
     private ActivityManager.AppTask preTask = null;
     private boolean recentTaskProduct = false, firebaseDataPayload = false;
     private AccountDbAdapter dbHelper = null;
     private int DbRecentTaskId = -1, DbMainActivityTaskId = -1, DbOrderActivityTaskId = -1;
+    private boolean systemClearTask = false;
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
 
     @Override
-    synchronized protected void onCreate(Bundle savedInstanceState) {
+    protected synchronized void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product);
 
@@ -106,37 +112,112 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
 
         int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
         int imgHeight;
-        if (isTab) {
-            if (screenWidth > rotationTabScreenWidth) {
-                imgHeight = (product_intro.length() / 27 + 1) * 100;
-                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-            }
-        }
-        else {
-            if (screenWidth > rotationScreenWidth) {
-                imgHeight = (product_intro.length() / 27 + 1) * 60;
-                introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+        if (product_intro != null && product_intro.length() != 0) {
+            if (isTab) {
+                if (screenWidth > rotationTabScreenWidth) {
+                    imgHeight = (product_intro.length() / 27 + 1) * 100;
+                    introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+                }
+            } else {
+                if (screenWidth > rotationScreenWidth) {
+                    imgHeight = (product_intro.length() / 27 + 1) * 60;
+                    introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
+                }
             }
         }
 
         if (dbHelper == null) {
             dbHelper = new AccountDbAdapter(this);
         }
-        if (!dbHelper.IsDbTaskIdEmpty()) {
-            try {
-                Cursor cursor = dbHelper.getTaskIdList();
-                DbRecentTaskId = cursor.getInt(1);
-                DbMainActivityTaskId = cursor.getInt(2);
-                DbOrderActivityTaskId = cursor.getInt(3);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
 
         intro.setText(product_intro);
         ret_b.setOnClickListener(this);
         buy_b.setOnClickListener(this);
 
+    }
+
+    @Override
+    public synchronized void onTrimMemory(int level) {
+        am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        tasks = am.getAppTasks();
+        ActivityManager.AppTask currentTask, mainTask = null;
+        currentTask = tasks.get(0);
+
+        switch (level) {
+            case ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN -> {
+                //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
+                ActivityManager.MemoryInfo outInfo = new ActivityManager.MemoryInfo();
+                am.getMemoryInfo(outInfo);
+                if (outInfo.lowMemory) {
+                    systemClearTask = true;
+                    //Toast.makeText(this, "ProductActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
+                }
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    if (tasks.size() > 3 || systemClearTask) {
+                        try {
+                            //Toast.makeText(this, "ProductActivity: system clear recentTaskList !", Toast.LENGTH_SHORT).show();
+                            Thread.sleep(1000);
+                            currentTask.moveToFront();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else {
+                    if (systemClearTask) {
+                        try {
+                            //Toast.makeText(this, "ProductActivity: system clear recentTaskList: " + tasks.size(), Toast.LENGTH_SHORT).show();
+                            Thread.sleep(2000);
+                            currentTask.moveToFront();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE, ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
+                //Toast.makeText(this, "ProductActivity: TRIM_MEMORY_COMPLETE !", Toast.LENGTH_SHORT).show();
+                if (dbHelper == null) {
+                    dbHelper = new AccountDbAdapter(this);
+                }
+                if (!dbHelper.IsDbTaskIdEmpty()) {
+                    try {
+                        Cursor cursor = dbHelper.getTaskIdList();
+                        DbMainActivityTaskId = cursor.getInt(2);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (tasks.size() >1) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId) && (DbMainActivityTaskId != getTaskId())) {
+                            mainTask = tasks.get(i);
+                        }
+                    }
+                    if (mainTask != null) {
+                        try {
+                            mainTask.finishAndRemoveTask();
+                            //Toast.makeText(this, "ProductActivity: Memory is extremely low, free main task !", Toast.LENGTH_LONG).show();
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                            //Toast.makeText(this, "ProductActivity: catch exception, Memory low !", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+            }
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> Log.i("ComponentCallbacks2 =>", "low memory event !");
+            default -> Log.i("ComponentCallbacks2 =>", "default event !");
+                    //Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
+        }
+        super.onTrimMemory(level);
+    }
+
+    @Override
+    public void onLowMemory() {
+        systemClearTask = true;
+        //Toast.makeText(this, "ProductActivity: LowMemory !", Toast.LENGTH_SHORT).show();
+        super.onLowMemory();
     }
 
     @Override
@@ -178,9 +259,20 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 intent.setClass(ProductActivity.this, OrderActivity.class);
 
                 if (notification_list != null) {
-                    ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks;
+                    am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
                     ActivityManager.AppTask currentTask = null;
+
+                    if (!dbHelper.IsDbTaskIdEmpty()) {
+                        try {
+                            Cursor cursor = dbHelper.getTaskIdList();
+                            DbRecentTaskId = cursor.getInt(1);
+                            DbMainActivityTaskId = cursor.getInt(2);
+                            DbOrderActivityTaskId = cursor.getInt(3);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     try {
                         synchronized (tasks = am.getAppTasks()) {
                             preTask = null;
@@ -226,7 +318,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             if (preTaskId == DbRecentTaskId) {
                                 preTask.moveToFront();
                             }
-                            preTask.startActivity(getApplicationContext(), intent, bundle);
+                            preTask.startActivity(getApplicationContext(), intent, null);
                             //Toast.makeText(this, "startActivity!", Toast.LENGTH_LONG).show();
                         } catch (Exception e) {
                             Toast.makeText(this, "catch preTask: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -244,12 +336,22 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             intentCatch.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             startActivity(intentCatch);
                             tasks = am.getAppTasks();
-                            for (int i = 0; i < tasks.size(); i++) {
-                                if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == preTaskId) {
-                                    preTask = tasks.get(i);
+                            boolean gotPreTask = false;
+                            try {
+                                for (int i = 0; i < tasks.size(); i++) {
+                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == preTaskId) {
+                                        preTask = tasks.get(i);
+                                        gotPreTask = true;
+                                        preTask.finishAndRemoveTask();
+                                    }
                                 }
+                            } catch (Exception ex) {
+                                if (!gotPreTask) {
+                                    preTask.finishAndRemoveTask();
+                                }
+                                Toast.makeText(this, "catch preTask is null ! ", Toast.LENGTH_SHORT).show();
+                                Log.i("preTask ===>", "is null: " + ex.getMessage());
                             }
-                            preTask.finishAndRemoveTask();
                         } finally {
                             try {
                                 if (preTask.getTaskInfo() != null && ((totalTaskSize + 1) == am.getAppTasks().size())) {
@@ -380,14 +482,24 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         }
         if (notification_list != null) {
             ActivityManager.AppTask currentTask = null;
-            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.AppTask> tasks;
+            am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+
+            if (!dbHelper.IsDbTaskIdEmpty()) {
+                try {
+                    Cursor cursor = dbHelper.getTaskIdList();
+                    DbMainActivityTaskId = cursor.getInt(2);
+                    DbOrderActivityTaskId = cursor.getInt(3);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             try {
                 synchronized (tasks = am.getAppTasks()) {
                     preTask = null;
                     if (tasks.size() > 1) {
                         for (int i = 0; i < tasks.size(); i++) {
-                            if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
+                            if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId) && (DbMainActivityTaskId != getTaskId())) {
                                 preTask = tasks.get(i);     // do getAppTasks again, it should be the main task
                             }
                             if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
@@ -397,8 +509,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         if (preTask == null) {
                             if (DbOrderActivityTaskId != -1) {
                                 for (int i = 0; i < tasks.size(); i++) {
-                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
-                                        if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
+                                    if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId)) {
+                                        if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId != getTaskId())) {
                                             preTask = tasks.get(i);
                                             //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
                                         }
@@ -436,18 +548,18 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                             currentTask = null;
                             if (tasks.size() > 1) {
                                 for (int i = 0; i < tasks.size(); i++) {
-                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId && DbMainActivityTaskId != getTaskId()) {
+                                    if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId) && (DbMainActivityTaskId != getTaskId())) {
                                         preTask = tasks.get(i);     // Should be the main task
                                     }
-                                    if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == getTaskId()) {
+                                    if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == getTaskId())) {
                                         currentTask = tasks.get(i);
                                     }
                                 }
                                 if (preTask == null) {
                                     if (DbOrderActivityTaskId != -1) {
                                         for (int i = 0; i < tasks.size(); i++) {
-                                            if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId) {
-                                                if (tasks.get(i).getTaskInfo() != null && tasks.get(i).getTaskInfo().persistentId != getTaskId()) {
+                                            if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == DbOrderActivityTaskId)) {
+                                                if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId != getTaskId())) {
                                                     preTask = tasks.get(i);
                                                     //Toast.makeText(this, "Got order preTask! ", Toast.LENGTH_LONG).show();
                                                 }
@@ -506,6 +618,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 Log.i("PreTask===> ", "null !");        //default value, have only one task
                  if (firebaseDataPayload) {
                      intent.setFlags(0);
+                     ActivityManager.AppTask currentPreTask = am.getAppTasks().get(0);
                     if (recentTaskProduct) {
                         intent = Intent.makeRestartActivityTask (new ComponentName(getApplicationContext(), MainActivity.class));
                         startActivity(intent);
@@ -518,7 +631,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                         retainRecentTaskBundle.putString("RetainRecentTask", "RECENT_TASK");
                         intent.putExtras(retainRecentTaskBundle);
                         startActivity(intent);
-                        am.getAppTasks().get(0).finishAndRemoveTask();
+                        currentPreTask.finishAndRemoveTask();
                     }
                 } else {
                      if (recentTaskProduct) {

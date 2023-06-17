@@ -1,12 +1,10 @@
 package com.example.user.store3c;
 
 import android.app.ActivityManager;
-import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,24 +14,19 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Build;
-import android.os.Bundle;
-import android.os.IBinder;
 import android.os.PowerManager;
-
-import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
-import androidx.core.content.IntentCompat;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -55,14 +48,17 @@ import java.util.Objects;
 import java.util.Random;
 
 import static com.example.user.store3c.MainActivity.setFirebaseDbPersistence;
+
 @Keep
 public class PromotionFirebaseMessagingService extends FirebaseMessagingService {
     private static Integer totalUserAmount = 0;
-    private static Integer pendingIntentIndex = 0;
 
     private DatabaseReference userTokenRef;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
+
     public String userId = "defaultId";
     public String refreshedToken;
 
@@ -72,7 +68,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     }
 
     @Override
-    synchronized public void onMessageReceived(RemoteMessage remoteMessage) {
+    public synchronized void onMessageReceived(RemoteMessage remoteMessage) {
         Log.i("Messaging===> ", "from: "+remoteMessage.getFrom());
         String title, messageType, messageText, subText, message, imageUrl; // "http://appserver.000webhostapp.com/store3c/image/dish/d16.jpg"
         String messagePrice = "", messageIntro = "";
@@ -80,11 +76,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         Bitmap bitmap;
         Map<String, String> data;
         PendingIntent pendingIntent, resultPendingIntent;
-        Bundle bundle;
         Intent intent, resultIntent;
-        TaskStackBuilder stackBuilder;
         NotificationManager notificationManager;
-        ActivityManager am;
         String channelId;
         Uri defaultSoundUri;
         NotificationCompat.Builder notificationBuilder;
@@ -93,6 +86,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         PowerManager pm;
         PowerManager.WakeLock wl;
         int notificationId;
+        Random r = new Random();
+        int pendingIntentIndex;
+        TaskStackBuilder stackBuilder;
 
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
@@ -105,12 +101,12 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 if (messageType.equals("promotion")) {          //Message from cloud function server; orderFormActivity
                     messageText = data.get("messageText");
                     subText = data.get("subText");
-                    bundle = new Bundle();
                     resultIntent = new Intent(this, com.example.user.store3c.OrderFormActivity.class);
 
                     am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
-                    //Log.i("Notification===> ", "size:  " +  tasks.size());
+                    tasks = am.getAppTasks();
+                    Log.i("Notification===> ", "size:  " +  tasks.size());
+
                     if (tasks.size() != 0) {
                         boolean appRunningForeground = false;
                         final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
@@ -125,25 +121,24 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                 }
                             }
                             if (appRunningForeground) {
-                                bundle.putString("Notification", "IN_APP");
-                                bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                resultIntent.putExtra("Notification", "IN_APP");
+                                resultIntent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
                                 resultIntent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                             } else {
-                                bundle.putString("Notification", "UPPER_APP");
+                                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                resultIntent.putExtra("Notification", "UPPER_APP");
                             }
                         }
                     }
                     else {          // user clear all app in recent screen
-                        bundle.putString("Notification", "UPPER_APP");
+                        resultIntent.putExtra("Notification", "UPPER_APP");
                     }
-                    bundle.putString("OrderMessageText", "    " + messageText);
+                    resultIntent.putExtra("OrderMessageText", "    " + messageText);
 
-                    synchronized(pendingIntentIndex++) {
-                        resultIntent.putExtras(bundle);
-                        stackBuilder = TaskStackBuilder.create(this);
-                        stackBuilder.addNextIntent(resultIntent);
-                        resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT, bundle);
-                    }
+                    pendingIntentIndex = r.nextInt(1000000);
+                    stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                    stackBuilder.addNextIntent(resultIntent);
+                    resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     channelId = getString(R.string.default_notification_channel_id);
                     defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -207,12 +202,10 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     }
                     messagePrice = data.get("messagePrice");
                     messageIntro = data.get("messageIntro");
-                   // PendingIntent pendingIntent;
-                    bundle = new Bundle();
                     intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
                     am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                    List<ActivityManager.AppTask> tasks = am.getAppTasks();
+                    tasks = am.getAppTasks();
                     Log.i("Notification===> ", "size:  " +  tasks.size());
 
                     if (tasks.size() != 0) {
@@ -230,12 +223,13 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                 }
                             }
                             if (appRunningForeground) {
-                                bundle.putString("Notification", "IN_APP");
-                                bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                                intent.putExtra("Notification", "IN_APP");
+                                intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
                                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                                 Log.i("Notification===> ", "fork new task.  ");
                             } else {
-                                bundle.putString("Notification", "UPPER_APP");
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                intent.putExtra("Notification", "UPPER_APP");
                             }
                         }
                         else {
@@ -243,24 +237,21 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         }
                     }
                     else {          // user clear all app in recent screen
-                        bundle.putString("Notification", "UPPER_APP");
+                        intent.putExtra("Notification", "UPPER_APP");
                     }
 
                     if (picture == null) {
                         picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
                     }
-                    bundle.putByteArray("Pic", Bitmap2Bytes(picture));
-                    bundle.putString("Name", message);
-                    bundle.putString("Price", messagePrice);
-                    bundle.putString("Intro", messageIntro);
+                    intent.putExtra("Pic", Bitmap2Bytes(picture));
+                    intent.putExtra("Name", message);
+                    intent.putExtra("Price", messagePrice);
+                    intent.putExtra("Intro", messageIntro);
 
-                    synchronized(pendingIntentIndex++) {
-                        intent.putExtras(bundle);
-                        stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                        stackBuilder.addNextIntent(intent);
-                        pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT, bundle);
-                        Log.i("PendingIntent ===> ", "Index: " + pendingIntentIndex);
-                    }
+                    pendingIntentIndex = r.nextInt(1000000);
+                    stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                    stackBuilder.addNextIntent(intent);
+                    pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
                     channelId = getString(R.string.default_notification_channel_id);
                     defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -343,11 +334,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 picture = getBitmapfromUrl(pic.toString());
             }
 
-            bundle = new Bundle();
             intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-
             am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.AppTask> tasks = am.getAppTasks();
+            tasks = am.getAppTasks();
 
             if (tasks.size() != 0) {
                 boolean appRunningForeground = false;
@@ -364,8 +353,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         }
                     }
                     if (appRunningForeground) {
-                        bundle.putString("Notification", "IN_APP");
-                        bundle.putString("RetainRecentTask", "RECENT_ACTIVITY");
+                        intent.putExtra("Notification", "IN_APP");
+                        intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
                         intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
                         Log.i("Notification===> ", "fork a new task.  ");
                     } else {
@@ -383,17 +372,15 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             if (picture == null) {
                 picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
             }
-            bundle.putByteArray("Pic", Bitmap2Bytes(picture));
-            bundle.putString("Name", message);
-            bundle.putString("Price", messagePrice);
-            bundle.putString("Intro", messageIntro);
+            intent.putExtra("Pic", Bitmap2Bytes(picture));
+            intent.putExtra("Name", message);
+            intent.putExtra("Price", messagePrice);
+            intent.putExtra("Intro", messageIntro);
 
-            synchronized(pendingIntentIndex++) {
-                intent.putExtras(bundle);
-                stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                stackBuilder.addNextIntent(intent);
-                pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT, bundle);
-            }
+            pendingIntentIndex = r.nextInt(1000000);
+            stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+            stackBuilder.addNextIntent(intent);
+            pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
             channelId = getString(R.string.default_notification_channel_id);
             defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -651,16 +638,17 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 URL url = new URL(imageUrl);
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
-                connection.setConnectTimeout(60000);
+                connection.setConnectTimeout(100000);
                 connection.connect();
                 InputStream input = connection.getInputStream();
                 return BitmapFactory.decodeStream(input);
             } catch (Exception e) {
                 e.printStackTrace();
+                Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 return null;
             }
         } else {
-            Toast.makeText(PromotionFirebaseMessagingService.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
+            Log.i("網路未連線! ", " ==>PromotionFirebaseMessagingService");
             return null;
         }
     }

@@ -46,7 +46,7 @@ import static com.example.user.store3c.MainActivity.mAuth;
 @Keep
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
     private AccountDbAdapter dbhelper = null;
-    private String menu_item;
+    private String menu_item = "DISH";
     private EditText LoginEmail, LoginPassword;
     private String user = "", email = "", password = "";
     private FirebaseAuth.AuthStateListener authListener;
@@ -70,6 +70,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         if (bundleItem != null) {
             menu_item = bundleItem.getString("Menu");
+        }
+        if (menu_item == null) {
+            menu_item = "DISH";
         }
         String edit_Title = "使用者登入";
         if (getSupportActionBar() != null) {
@@ -95,7 +98,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (menu_item) {
             case "DISH":
                 intentItem.setClass(LoginActivity.this, MainActivity.class);
-                intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 break;
             case "CAKE":
                 intentItem.setClass(LoginActivity.this, CakeActivity.class);
@@ -112,7 +114,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             default:
                 Toast.makeText(this.getBaseContext(), "Return to main menu ! ", Toast.LENGTH_SHORT).show();
                 intentItem.setClass(LoginActivity.this, MainActivity.class);
-                intentItem.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         }
         startActivity(intentItem);
         LoginActivity.this.finish();

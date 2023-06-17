@@ -51,6 +51,8 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
     private ArrayList<ProductItem> orderTable = new ArrayList<>();
     public boolean recentTaskOrder = false;
     public static ArrayList<ListItem> promotionListItem = new ArrayList<>();
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
 
     ItemTouchHelper ith;
 
@@ -229,6 +231,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
                 e.printStackTrace();
              }
 
+            orderTable.clear();
             for (int i=0;i<itemText.size();i++) {
                 orderTable.add(i,itemText.get(i));
             }
@@ -503,8 +506,7 @@ public class OrderActivity extends AppCompatActivity implements View.OnClickList
         }
         ActivityManager.AppTask currentTask = null;
         if (recentTaskOrder) {
-            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.AppTask> tasks;
+            am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             try {
                 synchronized (tasks = am.getAppTasks()) {
                     for (int i = 0; i < tasks.size(); i++) {

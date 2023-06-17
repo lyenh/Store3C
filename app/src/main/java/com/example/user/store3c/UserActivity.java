@@ -2181,7 +2181,6 @@ public class UserActivity extends AppCompatActivity implements View.OnClickListe
                 switch (menu_item) {
                     case "DISH":
                         intent.setClass(UserActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         break;
                     case "CAKE":
                         intent.setClass(UserActivity.this, CakeActivity.class);
