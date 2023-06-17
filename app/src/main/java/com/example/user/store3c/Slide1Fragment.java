@@ -23,12 +23,12 @@ public class Slide1Fragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     //private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    //private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    //private byte[] mParam1;
+    private byte[] mParam1;
     private String mParam2;
-    private static byte[] gParam1;
+    //private static byte[] gParam1;
 
     private OnFragmentInteractionListener mListener;
     private final int imgId = 1;
@@ -47,12 +47,12 @@ public class Slide1Fragment extends Fragment {
      */
     // TODO: Rename and change types and number of parameters
     public static Slide1Fragment newInstance(byte[] param1, String param2) {
-        gParam1 = param1;
+        //gParam1 = param1;
 
         Slide1Fragment fragment = new Slide1Fragment();
         Bundle args = new Bundle();
-        //args.putByteArray(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putByteArray("param1", param1);
+        args.putString("param2", param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -61,8 +61,8 @@ public class Slide1Fragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            //mParam1 = getArguments().getByteArray(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mParam1 = getArguments().getByteArray("param1");
+            mParam2 = getArguments().getString("param2");
         }
     }
 
@@ -72,7 +72,8 @@ public class Slide1Fragment extends Fragment {
 
         if (getArguments() != null) {
             synchronized (getArguments()) {
-                getArguments().putString(ARG_PARAM2, mParam2);
+                getArguments().putByteArray("param1", mParam1);
+                getArguments().putString("param2", mParam2);
             }
         }
     }
@@ -89,7 +90,7 @@ public class Slide1Fragment extends Fragment {
 
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setPadding(2,2,2,2);
-        image.setImageBitmap(BitmapFactory.decodeByteArray(gParam1, 0, gParam1.length));
+        image.setImageBitmap(BitmapFactory.decodeByteArray(mParam1, 0, mParam1.length));
         image.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){

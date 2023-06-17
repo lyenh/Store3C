@@ -837,7 +837,7 @@ public class MainActivity extends AppCompatActivity
                 am.getMemoryInfo(outInfo);
                 if (outInfo.lowMemory) {
                     systemClearTask = true;
-                    Toast.makeText(this, "MainActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "MainActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     if (tasks.size() > 3 || systemClearTask) {      // Samsung Android 5.1 max task number is 3
@@ -874,7 +874,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onLowMemory() {
         systemClearTask = true;
-        Toast.makeText(this, "MainActivity: LowMemory !", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "MainActivity: LowMemory !", Toast.LENGTH_SHORT).show();
         super.onLowMemory();
     }
 

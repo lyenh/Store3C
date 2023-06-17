@@ -154,7 +154,9 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
         am = getSystemService(ACTIVITY_SERVICE) as ActivityManager
         tasks = am.appTasks
         val currentTask: AppTask
+        var mainTask: AppTask? = null
         currentTask = tasks[0]
+
         when (level) {
             TRIM_MEMORY_UI_HIDDEN -> {
                 //Toast.makeText(this, "ProductActivity: UI_HIDDEN !", Toast.LENGTH_SHORT).show();
@@ -162,8 +164,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                 am.getMemoryInfo(outInfo)
                 if (outInfo.lowMemory) {
                     systemClearTask = true
-                    Toast.makeText(this@OrderFormActivity, "OrderFormActivity: in lowMemory ", Toast.LENGTH_SHORT)
-                        .show()
+                    //Toast.makeText(this@OrderFormActivity, "OrderFormActivity: in lowMemory ", Toast.LENGTH_SHORT).show()
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     if (tasks.size > 3 || systemClearTask) {
@@ -187,6 +188,38 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                     }
                 }
             }
+            TRIM_MEMORY_COMPLETE, TRIM_MEMORY_MODERATE -> {
+                //Toast.makeText(this, "OrderFormActivity: TRIM_MEMORY_COMPLETE !", Toast.LENGTH_SHORT).show();
+                if (dbHelper == null) {
+                    dbHelper = AccountDbAdapter(this)
+                }
+                if (!dbHelper!!.IsDbTaskIdEmpty()) {
+                    try {
+                        val cursor = dbHelper!!.taskIdList
+                        DbMainActivityTaskId = cursor.getInt(2)
+                    } catch (e: java.lang.Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                if (tasks.size > 1) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        for (i in tasks.indices) {
+                            if (tasks[i].taskInfo != null && tasks[i].taskInfo.taskId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
+                                mainTask = tasks[i]
+                            }
+                        }
+                        if (mainTask != null) {
+                            try {
+                                mainTask.finishAndRemoveTask()
+                                //Toast.makeText(this, "OrderFormActivity: Memory is extremely low, free main task !", Toast.LENGTH_LONG).show()
+                            } catch (t: Throwable) {
+                                t.printStackTrace()
+                                //Toast.makeText(this, "OrderFormActivity: catch exception, Memory low !", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            }
             else -> Log.i("ComponentCallbacks2 =>", "default event !")
                 //Toast.makeText(this@OrderFormActivity, "OrderFormActivity: default !", Toast.LENGTH_SHORT).show()
         }
@@ -195,7 +228,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
 
     override fun onLowMemory() {
         systemClearTask = true
-        Toast.makeText(this, "OrderFormActivity: LowMemory !", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this, "OrderFormActivity: LowMemory !", Toast.LENGTH_SHORT).show()
         super.onLowMemory()
     }
 

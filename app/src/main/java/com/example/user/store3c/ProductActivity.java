@@ -140,7 +140,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     public synchronized void onTrimMemory(int level) {
         am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         tasks = am.getAppTasks();
-        ActivityManager.AppTask currentTask;
+        ActivityManager.AppTask currentTask, mainTask = null;
         currentTask = tasks.get(0);
 
         switch (level) {
@@ -150,7 +150,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                 am.getMemoryInfo(outInfo);
                 if (outInfo.lowMemory) {
                     systemClearTask = true;
-                    Toast.makeText(this, "ProductActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, "ProductActivity: in lowMemory ", Toast.LENGTH_SHORT).show();
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
                     if (tasks.size() > 3 || systemClearTask) {
@@ -175,9 +175,38 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
             }
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE, ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
+                //Toast.makeText(this, "ProductActivity: TRIM_MEMORY_COMPLETE !", Toast.LENGTH_SHORT).show();
+                if (dbHelper == null) {
+                    dbHelper = new AccountDbAdapter(this);
+                }
+                if (!dbHelper.IsDbTaskIdEmpty()) {
+                    try {
+                        Cursor cursor = dbHelper.getTaskIdList();
+                        DbMainActivityTaskId = cursor.getInt(2);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (tasks.size() >1) {
+                    for (int i = 0; i < tasks.size(); i++) {
+                        if ((tasks.get(i).getTaskInfo() != null) && (tasks.get(i).getTaskInfo().persistentId == DbMainActivityTaskId) && (DbMainActivityTaskId != getTaskId())) {
+                            mainTask = tasks.get(i);
+                        }
+                    }
+                    if (mainTask != null) {
+                        try {
+                            mainTask.finishAndRemoveTask();
+                            //Toast.makeText(this, "ProductActivity: Memory is extremely low, free main task !", Toast.LENGTH_LONG).show();
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                            //Toast.makeText(this, "ProductActivity: catch exception, Memory low !", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+            }
             case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
-                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND, ComponentCallbacks2.TRIM_MEMORY_MODERATE, ComponentCallbacks2.TRIM_MEMORY_COMPLETE  ->
-                    Log.i("ComponentCallbacks2 =>", "low memory event !");
+                    ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> Log.i("ComponentCallbacks2 =>", "low memory event !");
             default -> Log.i("ComponentCallbacks2 =>", "default event !");
                     //Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();
         }
@@ -187,7 +216,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onLowMemory() {
         systemClearTask = true;
-        Toast.makeText(this, "ProductActivity: LowMemory !", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "ProductActivity: LowMemory !", Toast.LENGTH_SHORT).show();
         super.onLowMemory();
     }
 
