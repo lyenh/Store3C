@@ -175,7 +175,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
             }
-            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE, ComponentCallbacks2.TRIM_MEMORY_MODERATE -> {
+            case ComponentCallbacks2.TRIM_MEMORY_COMPLETE, ComponentCallbacks2.TRIM_MEMORY_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> {
                 //Toast.makeText(this, "ProductActivity: TRIM_MEMORY_COMPLETE !", Toast.LENGTH_SHORT).show();
                 if (dbHelper == null) {
                     dbHelper = new AccountDbAdapter(this);
@@ -205,7 +205,7 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
                     }
                 }
             }
-            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+            case ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
                     ComponentCallbacks2.TRIM_MEMORY_BACKGROUND -> Log.i("ComponentCallbacks2 =>", "low memory event !");
             default -> Log.i("ComponentCallbacks2 =>", "default event !");
                     //Toast.makeText(this, "ProductActivity: default !", Toast.LENGTH_SHORT).show();

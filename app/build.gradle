@@ -23,10 +23,11 @@ android {
         applicationId "com.example.user.store3c"
         minSdkVersion 22
         targetSdkVersion 33
-        versionCode 340
-        versionName "Store3C_v3.4.0"
+        versionCode 350
+        versionName "Store3C_v3.5.0"
         signingConfig signingConfigs.release
         multiDexEnabled true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -75,7 +76,9 @@ dependencies {
     api(group: "androidx.work", name: "work-runtime", version: '2.7.0')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'androidx.arch.core:core-testing:2.2.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation "androidx.test:runner:1.5.2"
+    androidTestImplementation "androidx.test:rules:1.5.0"
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.appcompat:appcompat-resources:1.6.1'
