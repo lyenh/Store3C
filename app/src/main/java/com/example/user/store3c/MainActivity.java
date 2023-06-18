@@ -142,14 +142,14 @@ public class MainActivity extends AppCompatActivity
     private List<Fragment> fragments;
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private boolean systemClearTask = false;
+    private volatile ActivityManager am;
+    private volatile List<ActivityManager.AppTask> tasks;
 
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
     public boolean combinedActivity = false;
     public volatile int returnApp = 0, appRntTimer = 0;
     public volatile int TimerThread = 0;
-    private volatile ActivityManager am;
-    private volatile List<ActivityManager.AppTask> tasks;
     public UserHandler userAdHandler;
 
     @Override

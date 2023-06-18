@@ -188,7 +188,7 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                     }
                 }
             }
-            TRIM_MEMORY_COMPLETE, TRIM_MEMORY_MODERATE -> {
+            TRIM_MEMORY_COMPLETE, TRIM_MEMORY_MODERATE, TRIM_MEMORY_RUNNING_CRITICAL -> {
                 //Toast.makeText(this, "OrderFormActivity: TRIM_MEMORY_COMPLETE !", Toast.LENGTH_SHORT).show();
                 if (dbHelper == null) {
                     dbHelper = AccountDbAdapter(this)

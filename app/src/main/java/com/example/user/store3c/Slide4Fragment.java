@@ -28,8 +28,8 @@ public class Slide4Fragment extends Fragment {
 
     // TODO: Rename and change types of para
     private String mParam2;
-    private byte[] mParam1;
-    //private static byte[] gParam1;
+    //private byte[] mParam1;
+    private static byte[] gParam1;
 
     private OnFragmentInteractionListener mListener;
     private final int imgId = 4;
@@ -48,11 +48,11 @@ public class Slide4Fragment extends Fragment {
      */
     // TODO: Rename and change types and number of parameters
     public static Slide4Fragment newInstance(byte[] param1, String param2) {
-        //gParam1 = param1;
+        gParam1 = param1;
 
         Slide4Fragment fragment = new Slide4Fragment();
         Bundle args = new Bundle();
-        args.putByteArray("param1", param1);
+        //args.putByteArray("param1", param1);
         args.putString("param2", param2);
         fragment.setArguments(args);
         return fragment;
@@ -62,7 +62,7 @@ public class Slide4Fragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getByteArray("param1");
+            //mParam1 = getArguments().getByteArray("param1");
             mParam2 = getArguments().getString("param2");
         }
     }
@@ -73,7 +73,7 @@ public class Slide4Fragment extends Fragment {
 
         if (getArguments() != null) {
             synchronized (getArguments()) {
-                getArguments().putByteArray("param1", mParam1);
+                //getArguments().putByteArray("param1", mParam1);
                 getArguments().putString("param2", mParam2);
             }
         }
@@ -91,7 +91,7 @@ public class Slide4Fragment extends Fragment {
 
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
         image.setPadding(2,2,2,2);
-        image.setImageBitmap(BitmapFactory.decodeByteArray(mParam1, 0, mParam1.length));
+        image.setImageBitmap(BitmapFactory.decodeByteArray(gParam1, 0, gParam1.length));
         image.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
