@@ -218,6 +218,22 @@ class OrderFormActivity : AppCompatActivity() , View.OnClickListener, ComponentC
                             }
                         }
                     }
+                    else {
+                        try {
+                            for (i in tasks.indices) {
+                                if (tasks[i].taskInfo != null && tasks[i].taskInfo.persistentId == DbMainActivityTaskId && DbMainActivityTaskId != taskId) {
+                                    mainTask = tasks[i]
+                                }
+                            }
+                            if (mainTask != null) {
+                                mainTask.finishAndRemoveTask()
+                                //Toast.makeText(this, "OrderFormActivity: Memory is extremely low, free main task !", Toast.LENGTH_LONG).show()
+                            }
+                        } catch (t: Throwable) {
+                            t.printStackTrace()
+                            //Toast.makeText(this, "OrderFormActivity: catch exception, Memory low !", Toast.LENGTH_LONG).show()
+                        }
+                    }
                 }
             }
             else -> Log.i("ComponentCallbacks2 =>", "default event !")

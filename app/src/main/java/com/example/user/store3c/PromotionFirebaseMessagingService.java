@@ -37,6 +37,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -634,18 +635,24 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     public Bitmap getBitmapfromUrl(String imageUrl) {
         if (InternetConnection.checkConnection(PromotionFirebaseMessagingService.this)) {
+            URL url;
+            HttpURLConnection connection = null;
             try {
-                URL url = new URL(imageUrl);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                url = new URL(imageUrl);
+                connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
                 connection.setConnectTimeout(100000);
                 connection.connect();
-                InputStream input = connection.getInputStream();
+                InputStream input = new BufferedInputStream(connection.getInputStream());
                 return BitmapFactory.decodeStream(input);
             } catch (Exception e) {
                 e.printStackTrace();
                 Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 return null;
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         } else {
             Log.i("網路未連線! ", " ==>PromotionFirebaseMessagingService");

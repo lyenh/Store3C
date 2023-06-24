@@ -29,13 +29,20 @@ public class Slide2Fragment extends Fragment {
     // TODO: Rename and change types of parameters
     //private byte[] mParam1;
     private String mParam2;
-    private static byte[] gParam1;
+    private byte[] gParam1;
 
     private OnFragmentInteractionListener mListener;
     private final int imgId = 2;
 
     public Slide2Fragment() {
         // Required empty public constructor
+    }
+
+    public Slide2Fragment(byte[] param1, String param2) {
+        gParam1 = param1;
+        Bundle args = new Bundle();
+        args.putString("param2", param2);
+        Slide2Fragment.this.setArguments(args);
     }
 
     /**
@@ -48,7 +55,7 @@ public class Slide2Fragment extends Fragment {
      */
     // TODO: Rename and change types and number of parameters
     public static Slide2Fragment newInstance(byte[] param1, String param2) {
-        gParam1 = param1;
+   //     gParam1 = param1;
 
         Slide2Fragment fragment = new Slide2Fragment();
         Bundle args = new Bundle();

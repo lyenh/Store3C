@@ -49,12 +49,8 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         ImageView pic, buy_b;
         TextView name,price,intro;
         Button ret_b;
-        ScrollView introView;
         Bitmap product_img;
-        final int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
-        final int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
         String firebaseNotification = "";
-        boolean isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setLogo(R.drawable.store_logo);
@@ -64,7 +60,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
         name = findViewById(R.id.productName_id);
         price = findViewById(R.id.productPrice_id);
         intro = findViewById(R.id.productIntro_id);
-        introView = findViewById(R.id.productIntroView_id);
         ret_b = findViewById(R.id.productReturnBtn_id);
         buy_b = findViewById(R.id.buyBtn_id);
 
@@ -108,22 +103,6 @@ public class ProductActivity extends AppCompatActivity implements View.OnClickLi
             product_price = bundle.getString("Price");
             price.setText(product_price);
             product_intro = bundle.getString("Intro");
-        }
-
-        int screenWidth = Resources.getSystem().getDisplayMetrics().widthPixels;
-        int imgHeight;
-        if (product_intro != null && product_intro.length() != 0) {
-            if (isTab) {
-                if (screenWidth > rotationTabScreenWidth) {
-                    imgHeight = (product_intro.length() / 27 + 1) * 100;
-                    introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-                }
-            } else {
-                if (screenWidth > rotationScreenWidth) {
-                    imgHeight = (product_intro.length() / 27 + 1) * 60;
-                    introView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, imgHeight));
-                }
-            }
         }
 
         if (dbHelper == null) {

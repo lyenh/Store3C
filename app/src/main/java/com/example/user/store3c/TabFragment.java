@@ -1,13 +1,10 @@
 package com.example.user.store3c;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,15 +13,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-
-import static com.example.user.store3c.MainActivity.isTab;
-import static com.example.user.store3c.MainActivity.rotationScreenWidth;
-import static com.example.user.store3c.MainActivity.rotationTabScreenWidth;
 
 /**
  * Created by user on 2016/10/22.

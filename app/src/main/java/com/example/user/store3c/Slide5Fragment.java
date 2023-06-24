@@ -28,13 +28,20 @@ public class Slide5Fragment extends Fragment {
     // TODO: Rename and change types of parameters
     //private byte[] mParam1;
     private String mParam2;
-    private static byte[] gParam1;
+    private byte[] gParam1;
 
     private OnFragmentInteractionListener mListener;
     private final int imgId = 5;
 
     public Slide5Fragment() {
         // Required empty public constructor
+    }
+
+    public Slide5Fragment(byte[] param1, String param2) {
+        gParam1 = param1;
+        Bundle args = new Bundle();
+        args.putString("param2", param2);
+        Slide5Fragment.this.setArguments(args);
     }
 
     /**
@@ -47,7 +54,7 @@ public class Slide5Fragment extends Fragment {
      */
     // TODO: Rename and change types and number of parameters
     public static Slide5Fragment newInstance(byte[] param1, String param2) {
-        gParam1 = param1;
+        //gParam1 = param1;
 
         Slide5Fragment fragment = new Slide5Fragment();
         Bundle args = new Bundle();

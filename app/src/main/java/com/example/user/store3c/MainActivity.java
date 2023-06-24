@@ -67,6 +67,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -120,10 +121,9 @@ public class MainActivity extends AppCompatActivity
     public static boolean setFirebaseDbPersistence;
     public static Bitmap userImg = null;
     public static boolean isTab;
-    public static int rotationScreenWidth = 700;  // phone rotation width > 700 , Samsung A8 Tab width size: 800
-    public static int rotationTabScreenWidth = 1000;  // Tab rotation width > 1000
-    public AlertDialog dialog;
-
+    public static int rotationScreenWidth;
+    public static int rotationTabScreenWidth;
+    
     private DishAdapter dishAdapter;
     private ImageView logoImage;
     private NavigationView navigationView;
@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity
     private volatile ActivityManager am;
     private volatile List<ActivityManager.AppTask> tasks;
 
+    public AlertDialog dialog;
     public String messageType, messageName,  messagePrice, messageIntro, messageImageUrl;
     public ActivityManager.AppTask currentTask = null;
     public boolean combinedActivity = false;
@@ -181,6 +182,15 @@ public class MainActivity extends AppCompatActivity
         }
         else {      //regular load MainActivity
             messageType = "NotFirebaseMessage";
+        }
+
+        isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
+        if (isTab) {
+            rotationTabScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
+            //Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
+        }
+        else {
+            rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
         }
 
         if (dbHelper == null) {
@@ -241,19 +251,24 @@ public class MainActivity extends AppCompatActivity
 
                 executor.execute(() -> {
                     if (InternetConnection.checkConnection(MainActivity.this)) {
+                        URL url;
+                        HttpURLConnection connection = null;
                         try {
-                            String imageUrl = messageImageUrl;
-                            URL url = new URL(imageUrl);
-                            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                            url = new URL(messageImageUrl);
+                            connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
                             connection.setConnectTimeout(100000);
                             connection.connect();
-                            InputStream input = connection.getInputStream();
+                            InputStream input = new BufferedInputStream(connection.getInputStream());
                             productImage = BitmapFactory.decodeStream(input);
                         } catch (Exception e) {
                             e.printStackTrace();
                             Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             productImage = null;
+                        } finally {
+                            if (connection != null) {
+                                connection.disconnect();
+                            }
                         }
                     } else {
                         Toast.makeText(MainActivity.this, "網路未連線! ", Toast.LENGTH_SHORT).show();
@@ -367,14 +382,6 @@ public class MainActivity extends AppCompatActivity
                     }
                     toolbar = findViewById(R.id.toolbarMain);
                     setSupportActionBar(toolbar);
-                    isTab = (getApplicationContext().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
-                    if (isTab) {
-                        rotationTabScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
-                        //Toast.makeText(MainActivity.this, "screen size: " + Resources.getSystem().getDisplayMetrics().widthPixels, Toast.LENGTH_LONG).show();
-                    }
-                    else {
-                        rotationScreenWidth = Math.min(Resources.getSystem().getDisplayMetrics().widthPixels, Resources.getSystem().getDisplayMetrics().heightPixels);
-                    }
 
                     drawer = findViewById(R.id.drawer_layout_main);
                     toggle = new ActionBarDrawerToggle(
@@ -1389,19 +1396,31 @@ public class MainActivity extends AppCompatActivity
         }
         fragments = new Vector<>();
         if (picShowImg.size() == DISH_SHOW_COUNT) {
-            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
-            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
-            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
-            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
-            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+            fragments.add(new Slide1Fragment(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+            fragments.add(new Slide2Fragment(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+            fragments.add(new Slide3Fragment(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+            fragments.add(new Slide4Fragment(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+            fragments.add(new Slide5Fragment(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
+
+            //fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picShowImg.get(0)), "frame1"));
+           // fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picShowImg.get(1)), "frame2"));
+            //fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picShowImg.get(2)), "frame3"));
+            //fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picShowImg.get(3)), "frame4"));
+            //fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picShowImg.get(4)), "frame5"));
         } else {
             Toast.makeText(MainActivity.this, "No DishShow fragment ", Toast.LENGTH_SHORT).show();
             Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-            fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picture), "frame1"));
-            fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picture), "frame2"));
-            fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picture), "frame3"));
-            fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picture), "frame4"));
-            fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picture), "frame5"));
+            fragments.add(new Slide1Fragment(Bitmap2Bytes(picture), "frame1"));
+            fragments.add(new Slide2Fragment(Bitmap2Bytes(picture), "frame2"));
+            fragments.add(new Slide3Fragment(Bitmap2Bytes(picture), "frame3"));
+            fragments.add(new Slide4Fragment(Bitmap2Bytes(picture), "frame4"));
+            fragments.add(new Slide5Fragment(Bitmap2Bytes(picture), "frame5"));
+
+            //fragments.add(Slide1Fragment.newInstance(Bitmap2Bytes(picture), "frame1"));
+            //fragments.add(Slide2Fragment.newInstance(Bitmap2Bytes(picture), "frame2"));
+            //fragments.add(Slide3Fragment.newInstance(Bitmap2Bytes(picture), "frame3"));
+            //fragments.add(Slide4Fragment.newInstance(Bitmap2Bytes(picture), "frame4"));
+            //fragments.add(Slide5Fragment.newInstance(Bitmap2Bytes(picture), "frame5"));
         }
 
         if (adapterLayout == 0) {

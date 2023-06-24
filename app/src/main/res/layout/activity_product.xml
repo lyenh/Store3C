@@ -19,7 +19,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <ImageView
@@ -36,8 +36,8 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2.7"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2.5"
                     android:gravity="start"
                     android:orientation="horizontal">
 
@@ -45,15 +45,14 @@
                         android:id="@+id/productName_id"
                         android:layout_width="277dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:gravity="center_horizontal"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.5"
                     android:gravity="end"
                     android:orientation="horizontal">
 
@@ -62,7 +61,6 @@
                         android:layout_width="105dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
-                        android:layout_weight="1"
                         android:textAppearance="?android:attr/textAppearanceLarge"
                         android:textIsSelectable="false" />
 
@@ -110,31 +108,25 @@
 
             </LinearLayout>
 
-            <ScrollView
-                android:id="@+id/productIntroView_id"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="161dp"
+                android:layout_height="0dp"
                 android:layout_marginTop="20dp"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:forceHasOverlappingRendering="false">
+                android:layout_marginBottom="20dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/productIntro_id"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+            </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/productIntro_id"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="20dp"
-                        android:layout_marginRight="20dp"
-                        android:textAppearance="?android:attr/textAppearanceLarge" />
-                </LinearLayout>
-            </ScrollView>
         </LinearLayout>
+
     </ScrollView>
 
 </LinearLayout>
