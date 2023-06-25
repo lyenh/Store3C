@@ -253,17 +253,17 @@ public class MainActivity extends AppCompatActivity
                     if (InternetConnection.checkConnection(MainActivity.this)) {
                         URL url;
                         HttpURLConnection connection = null;
+                        int bufferSize = 8 * 1024;
                         try {
                             url = new URL(messageImageUrl);
                             connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
-                            connection.setConnectTimeout(100000);
+                            connection.setConnectTimeout(1200000);
                             connection.connect();
-                            InputStream input = new BufferedInputStream(connection.getInputStream());
+                            InputStream input = new BufferedInputStream(connection.getInputStream(), bufferSize);
                             productImage = BitmapFactory.decodeStream(input);
                         } catch (Exception e) {
                             e.printStackTrace();
-                            Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             productImage = null;
                         } finally {
                             if (connection != null) {

@@ -141,7 +141,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     stackBuilder.addNextIntent(resultIntent);
                     resultPendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                    channelId = getString(R.string.default_notification_channel_id);
+                    channelId = getString(R.string.orderForm_notification_channel_id);
                     defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                     bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
                     notificationBuilder =
@@ -165,18 +165,23 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
                     }
 
-                    notificationManager =
-                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                     // Since android Oreo notification channel is needed.
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         NotificationChannel channel = new NotificationChannel(channelId,
-                                "Channel human readable title",
-                                NotificationManager.IMPORTANCE_DEFAULT);
+                                "Store3C OrderForm Channel",
+                                NotificationManager.IMPORTANCE_HIGH);
                         channel.enableLights(true);
                         if (notificationManager != null) {
                             notificationManager.createNotificationChannel(channel);
                         }
+                    } else {
+                        notification.ledARGB = Color.WHITE;
+                        notification.ledOnMS = 300;
+                        notification.ledOffMS = 300;
+                        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+                        //notification.defaults |= Notification.DEFAULT_LIGHTS;
                     }
 
                     try {
@@ -282,16 +287,15 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
                     }
 
-                    notificationManager =
-                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
                     //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
                     // Since android Oreo notification channel is needed.
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         NotificationChannel channel = new NotificationChannel(channelId,
-                                "Channel human readable title",
-                                NotificationManager.IMPORTANCE_DEFAULT);
+                                "Store3C onSale Channel",
+                                NotificationManager.IMPORTANCE_HIGH);
                         channel.enableLights(true);
                         if (notificationManager != null) {
                             notificationManager.createNotificationChannel(channel);
@@ -419,8 +423,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             // Since android Oreo notification channel is needed.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 NotificationChannel channel = new NotificationChannel(channelId,
-                        "Channel human readable title",
-                        NotificationManager.IMPORTANCE_DEFAULT);
+                        "Store3C onSale Channel",
+                        NotificationManager.IMPORTANCE_HIGH);
                 channel.enableLights(true);
                 if (notificationManager != null) {
                     notificationManager.createNotificationChannel(channel);
@@ -463,7 +467,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     }
 
     @Override
-    synchronized public void onNewToken(@NonNull String s) {
+    public synchronized void onNewToken(@NonNull String s) {
         super.onNewToken(s);
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
@@ -633,21 +637,21 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     }
 
-    public Bitmap getBitmapfromUrl(String imageUrl) {
+    public synchronized Bitmap getBitmapfromUrl(String imageUrl) {
         if (InternetConnection.checkConnection(PromotionFirebaseMessagingService.this)) {
             URL url;
             HttpURLConnection connection = null;
+            int bufferSize = 8 * 1024;
             try {
                 url = new URL(imageUrl);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
-                connection.setConnectTimeout(100000);
+                connection.setConnectTimeout(1200000);
                 connection.connect();
-                InputStream input = new BufferedInputStream(connection.getInputStream());
+                InputStream input = new BufferedInputStream(connection.getInputStream(), bufferSize);
                 return BitmapFactory.decodeStream(input);
             } catch (Exception e) {
                 e.printStackTrace();
-                Toast.makeText(this, "BitmapFromUrl: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 return null;
             } finally {
                 if (connection != null) {
@@ -660,7 +664,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         }
     }
 
-    private byte [] Bitmap2Bytes(Bitmap bm){
+    private synchronized byte [] Bitmap2Bytes(Bitmap bm){
         ByteArrayOutputStream baos =  new  ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.PNG,  100 , baos);
         return  baos.toByteArray();
