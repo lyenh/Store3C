@@ -29,7 +29,7 @@
     <string name="action_login">網路連線後即可登入</string>
     <string name="action_logout">使用者登出</string>
     <string name="default_notification_channel_id">OnSaleChannel</string>
-    <string name="orderForm_notification_channel_id">OnSaleChannel</string>
+    <string name="orderForm_notification_channel_id">OrderFormChannel</string>
     <string name="player_error">Error initializing YouTube player: %s</string>
     <string name="account">E-mail (帳號) : </string>
     <string name="password">Password (密碼) : </string>

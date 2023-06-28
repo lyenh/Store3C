@@ -250,17 +250,18 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 executor.execute(() -> {
+                    URL url;
+                    HttpURLConnection connection = null;
+
                     if (InternetConnection.checkConnection(MainActivity.this)) {
-                        URL url;
-                        HttpURLConnection connection = null;
-                        int bufferSize = 8 * 1024;
                         try {
                             url = new URL(messageImageUrl);
                             connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
-                            connection.setConnectTimeout(1200000);
+                            connection.setConnectTimeout(600000);
+                            connection.setUseCaches(true);
                             connection.connect();
-                            InputStream input = new BufferedInputStream(connection.getInputStream(), bufferSize);
+                            InputStream input = new BufferedInputStream(connection.getInputStream());
                             productImage = BitmapFactory.decodeStream(input);
                         } catch (Exception e) {
                             e.printStackTrace();

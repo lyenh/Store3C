@@ -59,6 +59,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     private String dbUserName, dbUserEmail;
     private volatile ActivityManager am;
     private volatile List<ActivityManager.AppTask> tasks;
+    private volatile Bitmap image;
 
     public String userId = "defaultId";
     public String refreshedToken;
@@ -151,6 +152,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setContentTitle(title)
                                     .setContentText(messageText)
                                     .setSubText(subText)
+                                    .setPriority(Notification.PRIORITY_HIGH)
                                     .setStyle(new NotificationCompat.BigTextStyle().bigText(messageText))
                                     .setAutoCancel(true)
                                     .setSound(defaultSoundUri)
@@ -203,8 +205,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
 
-                    if (getBitmapfromUrl(imageUrl) != null) {
+                    if (imageUrl != null) {
                         picture = getBitmapfromUrl(imageUrl);
+                    }
+                    if (picture == null) {
+                        picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
                     }
                     messagePrice = data.get("messagePrice");
                     messageIntro = data.get("messageIntro");
@@ -246,9 +251,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         intent.putExtra("Notification", "UPPER_APP");
                     }
 
-                    if (picture == null) {
-                        picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-                    }
                     intent.putExtra("Pic", Bitmap2Bytes(picture));
                     intent.putExtra("Name", message);
                     intent.putExtra("Price", messagePrice);
@@ -272,7 +274,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                             .setSummaryText(message)
                                             .bigPicture(picture))
                                     .setLights(Color.WHITE, 300, 300)
-                                    .setPriority(Notification.PRIORITY_DEFAULT)
+                                    .setPriority(Notification.PRIORITY_HIGH)
                                     .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
                                     .setAutoCancel(true)
                                     .setSound(defaultSoundUri)
@@ -338,6 +340,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             if (pic != null) {
                 picture = getBitmapfromUrl(pic.toString());
             }
+            if (picture == null) {
+                picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+            }
 
             intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
             am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
@@ -374,9 +379,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 Log.i("Notification===> ", "System tray send message to here.");  //It should not happen, notification will send to the MainActivity
             }
 
-            if (picture == null) {
-                picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-            }
             intent.putExtra("Pic", Bitmap2Bytes(picture));
             intent.putExtra("Name", message);
             intent.putExtra("Price", messagePrice);
@@ -400,7 +402,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setSummaryText(message)
                                     .bigPicture(picture))
                             .setLights(Color.WHITE,300,300)
-                            .setPriority(Notification.PRIORITY_DEFAULT)
+                            .setPriority(Notification.PRIORITY_HIGH)
                             .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
                             .setAutoCancel(true)
                             .setSound(defaultSoundUri)
@@ -637,29 +639,95 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
     }
 
+    @Override
+    public void onLowMemory() {
+        int memoSize = 0;
+
+        if (dbhelper == null) {
+            dbhelper = new AccountDbAdapter(this);
+        }
+        if (!(dbhelper.IsDbMemoEmpty())) {
+            try {
+                Cursor cursor = dbhelper.listAllMemo();
+                if (cursor.getCount() > 0) {
+                    do {
+                        memoSize++;
+                    } while (cursor.moveToNext());
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (dbhelper.createMemo(memoSize, "On low memory", "1") == -1) {
+            Log.i("create Memo: ", "fail!");
+        }
+
+        super.onLowMemory();
+    }
+
+    @Override
+    public synchronized void onTrimMemory(int level) {
+
+    }
+
     public synchronized Bitmap getBitmapfromUrl(String imageUrl) {
+        URL url;
+        HttpURLConnection connection = null;
+        int memoSize = 0;
+
+        if (dbhelper == null) {
+            dbhelper = new AccountDbAdapter(this);
+        }
+        if (!(dbhelper.IsDbMemoEmpty())) {
+            try {
+                Cursor cursor = dbhelper.listAllMemo();
+                if (cursor.getCount() > 0) {
+                    do {
+                        memoSize++;
+                    } while (cursor.moveToNext());
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
         if (InternetConnection.checkConnection(PromotionFirebaseMessagingService.this)) {
-            URL url;
-            HttpURLConnection connection = null;
-            int bufferSize = 8 * 1024;
             try {
                 url = new URL(imageUrl);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
-                connection.setConnectTimeout(1200000);
+                connection.setConnectTimeout(600000);
+                connection.setUseCaches(true);
                 connection.connect();
-                InputStream input = new BufferedInputStream(connection.getInputStream(), bufferSize);
-                return BitmapFactory.decodeStream(input);
+                InputStream input = new BufferedInputStream(connection.getInputStream());
+                image =  BitmapFactory.decodeStream(input);
+                if (image == null) {
+                    if (dbhelper.createMemo(memoSize, "image null", "10") == -1) {
+                        Log.i("create Memo: ", "fail!");
+                    }
+                }
+                else {
+                    if (dbhelper.createMemo(memoSize, "add image", "1000") == -1) {
+                        Log.i("create Memo: ", "fail!");
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
+                if (dbhelper.createMemo(memoSize, e.getMessage(), "100") == -1) {
+                    Log.i("create Memo: ", "fail!");
+                }
                 return null;
             } finally {
                 if (connection != null) {
                     connection.disconnect();
                 }
             }
+            return image;
         } else {
             Log.i("網路未連線! ", " ==>PromotionFirebaseMessagingService");
+            if (dbhelper.createMemo(memoSize, "No net !", "10000") == -1) {
+                Log.i("create Memo: ", "fail!");
+            }
             return null;
         }
     }
