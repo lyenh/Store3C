@@ -73,6 +73,7 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -138,7 +139,7 @@ public class MainActivity extends AppCompatActivity
     private String retainRecentTask = null;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private Bitmap productImage;
+    private Bitmap productImage = null;
     private List<Fragment> fragments;
     private ViewPager2.OnPageChangeCallback pageChangeCallback;
     private boolean systemClearTask = false;
@@ -259,11 +260,39 @@ public class MainActivity extends AppCompatActivity
                             connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
                             connection.setConnectTimeout(600000);
-                            connection.setUseCaches(true);
                             connection.connect();
-                            InputStream input = new BufferedInputStream(connection.getInputStream());
-                            productImage = BitmapFactory.decodeStream(input);
-                        } catch (Exception e) {
+                            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                                InputStream input = new BufferedInputStream(connection.getInputStream());
+                                productImage = BitmapFactory.decodeStream(input);
+                            }
+                            else {
+                                connection.connect();
+                                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                                    InputStream input = new BufferedInputStream(connection.getInputStream());
+                                    productImage =  BitmapFactory.decodeStream(input);
+                                }
+                            }
+                        } catch (UnknownHostException uhe) {
+                            uhe.printStackTrace();
+                            try {
+                                if (connection != null) {
+                                    connection.disconnect();
+                                }
+                                url = new URL(messageImageUrl);
+                                connection = (HttpURLConnection) url.openConnection();
+                                connection.setDoInput(true);
+                                connection.setConnectTimeout(600000);
+                                connection.setUseCaches(false);
+                                connection.connect();
+                                productImage =  BitmapFactory.decodeStream(connection.getInputStream());
+                                //   InputStream input = new BufferedInputStream(connection.getInputStream());
+                                //   image =  BitmapFactory.decodeStream(input);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                productImage = null;
+                            }
+                        }
+                        catch (Exception e) {
                             e.printStackTrace();
                             productImage = null;
                         } finally {

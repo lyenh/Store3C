@@ -19,33 +19,23 @@ public class InternetConnection {
         ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connMgr.getActiveNetworkInfo();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            Network nw = connMgr.getActiveNetwork();
-            if (nw == null) {
-                return false;
-            }
-            else {
-                return (activeNetworkInfo != null && Objects.requireNonNull(connMgr.getNetworkCapabilities(nw)).hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED));
-            }
-        }
-        else {
-            if (activeNetworkInfo != null) { // connected to the internet
-                //Toast.makeText(context, activeNetworkInfo.getTypeName(), Toast.LENGTH_SHORT).show();
-                if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-                    // connected to wifi
-                    return true;
-                } else if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
-                    // connected to the mobile provider's data plan
-                    return true;
-                } else if (activeNetworkInfo.isConnectedOrConnecting()) {
-                    Log.i("activeNetworkInfo: ", "Connected but none Wifi or Mobile");
-                    return true;
-                } else {
-                    return false;
-                }
+        if (activeNetworkInfo != null) { // connected to the internet
+            //Toast.makeText(context, activeNetworkInfo.getTypeName(), Toast.LENGTH_SHORT).show();
+            if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                // connected to wifi
+                return true;
+            } else if (activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                // connected to the mobile provider's data plan
+                return true;
+            } else if (activeNetworkInfo.isConnectedOrConnecting()) {
+                Log.i("activeNetworkInfo: ", "Connected but none Wifi or Mobile");
+                return true;
             } else {
                 return false;
             }
+        } else {
+            return false;
         }
     }
+
 }

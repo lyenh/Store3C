@@ -18,7 +18,6 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -42,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +59,6 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     private String dbUserName, dbUserEmail;
     private volatile ActivityManager am;
     private volatile List<ActivityManager.AppTask> tasks;
-    private volatile Bitmap image;
 
     public String userId = "defaultId";
     public String refreshedToken;
@@ -659,7 +658,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             }
         }
 
-        if (dbhelper.createMemo(memoSize, "On low memory", "1") == -1) {
+        if (dbhelper.createMemo(memoSize, "On low memory", "11") == -1) {
             Log.i("create Memo: ", "fail!");
         }
 
@@ -674,10 +673,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
     public synchronized Bitmap getBitmapfromUrl(String imageUrl) {
         URL url;
         HttpURLConnection connection = null;
+        Bitmap image = null;
         int memoSize = 0;
 
         if (dbhelper == null) {
-            dbhelper = new AccountDbAdapter(this);
+            dbhelper = new AccountDbAdapter(PromotionFirebaseMessagingService.this);
         }
         if (!(dbhelper.IsDbMemoEmpty())) {
             try {
@@ -697,10 +697,38 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
                 connection.setConnectTimeout(600000);
-                connection.setUseCaches(true);
                 connection.connect();
-                InputStream input = new BufferedInputStream(connection.getInputStream());
-                image =  BitmapFactory.decodeStream(input);
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+
+                   /* InputStream input = connection.getInputStream();
+                    byte[] imageData = new byte[4096];
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    int read;
+                    while ((read = input.read(imageData)) != -1) {
+                        outputStream.write(imageData, 0, read);
+                    }
+                    outputStream.close();
+                    byte [] data = outputStream.toByteArray();
+                    image  = BitmapFactory.decodeByteArray(data, 0, data.length);
+*/
+                    InputStream input = new BufferedInputStream(connection.getInputStream());
+                    image =  BitmapFactory.decodeStream(input);
+                }
+                else {
+                    connection.connect();
+                    if (dbhelper.createMemo(memoSize, "HTTP not OK", "1") == -1) {
+                        Log.i("create Memo: ", "fail!");
+                    }
+                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        InputStream input = new BufferedInputStream(connection.getInputStream());
+                        image =  BitmapFactory.decodeStream(input);
+                    }
+                    else {
+                        if (dbhelper.createMemo(memoSize, "HTTP retry not OK", "1_1") == -1) {
+                            Log.i("create Memo: ", "fail!");
+                        }
+                    }
+                }
                 if (image == null) {
                     if (dbhelper.createMemo(memoSize, "image null", "10") == -1) {
                         Log.i("create Memo: ", "fail!");
@@ -711,13 +739,48 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("create Memo: ", "fail!");
                     }
                 }
+            } catch (UnknownHostException uhe) {
+                uhe.printStackTrace();
+                if (dbhelper.createMemo(memoSize, uhe.getMessage(), "100_1") == -1) {
+                    Log.i("create Memo: ", "fail!");
+                }
+                try {
+                    if (connection != null) {
+                        connection.disconnect();
+                    }
+                    url = new URL(imageUrl);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setDoInput(true);
+                    connection.setConnectTimeout(600000);
+                    connection.setUseCaches(false);
+                    connection.connect();
+                    InputStream input = new BufferedInputStream(connection.getInputStream());
+                    image =  BitmapFactory.decodeStream(input);
+                    if (image == null) {
+                        if (dbhelper.createMemo(memoSize, "image null", "10_1") == -1) {
+                            Log.i("create Memo: ", "fail!");
+                        }
+                    }
+                    else {
+                        if (dbhelper.createMemo(memoSize, "add image", "1000_1") == -1) {
+                            Log.i("create Memo: ", "fail!");
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (dbhelper.createMemo(memoSize, e.getMessage(), "100_2") == -1) {
+                        Log.i("create Memo: ", "fail!");
+                    }
+                    return null;
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 if (dbhelper.createMemo(memoSize, e.getMessage(), "100") == -1) {
                     Log.i("create Memo: ", "fail!");
                 }
                 return null;
-            } finally {
+            }
+            finally {
                 if (connection != null) {
                     connection.disconnect();
                 }
