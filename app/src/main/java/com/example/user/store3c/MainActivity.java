@@ -33,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
+import com.bumptech.glide.load.HttpException;
 import com.google.android.material.navigation.NavigationView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -72,6 +73,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -262,35 +264,67 @@ public class MainActivity extends AppCompatActivity
                             connection.setConnectTimeout(600000);
                             connection.connect();
                             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                                InputStream input = new BufferedInputStream(connection.getInputStream());
-                                productImage = BitmapFactory.decodeStream(input);
+                                InputStream input = connection.getInputStream();
+                                byte[] imageData = new byte[4096];
+                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                int read;
+                                while ((read = input.read(imageData)) != -1) {
+                                    outputStream.write(imageData, 0, read);
+                                }
+                                outputStream.close();
+                                input.close();
+                                byte [] data = outputStream.toByteArray();
+                                productImage  = BitmapFactory.decodeByteArray(data, 0, data.length);
                             }
                             else {
                                 connection.connect();
                                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                                    InputStream input = new BufferedInputStream(connection.getInputStream());
-                                    productImage =  BitmapFactory.decodeStream(input);
+                                    InputStream input = connection.getInputStream();
+                                    byte[] imageData = new byte[4096];
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    int read;
+                                    while ((read = input.read(imageData)) != -1) {
+                                        outputStream.write(imageData, 0, read);
+                                    }
+                                    outputStream.close();
+                                    input.close();
+                                    byte [] data = outputStream.toByteArray();
+                                    productImage  = BitmapFactory.decodeByteArray(data, 0, data.length);
                                 }
                             }
-                        } catch (UnknownHostException uhe) {
-                            uhe.printStackTrace();
-                            try {
-                                if (connection != null) {
-                                    connection.disconnect();
+                        } catch (UnknownHostException | SocketException | HttpException combinedE) {
+                            combinedE.printStackTrace();
+                            boolean connected = false;
+                            int counter = 0;
+                            do {
+                                counter++;
+                                try {
+                                    if (connection != null) {
+                                        connection.disconnect();
+                                    }
+                                    Thread.sleep(8000);     // for system update the DNS table
+                                    url = new URL(messageImageUrl);
+                                    connection = (HttpURLConnection) url.openConnection();
+                                    connection.setDoInput(true);
+                                    connection.setConnectTimeout(600000);
+                                    connection.connect();
+                                    InputStream input = connection.getInputStream();
+                                    byte[] imageData = new byte[4096];
+                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                    int read;
+                                    while ((read = input.read(imageData)) != -1) {
+                                        outputStream.write(imageData, 0, read);
+                                    }
+                                    outputStream.close();
+                                    input.close();
+                                    byte [] data = outputStream.toByteArray();
+                                    productImage  = BitmapFactory.decodeByteArray(data, 0, data.length);
+                                    connected = true;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    productImage = null;
                                 }
-                                url = new URL(messageImageUrl);
-                                connection = (HttpURLConnection) url.openConnection();
-                                connection.setDoInput(true);
-                                connection.setConnectTimeout(600000);
-                                connection.setUseCaches(false);
-                                connection.connect();
-                                productImage =  BitmapFactory.decodeStream(connection.getInputStream());
-                                //   InputStream input = new BufferedInputStream(connection.getInputStream());
-                                //   image =  BitmapFactory.decodeStream(input);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                productImage = null;
-                            }
+                            } while (connected || counter < 6);
                         }
                         catch (Exception e) {
                             e.printStackTrace();

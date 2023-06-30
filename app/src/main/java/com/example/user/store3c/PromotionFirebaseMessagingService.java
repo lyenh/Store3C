@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
 
+import com.bumptech.glide.load.HttpException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -40,6 +41,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -699,8 +701,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 connection.setConnectTimeout(600000);
                 connection.connect();
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-
-                   /* InputStream input = connection.getInputStream();
+                    InputStream input = connection.getInputStream();
                     byte[] imageData = new byte[4096];
                     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     int read;
@@ -708,11 +709,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         outputStream.write(imageData, 0, read);
                     }
                     outputStream.close();
+                    input.close();
                     byte [] data = outputStream.toByteArray();
                     image  = BitmapFactory.decodeByteArray(data, 0, data.length);
-*/
-                    InputStream input = new BufferedInputStream(connection.getInputStream());
-                    image =  BitmapFactory.decodeStream(input);
                 }
                 else {
                     connection.connect();
@@ -720,8 +719,17 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("create Memo: ", "fail!");
                     }
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                        InputStream input = new BufferedInputStream(connection.getInputStream());
-                        image =  BitmapFactory.decodeStream(input);
+                        InputStream input = connection.getInputStream();
+                        byte[] imageData = new byte[4096];
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        int read;
+                        while ((read = input.read(imageData)) != -1) {
+                            outputStream.write(imageData, 0, read);
+                        }
+                        outputStream.close();
+                        input.close();
+                        byte [] data = outputStream.toByteArray();
+                        image  = BitmapFactory.decodeByteArray(data, 0, data.length);
                     }
                     else {
                         if (dbhelper.createMemo(memoSize, "HTTP retry not OK", "1_1") == -1) {
@@ -739,41 +747,55 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("create Memo: ", "fail!");
                     }
                 }
-            } catch (UnknownHostException uhe) {
-                uhe.printStackTrace();
-                if (dbhelper.createMemo(memoSize, uhe.getMessage(), "100_1") == -1) {
+            } catch (UnknownHostException | SocketException | HttpException combinedE) {
+                combinedE.printStackTrace();
+                if (dbhelper.createMemo(memoSize++, combinedE.getMessage(), "100_1") == -1) {
                     Log.i("create Memo: ", "fail!");
                 }
-                try {
-                    if (connection != null) {
-                        connection.disconnect();
-                    }
-                    url = new URL(imageUrl);
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.setConnectTimeout(600000);
-                    connection.setUseCaches(false);
-                    connection.connect();
-                    InputStream input = new BufferedInputStream(connection.getInputStream());
-                    image =  BitmapFactory.decodeStream(input);
-                    if (image == null) {
-                        if (dbhelper.createMemo(memoSize, "image null", "10_1") == -1) {
+                boolean connected = false;
+                int counter = 0;
+                do {
+                    counter++;
+                    try {
+                        if (connection != null) {
+                            connection.disconnect();
+                        }
+                        Thread.sleep(8000);     // for system update the DNS table
+                        url = new URL(imageUrl);
+                        connection = (HttpURLConnection) url.openConnection();
+                        connection.setDoInput(true);
+                        connection.setConnectTimeout(600000);
+                        connection.connect();
+                        InputStream input = connection.getInputStream();
+                        byte[] imageData = new byte[4096];
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        int read;
+                        while ((read = input.read(imageData)) != -1) {
+                            outputStream.write(imageData, 0, read);
+                        }
+                        outputStream.close();
+                        input.close();
+                        byte [] data = outputStream.toByteArray();
+                        image  = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        connected = true;
+                        if (image == null) {
+                            if (dbhelper.createMemo(memoSize++, "image null", "10_1: " + counter) == -1) {
+                                Log.i("create Memo: ", "fail!");
+                            }
+                        } else {
+                            if (dbhelper.createMemo(memoSize++, "add image", "1000_1: " + counter) == -1) {
+                                Log.i("create Memo: ", "fail!");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        if (dbhelper.createMemo(memoSize++, e.getMessage(), "100_2: " + counter) == -1) {
                             Log.i("create Memo: ", "fail!");
                         }
                     }
-                    else {
-                        if (dbhelper.createMemo(memoSize, "add image", "1000_1") == -1) {
-                            Log.i("create Memo: ", "fail!");
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    if (dbhelper.createMemo(memoSize, e.getMessage(), "100_2") == -1) {
-                        Log.i("create Memo: ", "fail!");
-                    }
-                    return null;
-                }
-            } catch (Exception e) {
+                } while (connected || counter < 6);
+            }
+            catch (Exception e) {
                 e.printStackTrace();
                 if (dbhelper.createMemo(memoSize, e.getMessage(), "100") == -1) {
                     Log.i("create Memo: ", "fail!");
