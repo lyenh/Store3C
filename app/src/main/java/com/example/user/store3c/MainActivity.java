@@ -302,7 +302,7 @@ public class MainActivity extends AppCompatActivity
                                     if (connection != null) {
                                         connection.disconnect();
                                     }
-                                    Thread.sleep(8000);     // for system update the DNS table
+                                    Thread.sleep(2000);     // for system update the DNS table
                                     url = new URL(messageImageUrl);
                                     connection = (HttpURLConnection) url.openConnection();
                                     connection.setDoInput(true);
@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity
                                     e.printStackTrace();
                                     productImage = null;
                                 }
-                            } while (connected || counter < 6);
+                            } while (!connected && counter < 6);
                         }
                         catch (Exception e) {
                             e.printStackTrace();

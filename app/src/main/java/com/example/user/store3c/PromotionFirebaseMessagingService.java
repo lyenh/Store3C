@@ -40,6 +40,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.SocketException;
 import java.net.URL;
@@ -747,7 +748,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         Log.i("create Memo: ", "fail!");
                     }
                 }
-            } catch (UnknownHostException | SocketException | HttpException combinedE) {
+            } catch (UnknownHostException | SocketException | HttpException | HttpRetryException combinedE) {
                 combinedE.printStackTrace();
                 if (dbhelper.createMemo(memoSize++, combinedE.getMessage(), "100_1") == -1) {
                     Log.i("create Memo: ", "fail!");
@@ -760,7 +761,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         if (connection != null) {
                             connection.disconnect();
                         }
-                        Thread.sleep(8000);     // for system update the DNS table
+                        Thread.sleep(2000);     // for system update the DNS table
                         url = new URL(imageUrl);
                         connection = (HttpURLConnection) url.openConnection();
                         connection.setDoInput(true);
@@ -793,7 +794,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             Log.i("create Memo: ", "fail!");
                         }
                     }
-                } while (connected || counter < 6);
+                } while (!connected && counter < 6);
             }
             catch (Exception e) {
                 e.printStackTrace();
