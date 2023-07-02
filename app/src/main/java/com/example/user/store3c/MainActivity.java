@@ -72,12 +72,16 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.Proxy;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -262,6 +266,7 @@ public class MainActivity extends AppCompatActivity
                             connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
                             connection.setConnectTimeout(600000);
+                            connection.setReadTimeout(600000);
                             connection.connect();
                             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                                 InputStream input = connection.getInputStream();
@@ -292,7 +297,7 @@ public class MainActivity extends AppCompatActivity
                                     productImage  = BitmapFactory.decodeByteArray(data, 0, data.length);
                                 }
                             }
-                        } catch (UnknownHostException | SocketException | HttpException combinedE) {
+                        } catch (UnknownHostException | SocketException | HttpException | HttpRetryException combinedE) {
                             combinedE.printStackTrace();
                             boolean connected = false;
                             int counter = 0;
@@ -302,11 +307,18 @@ public class MainActivity extends AppCompatActivity
                                     if (connection != null) {
                                         connection.disconnect();
                                     }
-                                    Thread.sleep(2000);     // for system update the DNS table
+                                    Thread.sleep(3000);     // for system update the DNS table
                                     url = new URL(messageImageUrl);
-                                    connection = (HttpURLConnection) url.openConnection();
+                                    connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
                                     connection.setDoInput(true);
                                     connection.setConnectTimeout(600000);
+                                    connection.setReadTimeout(600000);
+
+                                    Properties systemProperties = System.getProperties();
+                                    String agent = systemProperties.getProperty("http.agent");
+                                    connection.setRequestProperty("User-Agent", agent);
+                                    connection.setRequestProperty("Cookie", "*");
+
                                     connection.connect();
                                     InputStream input = connection.getInputStream();
                                     byte[] imageData = new byte[4096];

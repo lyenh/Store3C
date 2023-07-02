@@ -42,13 +42,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.URL;
+import java.net.Proxy;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Random;
 
 import static com.example.user.store3c.MainActivity.setFirebaseDbPersistence;
@@ -700,6 +705,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
                 connection.setConnectTimeout(600000);
+                connection.setReadTimeout(600000);
                 connection.connect();
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     InputStream input = connection.getInputStream();
@@ -750,7 +756,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 }
             } catch (UnknownHostException | SocketException | HttpException | HttpRetryException combinedE) {
                 combinedE.printStackTrace();
-                if (dbhelper.createMemo(memoSize++, combinedE.getMessage(), "100_1") == -1) {
+                if (dbhelper.createMemo(memoSize++, Arrays.toString(combinedE.getStackTrace()), "100_1") == -1) {
                     Log.i("create Memo: ", "fail!");
                 }
                 boolean connected = false;
@@ -761,11 +767,19 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         if (connection != null) {
                             connection.disconnect();
                         }
-                        Thread.sleep(2000);     // for system update the DNS table
+                        Thread.sleep(3000);     // for system update the DNS table
                         url = new URL(imageUrl);
-                        connection = (HttpURLConnection) url.openConnection();
+
+                        connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
                         connection.setDoInput(true);
                         connection.setConnectTimeout(600000);
+                        connection.setReadTimeout(600000);
+
+                        Properties systemProperties = System.getProperties();
+                        String agent = systemProperties.getProperty("http.agent");
+                        connection.setRequestProperty("User-Agent", agent);
+                        connection.setRequestProperty("Cookie", "*");
+
                         connection.connect();
                         InputStream input = connection.getInputStream();
                         byte[] imageData = new byte[4096];
