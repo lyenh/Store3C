@@ -18,7 +18,7 @@ public class UserTimerThread extends Thread{
         while(activity.TimerThread == 1) {
             activity.userAdHandler.sendEmptyMessage((what++) % 5);
             try{
-                Thread.sleep(4000);
+                Thread.sleep(3800);
             }catch (Exception e) {
                 e.printStackTrace();
             }

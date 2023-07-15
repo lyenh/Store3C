@@ -99,11 +99,11 @@ public class PromotionActivity extends AppCompatActivity implements View.OnClick
                 mAuth = FirebaseAuth.getInstance();
                 dbhelper = new AccountDbAdapter(PromotionActivity.this);
 
-                try{
-                    Thread.sleep(3000);
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }
+              //  try{
+              //      Thread.sleep(3000);
+              //  }catch (Exception e) {
+              //      e.printStackTrace();
+              //  }
                 amountRef.runTransaction(new Transaction.Handler() {
                     @Override
                     public @NonNull Transaction.Result doTransaction(@NonNull MutableData mutableData) {

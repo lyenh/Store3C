@@ -297,8 +297,8 @@ public class MainActivity extends AppCompatActivity
                                     productImage  = BitmapFactory.decodeByteArray(data, 0, data.length);
                                 }
                             }
-                        } catch (UnknownHostException | SocketException | HttpException | HttpRetryException combinedE) {
-                            combinedE.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                             boolean connected = false;
                             int counter = 0;
                             do {
@@ -307,7 +307,7 @@ public class MainActivity extends AppCompatActivity
                                     if (connection != null) {
                                         connection.disconnect();
                                     }
-                                    Thread.sleep(3000);     // for system update the DNS table
+                                    Thread.sleep(3500);     // for system update the DNS table,  min is 3 second
                                     url = new URL(messageImageUrl);
                                     connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
                                     connection.setDoInput(true);
@@ -332,16 +332,13 @@ public class MainActivity extends AppCompatActivity
                                     byte [] data = outputStream.toByteArray();
                                     productImage  = BitmapFactory.decodeByteArray(data, 0, data.length);
                                     connected = true;
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
                                     productImage = null;
                                 }
-                            } while (!connected && counter < 6);
+                            } while (!connected && counter < 30);
                         }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                            productImage = null;
-                        } finally {
+                        finally {
                             if (connection != null) {
                                 connection.disconnect();
                             }

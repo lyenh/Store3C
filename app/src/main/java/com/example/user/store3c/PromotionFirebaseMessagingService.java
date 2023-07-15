@@ -682,7 +682,8 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         URL url;
         HttpURLConnection connection = null;
         Bitmap image = null;
-        int memoSize = 0;
+        int memoSize = -1;
+        String Device, Product, Hardware;
 
         if (dbhelper == null) {
             dbhelper = new AccountDbAdapter(PromotionFirebaseMessagingService.this);
@@ -722,7 +723,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 }
                 else {
                     connection.connect();
-                    if (dbhelper.createMemo(memoSize, "HTTP not OK", "1") == -1) {
+                    if (dbhelper.createMemo(memoSize++, "HTTP not OK", "1") == -1) {
                         Log.i("create Memo: ", "fail!");
                     }
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -739,26 +740,26 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         image  = BitmapFactory.decodeByteArray(data, 0, data.length);
                     }
                     else {
-                        if (dbhelper.createMemo(memoSize, "HTTP retry not OK", "1_1") == -1) {
+                        if (dbhelper.createMemo(memoSize++, "HTTP retry not OK", "1_1") == -1) {
                             Log.i("create Memo: ", "fail!");
                         }
                     }
                 }
                 if (image == null) {
-                    if (dbhelper.createMemo(memoSize, "image null", "10") == -1) {
+                    if (dbhelper.createMemo(memoSize++, "image null", "10") == -1) {
                         Log.i("create Memo: ", "fail!");
                     }
                 }
                 else {
-                    if (dbhelper.createMemo(memoSize, "add image", "1000") == -1) {
+                    if (dbhelper.createMemo(memoSize++, "add image", "1000") == -1) {
                         Log.i("create Memo: ", "fail!");
                     }
                 }
-            } catch (UnknownHostException | SocketException | HttpException | HttpRetryException combinedE) {
-                combinedE.printStackTrace();
-                if (dbhelper.createMemo(memoSize++, Arrays.toString(combinedE.getStackTrace()), "100_1") == -1) {
+            } catch (Exception e) {
+                if (dbhelper.createMemo(memoSize++, Arrays.toString(e.getStackTrace()), "100_1") == -1) {
                     Log.i("create Memo: ", "fail!");
                 }
+                e.printStackTrace();
                 boolean connected = false;
                 int counter = 0;
                 do {
@@ -767,7 +768,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         if (connection != null) {
                             connection.disconnect();
                         }
-                        Thread.sleep(3000);     // for system update the DNS table
+                        Thread.sleep(3500);     // for system update the DNS table,  min is 3 second
                         url = new URL(imageUrl);
 
                         connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
@@ -802,20 +803,13 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                 Log.i("create Memo: ", "fail!");
                             }
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        if (dbhelper.createMemo(memoSize++, e.getMessage(), "100_2: " + counter) == -1) {
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        if (dbhelper.createMemo(memoSize++, ex.getMessage(), "100_2: " + counter) == -1) {
                             Log.i("create Memo: ", "fail!");
                         }
                     }
-                } while (!connected && counter < 6);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                if (dbhelper.createMemo(memoSize, e.getMessage(), "100") == -1) {
-                    Log.i("create Memo: ", "fail!");
-                }
-                return null;
+                } while (!connected && counter < 30);
             }
             finally {
                 if (connection != null) {
@@ -825,7 +819,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
             return image;
         } else {
             Log.i("網路未連線! ", " ==>PromotionFirebaseMessagingService");
-            if (dbhelper.createMemo(memoSize, "No net !", "10000") == -1) {
+            if (dbhelper.createMemo(memoSize++, "No net !", "100") == -1) {
                 Log.i("create Memo: ", "fail!");
             }
             return null;
