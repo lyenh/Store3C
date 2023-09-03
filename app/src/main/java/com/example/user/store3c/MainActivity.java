@@ -3,7 +3,6 @@ package com.example.user.store3c;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.ApplicationExitInfo;
 import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,6 +25,7 @@ import android.os.Message;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -265,8 +265,8 @@ public class MainActivity extends AppCompatActivity
                             url = new URL(messageImageUrl);
                             connection = (HttpURLConnection) url.openConnection();
                             connection.setDoInput(true);
-                            connection.setConnectTimeout(600000);
-                            connection.setReadTimeout(600000);
+                            connection.setConnectTimeout(300000);
+                            connection.setReadTimeout(300000);
                             connection.connect();
                             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                                 InputStream input = connection.getInputStream();
@@ -307,17 +307,19 @@ public class MainActivity extends AppCompatActivity
                                     if (connection != null) {
                                         connection.disconnect();
                                     }
-                                    Thread.sleep(3500);     // for system update the DNS table,  min is 3 second
                                     url = new URL(messageImageUrl);
                                     connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
+                                    connection.setRequestMethod("GET");
                                     connection.setDoInput(true);
-                                    connection.setConnectTimeout(600000);
-                                    connection.setReadTimeout(600000);
+                                    connection.setConnectTimeout(300000);
+                                    connection.setReadTimeout(300000);
+                                    connection.setInstanceFollowRedirects(true);
+                                    connection.setUseCaches(false);
 
                                     Properties systemProperties = System.getProperties();
                                     String agent = systemProperties.getProperty("http.agent");
                                     connection.setRequestProperty("User-Agent", agent);
-                                    connection.setRequestProperty("Cookie", "*");
+                                    //connection.setRequestProperty("Cookie", "*");
 
                                     connection.connect();
                                     InputStream input = connection.getInputStream();
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity
                                     ex.printStackTrace();
                                     productImage = null;
                                 }
-                            } while (!connected && counter < 30);
+                            } while (!connected && counter < 10);
                         }
                         finally {
                             if (connection != null) {

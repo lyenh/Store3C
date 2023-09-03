@@ -15,6 +15,8 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
 
-import com.bumptech.glide.load.HttpException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
@@ -55,13 +56,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.example.user.store3c.MainActivity.setFirebaseDbPersistence;
 
 @Keep
 public class PromotionFirebaseMessagingService extends FirebaseMessagingService {
     private static Integer totalUserAmount = 0;
-
+    
     private DatabaseReference userTokenRef;
     private AccountDbAdapter dbhelper = null;
     private String dbUserName, dbUserEmail;
@@ -81,7 +84,11 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         Log.i("Messaging===> ", "from: "+remoteMessage.getFrom());
         String title, messageType, messageText, subText, message, imageUrl; // "http://appserver.000webhostapp.com/store3c/image/dish/d16.jpg"
         String messagePrice = "", messageIntro = "";
-        Bitmap picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+
+        Bitmap picture;
         Bitmap bitmap;
         Map<String, String> data;
         PendingIntent pendingIntent, resultPendingIntent;
@@ -159,7 +166,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                                     .setContentTitle(title)
                                     .setContentText(messageText)
                                     .setSubText(subText)
-                                    .setPriority(Notification.PRIORITY_HIGH)
+                                    .setPriority(Notification.PRIORITY_MAX)
                                     .setStyle(new NotificationCompat.BigTextStyle().bigText(messageText))
                                     .setAutoCancel(true)
                                     .setSound(defaultSoundUri)
@@ -212,124 +219,262 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                     message = data.get("messageText");
                     imageUrl = data.get("imagePath");
 
-                    if (imageUrl != null) {
-                        picture = getBitmapfromUrl(imageUrl);
-                    }
-                    if (picture == null) {
+                    if (imageUrl == null) {
                         picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-                    }
-                    messagePrice = data.get("messagePrice");
-                    messageIntro = data.get("messageIntro");
-                    intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+                        messagePrice = data.get("messagePrice");
+                        messageIntro = data.get("messageIntro");
+                        intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
 
-                    am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-                    tasks = am.getAppTasks();
-                    Log.i("Notification===> ", "size:  " +  tasks.size());
+                        am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                        tasks = am.getAppTasks();
+                        Log.i("Notification===> ", "size:  " + tasks.size());
 
-                    if (tasks.size() != 0) {
-                        boolean appRunningForeground = false;
-                        final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
-                        if (procInfos != null) {
-                            String packageName = getApplicationContext().getPackageName();
-                            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
-                                if (processInfo.processName.equals(packageName)) {
-                                    Log.i("Notification===> ", "find app package.  ");
-                                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                                        appRunningForeground =  true;
-                                        break;
+                        if (tasks.size() != 0) {
+                            boolean appRunningForeground = false;
+                            final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                            if (procInfos != null) {
+                                String packageName = getApplicationContext().getPackageName();
+                                for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                    if (processInfo.processName.equals(packageName)) {
+                                        Log.i("Notification===> ", "find app package.  ");
+                                        if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                            appRunningForeground = true;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            if (appRunningForeground) {
-                                intent.putExtra("Notification", "IN_APP");
-                                intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
-                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                                Log.i("Notification===> ", "fork new task.  ");
+                                if (appRunningForeground) {
+                                    intent.putExtra("Notification", "IN_APP");
+                                    intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                    Log.i("Notification===> ", "fork new task.  ");
+                                } else {
+                                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    intent.putExtra("Notification", "UPPER_APP");
+                                }
                             } else {
-                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                intent.putExtra("Notification", "UPPER_APP");
+                                Log.i("Notification===> ", "Non running app.  ");
                             }
+                        } else {          // user clear all app in recent screen
+                            intent.putExtra("Notification", "UPPER_APP");
                         }
-                        else {
-                            Log.i("Notification===> ", "Non running app.  ");
+
+                        intent.putExtra("Pic", Bitmap2Bytes(picture));
+                        intent.putExtra("Name", message);
+                        intent.putExtra("Price", messagePrice);
+                        intent.putExtra("Intro", messageIntro);
+
+                        pendingIntentIndex = r.nextInt(1000000);
+                        stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                        stackBuilder.addNextIntent(intent);
+                        pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                        channelId = getString(R.string.default_notification_channel_id);
+                        defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                        bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                        notification =
+                                new NotificationCompat.Builder(this, channelId)
+                                        .setSmallIcon(R.drawable.store_icon)
+                                        .setLargeIcon(bitmap)
+                                        .setContentTitle(title)
+                                        .setContentText(message)
+                                        .setStyle(new NotificationCompat.BigPictureStyle()
+                                                .setSummaryText(message)
+                                                .bigPicture(picture))
+                                        .setLights(Color.WHITE, 300, 300)
+                                        .setPriority(Notification.PRIORITY_MAX)
+                                        .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
+                                        .setAutoCancel(true)
+                                        .setSound(defaultSoundUri)
+                                        .setContentIntent(pendingIntent).build();
+
+                        smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+
+                        if (smallIconId != 0) {
+                            if (notification.contentView != null)
+                                notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
+                            if (notification.bigContentView != null)
+                                notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
                         }
-                    }
-                    else {          // user clear all app in recent screen
-                        intent.putExtra("Notification", "UPPER_APP");
-                    }
 
-                    intent.putExtra("Pic", Bitmap2Bytes(picture));
-                    intent.putExtra("Name", message);
-                    intent.putExtra("Price", messagePrice);
-                    intent.putExtra("Intro", messageIntro);
+                        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-                    pendingIntentIndex = r.nextInt(1000000);
-                    stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-                    stackBuilder.addNextIntent(intent);
-                    pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                        //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
-                    channelId = getString(R.string.default_notification_channel_id);
-                    defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-                    notification =
-                            new NotificationCompat.Builder(this, channelId)
-                                    .setSmallIcon(R.drawable.store_icon)
-                                    .setLargeIcon(bitmap)
-                                    .setContentTitle(title)
-                                    .setContentText(message)
-                                    .setStyle(new NotificationCompat.BigPictureStyle()
-                                            .setSummaryText(message)
-                                            .bigPicture(picture))
-                                    .setLights(Color.WHITE, 300, 300)
-                                    .setPriority(Notification.PRIORITY_HIGH)
-                                    .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
-                                    .setAutoCancel(true)
-                                    .setSound(defaultSoundUri)
-                                    .setContentIntent(pendingIntent).build();
+                        // Since android Oreo notification channel is needed.
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            NotificationChannel channel = new NotificationChannel(channelId,
+                                    "Store3C onSale Channel",
+                                    NotificationManager.IMPORTANCE_HIGH);
+                            channel.enableLights(true);
+                            if (notificationManager != null) {
+                                notificationManager.createNotificationChannel(channel);
+                            }
+                        } else {
+                            notification.ledARGB = Color.WHITE;
+                            notification.ledOnMS = 300;
+                            notification.ledOffMS = 300;
+                            notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+                            //notification.defaults |= Notification.DEFAULT_LIGHTS;
+                        }
 
-                    smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
-
-                    if (smallIconId != 0) {
-                        if (notification.contentView != null)
-                            notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
-                        if (notification.bigContentView != null)
-                            notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
-                    }
-
-                    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                    //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-
-                    // Since android Oreo notification channel is needed.
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        NotificationChannel channel = new NotificationChannel(channelId,
-                                "Store3C onSale Channel",
-                                NotificationManager.IMPORTANCE_HIGH);
-                        channel.enableLights(true);
+                        try {
+                            pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                            if (pm != null) {
+                                wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                                wl.acquire(30000);
+                                wl.release();
+                            }
+                        } catch (Exception e) {
+                            Log.i("Exception ==> ", e.getClass().toString());
+                        }
+                        notificationId = new Random().nextInt(60000);
                         if (notificationManager != null) {
-                            notificationManager.createNotificationChannel(channel);
+                            notificationManager.notify(notificationId /* ID of notification */, notification);
                         }
-                    } else {
-                        notification.ledARGB = Color.WHITE;
-                        notification.ledOnMS = 300;
-                        notification.ledOffMS = 300;
-                        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
-                        //notification.defaults |= Notification.DEFAULT_LIGHTS;
                     }
+                    else {
+                        executor.execute(() -> {
+                            final Bitmap[] pictureFromExecutor = {getBitmapfromUrl(imageUrl)};
 
-                    try {
-                         pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
-                        if (pm != null) {
-                            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
-                            wl.acquire(30000);
-                            wl.release();
-                        }
-                    } catch (Exception e) {
-                        Log.i("Exception ==> ",  e.getClass().toString());
-                    }
-                    notificationId = new Random().nextInt(60000);
-                    if (notificationManager != null) {
-                        notificationManager.notify(notificationId /* ID of notification */, notification);
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    String messagePrice = "", messageIntro = "";
+                                    Bitmap bitmap;
+                                    Map<String, String> data;
+                                    PendingIntent pendingIntent;
+                                    Intent intent;
+                                    NotificationManager notificationManager;
+                                    String channelId;
+                                    Uri defaultSoundUri;
+                                    Notification notification;
+                                    int smallIconId;
+                                    PowerManager pm;
+                                    PowerManager.WakeLock wl;
+                                    int notificationId;
+                                    Random r = new Random();
+                                    int pendingIntentIndex;
+                                    TaskStackBuilder stackBuilder;
+
+                                    if (pictureFromExecutor[0] == null) {
+                                        pictureFromExecutor[0] = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                                    }
+                                    data = remoteMessage.getData();
+                                    messagePrice = data.get("messagePrice");
+                                    messageIntro = data.get("messageIntro");
+                                    intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+
+                                    am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                                    tasks = am.getAppTasks();
+                                    Log.i("Notification===> ", "size:  " + tasks.size());
+
+                                    if (tasks.size() != 0) {
+                                        boolean appRunningForeground = false;
+                                        final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                                        if (procInfos != null) {
+                                            String packageName = getApplicationContext().getPackageName();
+                                            for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                                if (processInfo.processName.equals(packageName)) {
+                                                    Log.i("Notification===> ", "find app package.  ");
+                                                    if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                                        appRunningForeground = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (appRunningForeground) {
+                                                intent.putExtra("Notification", "IN_APP");
+                                                intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                                Log.i("Notification===> ", "fork new task.  ");
+                                            } else {
+                                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                                intent.putExtra("Notification", "UPPER_APP");
+                                            }
+                                        } else {
+                                            Log.i("Notification===> ", "Non running app.  ");
+                                        }
+                                    } else {          // user clear all app in recent screen
+                                        intent.putExtra("Notification", "UPPER_APP");
+                                    }
+
+                                    intent.putExtra("Pic", Bitmap2Bytes(pictureFromExecutor[0]));
+                                    intent.putExtra("Name", message);
+                                    intent.putExtra("Price", messagePrice);
+                                    intent.putExtra("Intro", messageIntro);
+
+                                    pendingIntentIndex = r.nextInt(1000000);
+                                    stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                                    stackBuilder.addNextIntent(intent);
+                                    pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                                    channelId = getString(R.string.default_notification_channel_id);
+                                    defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                                    notification =
+                                            new NotificationCompat.Builder(PromotionFirebaseMessagingService.this, channelId)
+                                                    .setSmallIcon(R.drawable.store_icon)
+                                                    .setLargeIcon(bitmap)
+                                                    .setContentTitle(title)
+                                                    .setContentText(message)
+                                                    .setStyle(new NotificationCompat.BigPictureStyle()
+                                                            .setSummaryText(message)
+                                                            .bigPicture(pictureFromExecutor[0]))
+                                                    .setLights(Color.WHITE, 300, 300)
+                                                    .setPriority(Notification.PRIORITY_MAX)
+                                                    .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
+                                                    .setAutoCancel(true)
+                                                    .setSound(defaultSoundUri)
+                                                    .setContentIntent(pendingIntent).build();
+
+                                    smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+
+                                    if (smallIconId != 0) {
+                                        if (notification.contentView != null)
+                                            notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
+                                        if (notification.bigContentView != null)
+                                            notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
+                                    }
+
+                                    notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                                    //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+
+                                    // Since android Oreo notification channel is needed.
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        NotificationChannel channel = new NotificationChannel(channelId,
+                                                "Store3C onSale Channel",
+                                                NotificationManager.IMPORTANCE_HIGH);
+                                        channel.enableLights(true);
+                                        if (notificationManager != null) {
+                                            notificationManager.createNotificationChannel(channel);
+                                        }
+                                    } else {
+                                        notification.ledARGB = Color.WHITE;
+                                        notification.ledOnMS = 300;
+                                        notification.ledOffMS = 300;
+                                        notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+                                        //notification.defaults |= Notification.DEFAULT_LIGHTS;
+                                    }
+
+                                    try {
+                                        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                                        if (pm != null) {
+                                            wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                                            wl.acquire(30000);
+                                            wl.release();
+                                        }
+                                    } catch (Exception e) {
+                                        Log.i("Exception ==> ", e.getClass().toString());
+                                    }
+                                    notificationId = new Random().nextInt(60000);
+                                    if (notificationManager != null) {
+                                        notificationManager.notify(notificationId /* ID of notification */, notification);
+                                    }
+                                }
+                            });
+                        });
                     }
                 }
             }
@@ -337,136 +482,266 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
 
         // Check if message contains a notification payload.
         else if (remoteMessage.getNotification() != null) {   // firebase cloud message with no data defined by user
-            Log.i("Messaging===> ", "Message Notification Body:  "+remoteMessage.getNotification().getBody());
+            Log.i("Messaging===> ", "Message Notification Body:  " + remoteMessage.getNotification().getBody());
             title = remoteMessage.getNotification().getTitle();
             message = remoteMessage.getNotification().getBody();
             messagePrice = "100元";
             messageIntro = "挑選多種蔬菜水果，吐司、熱狗、豬排、煎蛋，豐富的食材，讓人有一種滿足的感覺!";
-
             Uri pic = remoteMessage.getNotification().getImageUrl();
-            if (pic != null) {
-                picture = getBitmapfromUrl(pic.toString());
-            }
-            if (picture == null) {
+
+            if (pic == null) {
                 picture = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-            }
+                intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+                am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                tasks = am.getAppTasks();
 
-            intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
-            am = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
-            tasks = am.getAppTasks();
-
-            if (tasks.size() != 0) {
-                boolean appRunningForeground = false;
-                final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
-                if (procInfos != null) {
-                    String packageName = getApplicationContext().getPackageName();
-                    for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
-                        if (processInfo.processName.equals(packageName)) {
-                            Log.i("Notification===> ", "find app package.  ");
-                            if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                                appRunningForeground =  true;
-                                break;
+                if (tasks.size() != 0) {
+                    boolean appRunningForeground = false;
+                    final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                    if (procInfos != null) {
+                        String packageName = getApplicationContext().getPackageName();
+                        for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                            if (processInfo.processName.equals(packageName)) {
+                                Log.i("Notification===> ", "find app package.  ");
+                                if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                    appRunningForeground = true;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    if (appRunningForeground) {
-                        intent.putExtra("Notification", "IN_APP");
-                        intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
-                        intent.setFlags( Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                        Log.i("Notification===> ", "fork a new task.  ");
+                        if (appRunningForeground) {
+                            intent.putExtra("Notification", "IN_APP");
+                            intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
+                            intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                            Log.i("Notification===> ", "fork a new task.  ");
+                        } else {
+                            Log.i("Notification===> ", "System tray send message to here. ");  //It should not happen, notification will send to MainActivity
+                        }
                     } else {
-                        Log.i("Notification===> ", "System tray send message to here. ");  //It should not happen, notification will send to MainActivity
+                        Log.i("Notification===> ", "Non running app.  ");
                     }
+                } else {          // user clear all app in recent screen
+                    Log.i("Notification===> ", "System tray send message to here.");  //It should not happen, notification will send to the MainActivity
                 }
-                else {
-                    Log.i("Notification===> ", "Non running app.  ");
+
+                intent.putExtra("Pic", Bitmap2Bytes(picture));
+                intent.putExtra("Name", message);
+                intent.putExtra("Price", messagePrice);
+                intent.putExtra("Intro", messageIntro);
+
+                pendingIntentIndex = r.nextInt(1000000);
+                stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                stackBuilder.addNextIntent(intent);
+                pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                channelId = getString(R.string.default_notification_channel_id);
+                defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                notification =
+                        new NotificationCompat.Builder(this, channelId)
+                                .setSmallIcon(R.drawable.store_icon)
+                                .setLargeIcon(bitmap)
+                                .setContentTitle(title)
+                                .setContentText(message)
+                                .setStyle(new NotificationCompat.BigPictureStyle()
+                                        .setSummaryText(message)
+                                        .bigPicture(picture))
+                                .setLights(Color.WHITE, 300, 300)
+                                .setPriority(Notification.PRIORITY_MAX)
+                                .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
+                                .setAutoCancel(true)
+                                .setSound(defaultSoundUri)
+                                .setContentIntent(pendingIntent).build();
+
+                smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+
+                if (smallIconId != 0) {
+                    if (notification.contentView != null)
+                        notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
+                    if (notification.bigContentView != null)
+                        notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
                 }
-            }
-            else {          // user clear all app in recent screen
-                Log.i("Notification===> ", "System tray send message to here.");  //It should not happen, notification will send to the MainActivity
-            }
 
-            intent.putExtra("Pic", Bitmap2Bytes(picture));
-            intent.putExtra("Name", message);
-            intent.putExtra("Price", messagePrice);
-            intent.putExtra("Intro", messageIntro);
+                notificationManager =
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-            pendingIntentIndex = r.nextInt(1000000);
-            stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
-            stackBuilder.addNextIntent(intent);
-            pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+                //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
 
-            channelId = getString(R.string.default_notification_channel_id);
-            defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
-            notification =
-                    new NotificationCompat.Builder(this, channelId)
-                            .setSmallIcon(R.drawable.store_icon)
-                            .setLargeIcon(bitmap)
-                            .setContentTitle(title)
-                            .setContentText(message)
-                            .setStyle(new NotificationCompat.BigPictureStyle()
-                                    .setSummaryText(message)
-                                    .bigPicture(picture))
-                            .setLights(Color.WHITE,300,300)
-                            .setPriority(Notification.PRIORITY_HIGH)
-                            .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
-                            .setAutoCancel(true)
-                            .setSound(defaultSoundUri)
-                            .setContentIntent(pendingIntent).build();
+                // Since android Oreo notification channel is needed.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    NotificationChannel channel = new NotificationChannel(channelId,
+                            "Store3C onSale Channel",
+                            NotificationManager.IMPORTANCE_HIGH);
+                    channel.enableLights(true);
+                    if (notificationManager != null) {
+                        notificationManager.createNotificationChannel(channel);
+                    }
+                } else {
+                    notification.ledARGB = Color.WHITE;
+                    notification.ledOnMS = 300;
+                    notification.ledOffMS = 300;
+                    notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+                    //notification.defaults |= Notification.DEFAULT_LIGHTS;
+                }
 
-            smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
-
-            if (smallIconId != 0) {
-                if (notification.contentView!=null)
-                    notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
-                if (notification.bigContentView != null)
-                    notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
-            }
-
-            notificationManager =
-                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-            //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
-
-            // Since android Oreo notification channel is needed.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel channel = new NotificationChannel(channelId,
-                        "Store3C onSale Channel",
-                        NotificationManager.IMPORTANCE_HIGH);
-                channel.enableLights(true);
+                notificationId = new Random().nextInt(60000);
                 if (notificationManager != null) {
-                    notificationManager.createNotificationChannel(channel);
+                    notificationManager.notify(notificationId /* ID of notification */, notification);
                 }
-            }
-            else {
-                notification.ledARGB = Color.WHITE;
-                notification.ledOnMS = 300;
-                notification.ledOffMS = 300;
-                notification.flags |= Notification.FLAG_SHOW_LIGHTS;
-                //notification.defaults |= Notification.DEFAULT_LIGHTS;
-            }
 
-            notificationId = new Random().nextInt(60000);
-            if (notificationManager != null) {
-                notificationManager.notify(notificationId /* ID of notification */, notification);
-            }
-
-            try {
-                pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
-                if (pm != null) {
-                    wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
-                    wl.acquire(30000);
-                    wl.release();
+                try {
+                    pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                    if (pm != null) {
+                        wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                        wl.acquire(30000);
+                        wl.release();
+                    }
+                } catch (Exception e) {
+                    Log.i("Exception ==> ", e.getClass().toString());
                 }
-            } catch (Exception e) {
-                Log.i("Exception ==> ",  e.getClass().toString());
+            } else {
+                executor.execute(() -> {
+                    final Bitmap[] pictureFromExecutor = {getBitmapfromUrl(pic.toString())};
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            String title, message, messagePrice, messageIntro;
+                            Bitmap bitmap;
+                            PendingIntent pendingIntent;
+                            Intent intent;
+                            NotificationManager notificationManager;
+                            String channelId;
+                            Uri defaultSoundUri;
+                            Notification notification;
+                            int smallIconId;
+                            PowerManager pm;
+                            PowerManager.WakeLock wl;
+                            int notificationId;
+                            Random r = new Random();
+                            int pendingIntentIndex;
+                            TaskStackBuilder stackBuilder;
+
+                            title = remoteMessage.getNotification().getTitle();
+                            message = remoteMessage.getNotification().getBody();
+                            messagePrice = "100元";
+                            messageIntro = "挑選多種蔬菜水果，吐司、熱狗、豬排、煎蛋，豐富的食材，讓人有一種滿足的感覺!";
+
+                            if (pictureFromExecutor[0] == null) {
+                                pictureFromExecutor[0] = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                            }
+                            intent = new Intent(PromotionFirebaseMessagingService.this, ProductActivity.class);
+                            am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                            tasks = am.getAppTasks();
+
+                            if (tasks.size() != 0) {
+                                boolean appRunningForeground = false;
+                                final List<ActivityManager.RunningAppProcessInfo> procInfos = am.getRunningAppProcesses();
+                                if (procInfos != null) {
+                                    String packageName = getApplicationContext().getPackageName();
+                                    for (final ActivityManager.RunningAppProcessInfo processInfo : procInfos) {
+                                        if (processInfo.processName.equals(packageName)) {
+                                            Log.i("Notification===> ", "find app package.  ");
+                                            if (processInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
+                                                appRunningForeground = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (appRunningForeground) {
+                                        intent.putExtra("Notification", "IN_APP");
+                                        intent.putExtra("RetainRecentTask", "RECENT_ACTIVITY");
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                                        Log.i("Notification===> ", "fork a new task.  ");
+                                    } else {
+                                        Log.i("Notification===> ", "System tray send message to here. ");  //It should not happen, notification will send to MainActivity
+                                    }
+                                } else {
+                                    Log.i("Notification===> ", "Non running app.  ");
+                                }
+                            } else {          // user clear all app in recent screen
+                                Log.i("Notification===> ", "System tray send message to here.");  //It should not happen, notification will send to the MainActivity
+                            }
+
+                            intent.putExtra("Pic", Bitmap2Bytes(pictureFromExecutor[0]));
+                            intent.putExtra("Name", message);
+                            intent.putExtra("Price", messagePrice);
+                            intent.putExtra("Intro", messageIntro);
+
+                            pendingIntentIndex = r.nextInt(1000000);
+                            stackBuilder = TaskStackBuilder.create(PromotionFirebaseMessagingService.this);
+                            stackBuilder.addNextIntent(intent);
+                            pendingIntent = stackBuilder.getPendingIntent(pendingIntentIndex, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                            channelId = getString(R.string.default_notification_channel_id);
+                            defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.store_icon);
+                            notification =
+                                    new NotificationCompat.Builder(PromotionFirebaseMessagingService.this, channelId)
+                                            .setSmallIcon(R.drawable.store_icon)
+                                            .setLargeIcon(bitmap)
+                                            .setContentTitle(title)
+                                            .setContentText(message)
+                                            .setStyle(new NotificationCompat.BigPictureStyle()
+                                                    .setSummaryText(message)
+                                                    .bigPicture(pictureFromExecutor[0]))
+                                            .setLights(Color.WHITE, 300, 300)
+                                            .setPriority(Notification.PRIORITY_MAX)
+                                            .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND | Notification.FLAG_SHOW_LIGHTS)
+                                            .setAutoCancel(true)
+                                            .setSound(defaultSoundUri)
+                                            .setContentIntent(pendingIntent).build();
+
+                            smallIconId = getApplicationContext().getResources().getIdentifier("right_icon", "id", Objects.requireNonNull(android.R.class.getPackage()).getName());
+
+                            if (smallIconId != 0) {
+                                if (notification.contentView != null)
+                                    notification.contentView.setViewVisibility(smallIconId, View.INVISIBLE);
+                                if (notification.bigContentView != null)
+                                    notification.bigContentView.setViewVisibility(smallIconId, View.INVISIBLE);
+                            }
+
+                            notificationManager =
+                                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                            //NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+
+                            // Since android Oreo notification channel is needed.
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                NotificationChannel channel = new NotificationChannel(channelId,
+                                        "Store3C onSale Channel",
+                                        NotificationManager.IMPORTANCE_HIGH);
+                                channel.enableLights(true);
+                                if (notificationManager != null) {
+                                    notificationManager.createNotificationChannel(channel);
+                                }
+                            } else {
+                                notification.ledARGB = Color.WHITE;
+                                notification.ledOnMS = 300;
+                                notification.ledOffMS = 300;
+                                notification.flags |= Notification.FLAG_SHOW_LIGHTS;
+                                //notification.defaults |= Notification.DEFAULT_LIGHTS;
+                            }
+
+                            notificationId = new Random().nextInt(60000);
+                            if (notificationManager != null) {
+                                notificationManager.notify(notificationId /* ID of notification */, notification);
+                            }
+
+                            try {
+                                pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                                if (pm != null) {
+                                    wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE, "Store3C:ScreenLockNotificationTag");
+                                    wl.acquire(30000);
+                                    wl.release();
+                                }
+                            } catch (Exception e) {
+                                Log.i("Exception ==> ", e.getClass().toString());
+                            }
+                        }
+                    });
+                });
             }
-
-            //WindowManager.LayoutParams params = ((Activity) getBaseContext()).getWindow().getAttributes();
-            //params.screenBrightness = 1;
-            //((Activity) getBaseContext()).getWindow().setAttributes(params);
-
         }
     }
 
@@ -682,7 +957,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
         URL url;
         HttpURLConnection connection = null;
         Bitmap image = null;
-        int memoSize = -1;
+        int memoSize = 0;
         String Device, Product, Hardware;
 
         if (dbhelper == null) {
@@ -705,8 +980,9 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                 url = new URL(imageUrl);
                 connection = (HttpURLConnection) url.openConnection();
                 connection.setDoInput(true);
-                connection.setConnectTimeout(600000);
-                connection.setReadTimeout(600000);
+                connection.setConnectTimeout(300000);
+                connection.setReadTimeout(300000);
+
                 connection.connect();
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     InputStream input = connection.getInputStream();
@@ -768,18 +1044,21 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                         if (connection != null) {
                             connection.disconnect();
                         }
-                        Thread.sleep(3500);     // for system update the DNS table,  min is 3 second
                         url = new URL(imageUrl);
 
+
                         connection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
+                        connection.setRequestMethod("GET");
                         connection.setDoInput(true);
-                        connection.setConnectTimeout(600000);
-                        connection.setReadTimeout(600000);
+                        connection.setConnectTimeout(300000);
+                        connection.setReadTimeout(300000);
+                        connection.setInstanceFollowRedirects(true);
+                        connection.setUseCaches(false);
 
                         Properties systemProperties = System.getProperties();
                         String agent = systemProperties.getProperty("http.agent");
                         connection.setRequestProperty("User-Agent", agent);
-                        connection.setRequestProperty("Cookie", "*");
+                        //connection.setRequestProperty("Cookie", "*");
 
                         connection.connect();
                         InputStream input = connection.getInputStream();
@@ -809,7 +1088,7 @@ public class PromotionFirebaseMessagingService extends FirebaseMessagingService 
                             Log.i("create Memo: ", "fail!");
                         }
                     }
-                } while (!connected && counter < 30);
+                } while (!connected && counter < 10);
             }
             finally {
                 if (connection != null) {
